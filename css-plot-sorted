@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+from nlxpy.util.clustered_overview import parse_args 
+
+if __name__ == "__main__":
+    parse_args()
