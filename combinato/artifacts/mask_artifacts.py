@@ -40,7 +40,7 @@ options_double = {'art_id': 8,
                   'min_dist': 1.5}  # means 1.5 ms minimum distance
 
 artifact_types = (options_by_diff, options_by_height,
-                  options_by_bincount, opitions_double)
+                  options_by_bincount, options_double)
 
 id_to_name = {}
 

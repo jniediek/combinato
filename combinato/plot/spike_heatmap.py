@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 # JN 2014-12-14
 # function to plot heatmaps of clusters
 from __future__ import absolute_import, division, print_function
