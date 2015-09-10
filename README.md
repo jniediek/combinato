@@ -277,8 +277,51 @@ This tab displays all groups, by plotting the mean spikes of all clusters in a g
 |         |           | G      | Move selected cluster to closest group |
 
 
-### Sample workflow with new files after each step
-TBD
+# Sample workflow with new files after each step
+Let's start with a file `CSC1.ncs`, placed in a folder `testdata`. Open a shell and go to the folder `testdata`. All following calls assume that `testdata` is your current working directory.
+
+0. (optional) If you are using Linux, you can plot the continuous signal. Call
+
+`css-plot-rawsignal`.
+
+Look at the figure in `testdata/overview/`.
+
+On Windows, plotting the raw signal is currently not implemented.
+
+1. Extract spikes by calling
+
+`css-extract --files CSC1.ncs`.
+
+The process takes some time.
+
+Check that there now is a folder `testdata/CSC1` containing the file `data_CSC1.h5`. 
+
+3. Mask artifact spikes by calling
+
+`css-mask-artifacts --no-concurrent`.
+
+The option `--no-concurrent` indicates that artifact masking should not try to use information from several channels, because you extracted spikes from one channel only. If you have multiple channels, you can call `css-concurrent` first, and then `css-mask-artifacts` with no option.
+
+4. (optional) To plot the extracted spikes, call
+
+`css-plot-extracted`.
+
+The figure is placed in `testdata/overview`, its name begins with `spikes_`. The different artifact types are marked in the figure.
+
+5. Now you have to tell Combinato which spikes to sort. Call
+
+`css-prepare-sorting`
+
+This step might seem unnecessarily complicated, but it is extremely handy when you would like to sort only spikes from a certain time window, e.g. for sleep recordings or multi-part experiments. 
+
+6. Ready to sort the spikes. Call
+
+`css-cluster`
+
+
+7. (optional) Plot the sorting result
+
+8. (optional) Use the GUI to optimize results
 
 
 # Contributing

@@ -16,7 +16,7 @@ import matplotlib.pyplot as mpl
 from matplotlib.gridspec import GridSpec
 
 from .spike_heatmap import spike_heatmap
-from .. import artifact_id_to_name, get_channels
+from .. import artifact_id_to_name, get_channels, SortingManagerGrouped
 
 SIGNS = ('pos', 'neg')
 SPIKES_PER_PLOT = 5000
@@ -202,7 +202,6 @@ def process_file(fname):
     """
     run overview on datafiles
     """
-    from nlxpy.manager import SortingManagerGrouped
     # get the channel name
     # this is dirty code, come up with a better solution
     # e.g. storing the header info in the h5 file attrs
