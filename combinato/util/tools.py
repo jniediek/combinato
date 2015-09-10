@@ -62,7 +62,7 @@ def check_status(channel_fname):
     return ch_extracted, n_pos, n_neg, n_sorted, h5fname
 
 
-def channels(path, from_h5files=False):
+def get_channels(path, from_h5files=False):
     """
     simply finds the ncs files that are big enough
     """
@@ -95,7 +95,7 @@ def channels(path, from_h5files=False):
     return ret
 
 
-def regions(path):
+def get_regions(path):
 
     channels = glob(os.path.join(path, 'CSC*.ncs'))
     regions = defaultdict(list)

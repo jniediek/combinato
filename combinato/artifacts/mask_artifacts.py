@@ -36,9 +36,17 @@ options_by_bincount = {'art_id': 4,
 
 options_double = {'art_id': 8,
                   'name': 'double',
-                  'relevant_idx': 18,  # look here for decision
+                  'relevant_idx': 18,  # look here for decision, very specific!
                   'min_dist': 1.5}  # means 1.5 ms minimum distance
 
+artifact_types = (options_by_diff, options_by_height,
+                  options_by_bincount, opitions_double)
+
+id_to_name = {}
+
+for options in artifact_types:
+    id_to_name[options['art_id']] = options['name']
+    
 
 def mark_double_detection(times, spikes, sign):
     """
