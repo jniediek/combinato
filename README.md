@@ -41,6 +41,8 @@ Install a Python Distribution (e.g. [Anaconda][5] by [Continuum][6]) and place t
 
 in your `.bash_profile`.
 
+Also copy `default_options.py` to `combinato/options.py` and modify the path to the cluster binary (`cluster_maci.exe`).
+
 Then you should be ready to use `css-extract`, `css-cluster`, `css-gui` etc.
 
 ## Caveat
