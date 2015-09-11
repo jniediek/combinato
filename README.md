@@ -280,48 +280,78 @@ This tab displays all groups, by plotting the mean spikes of all clusters in a g
 # Sample workflow with new files after each step
 Let's start with a file `CSC1.ncs`, placed in a folder `testdata`. Open a shell and go to the folder `testdata`. All following calls assume that `testdata` is your current working directory.
 
-0. (optional) If you are using Linux, you can plot the continuous signal. Call
+1. *optional* If you are using Linux, you can plot the continuous signal. Call
 
-`css-plot-rawsignal`.
+  `css-plot-rawsignal`.
 
-Look at the figure in `testdata/overview/`.
+  Look at the figure in `testdata/overview/`.
 
-On Windows, plotting the raw signal is currently not implemented.
+  On Windows, plotting the raw signal is currently not implemented.
 
-1. Extract spikes by calling
+2. Extract spikes by calling
 
-`css-extract --files CSC1.ncs`.
+  `css-extract --files CSC1.ncs`.
 
-The process takes some time.
+  The process takes some time.
 
-Check that there now is a folder `testdata/CSC1` containing the file `data_CSC1.h5`. 
+  Check that there now is a folder `testdata/CSC1` containing the file `data_CSC1.h5`. 
 
-3. Mask artifact spikes by calling
+3. *optional, but recommended* Mask artifact spikes by calling
 
-`css-mask-artifacts --no-concurrent`.
+  `css-mask-artifacts --no-concurrent`.
 
-The option `--no-concurrent` indicates that artifact masking should not try to use information from several channels, because you extracted spikes from one channel only. If you have multiple channels, you can call `css-concurrent` first, and then `css-mask-artifacts` with no option.
+  The option `--no-concurrent` indicates that artifact masking should not try to use information from several channels, because you extracted spikes from one channel only. If you have multiple channels, you can call `css-concurrent` first, and then `css-mask-artifacts` with no option.
 
-4. (optional) To plot the extracted spikes, call
+4. *optional* To plot the extracted spikes, call
 
-`css-plot-extracted`.
+  `css-plot-extracted`.
 
-The figure is placed in `testdata/overview`, its name begins with `spikes_`. The different artifact types are marked in the figure.
+  The figure is placed in `testdata/overview`, its name begins with `spikes_`. The different artifact types are marked in the figure.
 
 5. Now you have to tell Combinato which spikes to sort. Call
 
-`css-prepare-sorting`
+  `css-prepare-sorting --data CSC1/data_CSC1.h5`.
 
-This step might seem unnecessarily complicated, but it is extremely handy when you would like to sort only spikes from a certain time window, e.g. for sleep recordings or multi-part experiments. 
+  This step might seem unnecessarily complicated, but it is extremely handy when you would like to sort only spikes from certain time periods, e.g. for sleep recordings or multi-part experiments. 
+
+  There is now a file `sort_pos_abc.txt`, where `abc` is a shorthand for your username. In the following, use the real shorthand instead of the `abc` appearing in this manual. This file lists all sessions that you can now begin to sort.
+
+  There also is a folder `CSC1/sort_pos_abc_000...`, where temporary files from the spike sorting process will reside.
 
 6. Ready to sort the spikes. Call
 
-`css-cluster`
+  `css-cluster --jobs sort_pos_abc.txt`.
 
+  This starts the clustering process.
 
-7. (optional) Plot the sorting result
+7. Combine the many clusters into cluster groups by calling
 
-8. (optional) Use the GUI to optimize results
+  `css-combine --jobs sort_pos_abc.txt`.
+
+  This step may seem overly complicated again, but it is useful to separate clustering and cluster combinining, especially when you would like to optimize the automatic combination process by parameter tuning, without repeating the whole clustering procedure all over.
+  
+  There is now a folder `testdata/CSC1/sort_pos_abc`, which contains plots of all clusters.
+
+8. *optional* Plot the sorting result by calling
+  `css-plot-sorted --label sort_pos_abc`
+
+  The `label` parameter comes in because Combinato allows to store several alternative “sortings”, which can then be plotted independently.
+
+  The resulting plot is stored in `testdata/overview` again.
+
+9. *optional* Use the GUIs to optimize results
+  
+  Call
+  
+  `css-overview-gui`,
+
+  enter the sorting label `sort_pos_abc` and initialize the folder (from the menu or by pressing `Ctrl+I`).
+
+  You will see a representation of the sorting result. If you would like to change something, call
+
+  `css-gui`,
+
+  load the channel and change the clustering as you like.
 
 
 # Contributing
