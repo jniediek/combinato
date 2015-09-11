@@ -33,6 +33,16 @@ Set the local path to the `cluster_linux.exe` binary in `options.py`.
 
 ### On Windows
 Install a Python Distribution (e.g. [Anaconda][5] by [Continuum][6]) and place the Combinato repository in an appropriate folder (e.g. `C:\Users\YourUsername\Anaconda\Lib\site-packages` if using Anaconda). Then copy `default_options.py` to `options.py`. Change the path to the cluster binary (`Cluster.exe`) in `options.py`.
+
+### On OS X
+Install a Python Distribution (e.g. [Anaconda][5] by [Continuum][6]) and place the Combinato repository somewhere, (e.g. `/Applications/anaconda/lib/python2.7/site-packages`, but any other location is fine). To use the programs that are part of Combinato from a Terminal, add the path to the repository to your `PATH`, e.g. by inserting
+
+`export PATH=$PATH:/Applications/anaconda/lib/python2.7/site-packages/combinato`
+
+in your `.bash_profile`.
+
+Then you should be ready to use `css-extract`, `css-cluster`, `css-gui` etc.
+
 ## Caveat
 I am not a trained software engineer, and when I started this project, I had little experience with Python and Qt. This means that the code is redundant at some points and that the style of the code could be improved. I am aware of several issues and I am constantly reducing redundancies.
 
