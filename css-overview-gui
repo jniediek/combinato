@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from nlxpy.guioverview.guioverview import main
+from combinato.guioverview.guioverview import main
 
 if __name__ == "__main__":
     main()
