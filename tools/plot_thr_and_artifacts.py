@@ -26,7 +26,8 @@ import tables
 import matplotlib.pyplot as mpl
 import matplotlib.cm as cm
 
-from combinato import SortingManagerGrouped, get_regions
+from combinato import SortingManagerGrouped, get_regions, artifact_id_to_name 
+print(artifact_id_to_name)
 
 
 FIGSIZE = (7, 6)
@@ -96,15 +97,9 @@ def plotarti(artifacts):
     """
     plots artifact statistics
     """
-    from nlxpy.artifacts.mask_artifacts import options_by_bincount,\
-        options_by_diff, options_by_height
-
-    art_types = (options_by_bincount, options_by_diff, options_by_height)
     tot = len(artifacts)
 
-    for art in art_types:
-        name = art['name']
-        artid = art['art_id']
+    for artid, name in artifact_id_to_name:
         perc = (artifacts == artid).sum()/tot
         print('{}: {:.1%}'.format(name, perc))
 
