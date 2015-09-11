@@ -1,10 +1,10 @@
 # JN 2015-01-13
-# refactoring
 """
 collect all functions that have to do with distances
 between clusters, groups etc
 """
 
+# pylint: disable=E1101
 from __future__ import division, print_function, absolute_import
 import numpy as np
 import sys
@@ -46,7 +46,7 @@ def template_match(spikes, sort_idx, match_idx, factor):
         return
 
     ids, mean_array, stds = get_means(sort_idx, spikes)
-    
+
     if options['ExcludeVariableClustersMatch']:
         median_std = np.median(stds)
         std_too_high_idx = stds > 3 * median_std
@@ -61,24 +61,25 @@ def template_match(spikes, sort_idx, match_idx, factor):
     minimizers = ids[minimizers_idx]
 
     minima = all_distances.min(1)
-    minimizers[minima >= options['FirstMatchMaxDist'] * num_samples] = CLID_UNMATCHED
+    minimizers[minima >= options['FirstMatchMaxDist'] * num_samples] =\
+        CLID_UNMATCHED
 
     sort_idx[unmatched_idx] = minimizers
     match_idx[unmatched_idx] = minimizers
 
 
-def distance_groups(a, b):
+def distance_groups(in1, in2):
     """
     calculates a distance between mean spikes
     """
-    d = a - b
-    d /= min(a.max(), b.max())
-    l2 = np.sqrt((d**2).sum())
+    dist = in1 - in2
+    dist /= min(in1.max(), in2.max())
+    l2_dist = np.sqrt((dist**2).sum())
     # return l2
     # purely heuristical metric!
     # should be optimized by someone...
-    linf = np.abs(d).max()
-    return (l2 + 7 * linf)/2
+    linf = np.abs(dist).max()
+    return (l2_dist + 7 * linf)/2
 
 
 def find_nearest(means):
