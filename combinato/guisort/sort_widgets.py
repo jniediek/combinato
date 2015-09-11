@@ -14,7 +14,7 @@ from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 import time
 
-from nlxpy.options import options
+from .. import options
 from .basics import spikeDist
 
 

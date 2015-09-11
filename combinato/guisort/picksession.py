@@ -3,8 +3,7 @@ from __future__ import print_function, division, absolute_import
 
 from PyQt4.QtGui import *
 
-from nlxpy.util.get_folder_structure import get_relevant_folders,\
-    get_time_files
+from .. import get_relevant_folders, get_time_files
 
 
 class PickSessionDialog(QDialog):
