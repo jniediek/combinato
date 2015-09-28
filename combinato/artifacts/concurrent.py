@@ -10,7 +10,7 @@ import os
 import numpy as np
 import tables
 import time
-from .. import NcsFile, h5files, regions
+from .. import NcsFile, h5files, get_regions
 
 DEBUG = True
 BIN_MS = 3 
@@ -89,7 +89,7 @@ def write_bincount(folder):
     if not len(files):
         raise ValueError('No spike data found in ' + folder)
         
-    ncsfiles = regions(folder)
+    ncsfiles = get_regions(folder)
     ncsf = ncsfiles.values()[0][0]
     ncsfid = NcsFile(ncsf)
     ts_beg = float(ncsfid.read(0, 1, mode='timestamp'))/1000
