@@ -65,7 +65,7 @@ They come along with a few other convenient tools
 | Executable                                  | Used for 		       |
 |---------------------------------------------|--------------------------------|
 | `css-find-concurrent`, `css-mask-artifacts` | pre-sorting artifact detection |
-| `css-plot-continuous` | generating raw data quality plots |
+| `css-plot-rawsignal` | generating raw data quality plots |
 | `css-plot-extracted` | plotting overview figures of extracted spikes and artifacts |
 | `css-plot-sorted`	| plotting overview figures of sorted spikes and artifacts |
 | `css-overview-gui` | displaying various overview plots |
@@ -77,7 +77,7 @@ If you expect all channels to be usable, simply extract spikes from all channels
 
 If instead you think a number of channels should be excluded from spike extraction, do a raw data overview plot first by calling
 
-`css-plot-continuous`
+`css-plot-rawsignal`
 
 When the plots are ready, use
 
