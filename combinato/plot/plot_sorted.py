@@ -15,7 +15,7 @@ import matplotlib.pyplot as mpl
 from matplotlib.gridspec import GridSpec
 
 from .. import Combinato, TYPE_NAMES, h5files
-from .plot_extracted import spike_cumulative
+from .plot_cumulative_time import spike_cumulative
 from .spike_heatmap import spike_heatmap
 
 SIGNS = ('pos', 'neg')
