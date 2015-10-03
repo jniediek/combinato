@@ -6,13 +6,15 @@ cumulative spike time plot
 
 import numpy as np
 TEXT_SIZE = 'small'
-YLIM = (-200, 200)
 
 
-def spike_cumulative(plot, times, special):
+def spike_cumulative(plot, times, special, ylim=None, text=True):
     """
     draw cumulative spike line
     """
+    if ylim is None:
+        ylim = (-200, 200)
+
     duration = (times[-1] - times[0])/1000  # in sec
 
     if duration < 60:
@@ -26,12 +28,14 @@ def spike_cumulative(plot, times, special):
             dur_str = '{:.0f} h'.format(duration)
 
     plot.plot(times,
-              np.linspace(YLIM[0], YLIM[1], len(times)), 'm', lw=1, alpha=.7)
+              np.linspace(ylim[0], ylim[1], len(times)), 'm', lw=1, alpha=.7)
     xlim = plot.get_xlim()
-    plot.text(xlim[1], YLIM[1], dur_str, ha='right', va='top', size=TEXT_SIZE)
+    if text:
+        plot.text(xlim[1], ylim[1], dur_str, ha='right',
+                  va='top', size=TEXT_SIZE)
     if special:
         nspk_str = '{} spk '.format(len(times))
-        plot.text(xlim[1], YLIM[0], nspk_str, ha='right',
+        plot.text(xlim[1], ylim[0], nspk_str, ha='right',
                   va='bottom', size=TEXT_SIZE)
     plot.set_xticklabels([])
     plot.set_xticks([])

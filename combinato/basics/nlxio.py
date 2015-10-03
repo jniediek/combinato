@@ -30,6 +30,17 @@ ncs_type = np.dtype([('timestamp', 'u8'),
                      ('data', ('i2', 512))])
 
 
+def time_upsample(time, timestep):
+    """
+    fills in NCS_SAMPLES_PER_REC timestamps with
+    dist timestep after each timestamp given
+    """
+    filler = NCS_SAMPLES_PER_REC
+    timestep *= 1e6
+    base = np.linspace(0, timestep*(filler - 1), filler)
+    return np.array([base + x for x in time]).ravel()
+
+
 def nev_read(filename):
     """
     Neuralynx .nev file reading function.
