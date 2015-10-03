@@ -172,7 +172,8 @@ def spikes_overview(dirname, save_fname):
                 spike_heatmap(plot, current_spikes[start:stop])
                 set_params(plot, x, start == 0)
                 if current_type in artifact_id_to_name:
-                    plot.text(x[2], YLIM[0]*.75, artifact_id_to_name[current_type],
+                    plot.text(x[2], YLIM[0]*.75,
+                              artifact_id_to_name[current_type],
                               va='bottom', ha='left', size=TEXT_SIZE)
                 plot2 = plot.twiny()
                 spike_cumulative(plot2, current_times[start:stop], start == 0)
