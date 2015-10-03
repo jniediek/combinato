@@ -354,7 +354,7 @@ class Combinato(SortingManagerGrouped):
 
 def test(name):
     """
-    simple test case
+    simple test case, needs a folder as argument
     """
     with open(os.path.join(os.path.dirname(name), '../morning_ts.txt')) as fid:
         start, stop = [int(x)/1000. for x in fid.readline().split()]
@@ -390,11 +390,3 @@ def test(name):
         print('Group {} has {} times and type {}'.format(gid, group['times'].shape[0],
         TYPE_NAMES[group['type']]))
     # man.save_groups_and_types(groups, types)
-
-
-def main():
-    import sys
-    test(sys.argv[1])
-
-if __name__ == "__main__":
-    main()
