@@ -12,7 +12,7 @@ from .basics.nlxio import NcsFile, ncs_info
 from .basics.filters import DefaultFilter
 from .util.tools import h5files, get_channels, get_regions, check_status
 from .util.get_folder_structure import get_relevant_folders, get_time_files
-from .artifacts.mask_artifacts import id_to_name as artifact_id_to_name
+from .artifacts.mask_artifacts import id_to_name as artifact_id_to_name, artifact_types
 from .manager.manager import SortingManager, SessionManager, DataManager
 from .manager.manager_cat import SortingManagerGrouped, SortingFile, Combinato
 from .manager.create_session import create_session
