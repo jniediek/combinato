@@ -8,7 +8,8 @@ import numpy as np
 TEXT_SIZE = 'small'
 
 
-def spike_cumulative(plot, times, special, ylim=None, text=True):
+def spike_cumulative(plot, times, special, ylim=None, text=True,
+                     lw=1, alpha=.7):
     """
     draw cumulative spike line
     """
@@ -28,7 +29,9 @@ def spike_cumulative(plot, times, special, ylim=None, text=True):
             dur_str = '{:.0f} h'.format(duration)
 
     plot.plot(times,
-              np.linspace(ylim[0], ylim[1], len(times)), 'm', lw=1, alpha=.7)
+              np.linspace(ylim[0], ylim[1], len(times)), 'm',
+              lw=lw, alpha=alpha)
+
     xlim = plot.get_xlim()
     if text:
         plot.text(xlim[1], ylim[1], dur_str, ha='right',
