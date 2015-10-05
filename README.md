@@ -29,7 +29,7 @@ However, not all parts depend on all of these packages, so it is perfectly reaso
 
 Before running any Combinato commands, copy the file `default_options.py` to `options.py`. This ensures that your locally set options are not tracked by git.
 
-Set the local path to the `cluster_linux.exe` binary in `options.py`.
+Set the local path to the `cluster_linux.exe` binary in `options.py`. Also check that `cluster_linux.exe` runs (`chmod +x cluster_linux.exe; ./cluster_linux.exe`). If that does not work, you probably have to activate [multi-architecture support][9].
 
 ### On Windows
 Install a Python Distribution (e.g. [Anaconda][5] by [Continuum][6]) and place the Combinato repository in an appropriate folder (e.g. `C:\Users\YourUsername\Anaconda\Lib\site-packages` if using Anaconda). Then copy `default_options.py` to `options.py`. Change the path to the cluster binary (`Cluster.exe`) in `options.py`.
@@ -379,3 +379,5 @@ I'm always happy to see pull requests, feature suggestions and bug reports. Plea
 [7]: http://neuralynx.com
 
 [8]: http://www.jneurosci.org/content/31/24/8699 "D. Hill, S. Mehta, D. Kleinfeld: “Quality Metrics to Accompany Spike Sorting of Extracellular Signals”. The Journal of Neuroscience”. The Journal of Neuroscience 31 (24): 8699–8705" 
+[9]: http://askubuntu.com/a/454254
+
