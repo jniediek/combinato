@@ -11,7 +11,7 @@ from __future__ import division, print_function, absolute_import
 import os
 import numpy as np
 from scipy.io import savemat
-from combinato import SortingManagerGrouped, SortingFile, h5files
+from combinato import SortingManagerGrouped, h5files
 
 def convert_to_mat(groups, outfname):
     """
@@ -56,7 +56,7 @@ def convert_to_mat(groups, outfname):
     savemat(spikes_fname, spikesdict)
 
     timesdict = { 'spikes': all_spikes,
-                'cluster_class': cluster_class}
+                'cluster_class': cluster_class.astype(float)}
 
     times_fname = 'times_' + outfname + '.mat'
     savemat(times_fname, timesdict)
