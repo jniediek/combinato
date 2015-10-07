@@ -17,7 +17,7 @@ options = {
     'MinSpikesPerClusterMultiSelect': 15,
     'MinInputSize': 15,
     'MarkArtifactClasses': True,
-    'MinInputSizeRecluster': 2000,
+    'MinInputSizeRecluster': 500,
     'FractionOfBiggestCluster': .05,
     'MaxClustersPerTemp': 5,  # try different values
     'nFeatures': 10,
@@ -65,12 +65,4 @@ options = {
     'folder_patterns': ('CSC?', 'CSC??', 'CSC???', 'test', 'L??',
                         'R??', 'L???', 'R???', 'L????', 'R????',
                         'simulation_*')
-}
-
-artifact_criteria = {
-   'maxima': 5,
-   'maxima_1_2_ratio': 2,
-   'max_min_ratio': 1.5,
-   'sem': 4,
-   'ptp': 1
 }

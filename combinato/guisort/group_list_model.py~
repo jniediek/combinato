@@ -49,7 +49,7 @@ class GroupListModel(QAbstractListModel):
         max_of_means = np.max(np.abs(self.meandata))
         bins_density = np.linspace(-2*max_of_means,
                                    2*max_of_means,
-                                   200)
+                                   2*max_of_means)
 
         density = [np.histogram(row, bins=bins_density)[0]
                    for row in allspikes]
