@@ -19,7 +19,7 @@ from .plot_cumulative_time import spike_cumulative
 from .spike_heatmap import spike_heatmap
 
 SIGNS = ('pos', 'neg')
-BOXSIZE = 1.5
+BOXSIZE = 1
 NCOLS = 7
 FONTSIZE = 8
 GRID_ARGS = {'left': .005,
