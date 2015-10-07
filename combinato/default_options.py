@@ -5,7 +5,7 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 from matplotlib import cm
 
-CLUS_BINARY = '/home/johannes/combinato/spc/cluster_linux.exe'
+CLUS_BINARY = '/home/chris/Dokumente/combinato/spc/cluster_linux.exe'
 
 
 max_amplitude = 150
