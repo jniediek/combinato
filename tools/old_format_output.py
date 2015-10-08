@@ -116,11 +116,9 @@ def parse_args():
     for dfile in rel_h5files:
         basedir = os.path.dirname(dfile)
         basename = os.path.basename(dfile)
-        basename
         sorting_path = os.path.join(basedir, label)
         outfname = basename[5:-3]
         row = main(dfile, sorting_path, sign, outfname)
-        row
         writer.writerow(row)
 
 def f(x, existing_groups):
@@ -150,8 +148,6 @@ def cluster_info(groups,existing_groups,sorting_path, sign, AcqEnt):
 #############################
     folderinfosplit=sorting_path.split('/')
     ch_numb = folderinfosplit[len(folderinfosplit)-2][3:]
-    ch_numb
-    AcqEnt
     row=np.append([ch_numb, AcqEnt],cluster_types_writeout)
     return row
 
