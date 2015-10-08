@@ -136,15 +136,9 @@ def f(x, existing_groups):
    		return 0   
 
 def cluster_info(groups,existing_groups,sorting_path, sign, AcqEnt):
-<<<<<<< HEAD
 #	"""
 #	write csv file containing group type
 #	"""
-=======
-	"""
-	write csv file containing group type
-	"""
->>>>>>> 39e53af1e555e9228459af8687a1f31ed3cd87d8
     groups = np.unique(np.append(groups[:, 1], [-1, 0]))
     gtypes = np.array([(g, f(g, existing_groups)) for g in groups])
 # vorerst noetig, bis leere Cluster geloescht:
