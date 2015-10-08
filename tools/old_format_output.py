@@ -118,8 +118,12 @@ def parse_args():
         basename = os.path.basename(dfile)
         sorting_path = os.path.join(basedir, label)
         outfname = basename[5:-3]
-        row = main(dfile, sorting_path, sign, outfname)
-        writer.writerow(row)
+        try:
+            row = main(dfile, sorting_path, sign, outfname)
+       	    writer.writerow(row)
+        except:
+            print('No grouped spikes found in :',os.path.basename(dfile))
+
 
 def f(x, existing_groups):
    	if x <= 0:
