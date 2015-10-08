@@ -13,8 +13,8 @@ import csv
 import numpy as np
 from scipy.io import savemat
 from combinato import SortingManagerGrouped, h5files
-from combinato import Combinato
-from combinato.util import get_folder_structure
+#from combinato import Combinato
+#from combinato.util import get_folder_structure
 
 def convert_to_mat(groups, outfname):
     """
@@ -82,8 +82,8 @@ def main(fname_data, fname_sorting, sign, outfname):
         print('Could not initialize {} {}'.format(fn1, fn2))
     else:
         convert_to_mat(man.get_groups_joined(), outfname)
-	cluster_info()
-
+        row = cluster_info(man.get_group_table(),man.get_groups_joined(),fname_sorting, sign, man.header['AcqEntName'])
+        return row
 
 def parse_args():
     """
@@ -105,58 +105,55 @@ def parse_args():
         rel_h5files = h5files(os.getcwd())
     else:
         rel_h5files = [args.h5file]
-    
+
+    csvfile = open('cluster_info.csv', 'w')
+    writer = csv.writer(csvfile)
+    writer.writerow(['# Session:  ' + os.path.basename(os.getcwd())])
+    writer.writerow(['# Colums are listed below. For artefacts or unassigned signals a 1 means exists, a 0 exists not.'])
+    writer.writerow(['# For cluster 1, 2, ... a 1 means multiunit, a 2 singleunit.'])
+    writer.writerow(['# ChannelNumber, ChannelName, artefacts, unassigned, cluster 1, cluster 2, ...'])
 
     for dfile in rel_h5files:
         basedir = os.path.dirname(dfile)
         basename = os.path.basename(dfile)
+        basename
         sorting_path = os.path.join(basedir, label)
         outfname = basename[5:-3]
-        main(dfile, sorting_path, sign, outfname)
-   
+        row = main(dfile, sorting_path, sign, outfname)
+        row
+        writer.writerow(row)
 
-def cluster_info():
+def f(x, existing_groups):
+   	if x <= 0:
+   		if x in existing_groups.keys():
+    			return 1
+   		else:
+    			return 0
+   		return
+   	elif x in existing_groups.keys():
+   		return existing_groups[x]['type']
+   	else:
+   		return 0   
+
+def cluster_info(groups,existing_groups,sorting_path, sign, AcqEnt):
 	"""
 	write csv file containing group type
 	"""
-	folderinfo = get_folder_structure.get_relevant_folders(os.getcwd())
-	folderlen = range(0,len(folderinfo[:]))
-	with open('cluster_info.csv', 'w') as csvfile:
-		writer = csv.writer(csvfile)
-		writer.writerow(['# Session:  ' + os.path.basename(os.getcwd())])
-		writer.writerow(['# Colums are listed below. For artefacts or unassigned signals a 1 means exists, a 0 exists not.'])
-		writer.writerow(['# For cluster 1, 2, ... a 1 means multiunit, a 2 singleunit.'])
-		writer.writerow(['# ChannelNumber, ChannelName, artefacts, unassigned, cluster 1, cluster 2, ...'])
-		for i in folderlen:
-			label=folderinfo[i][2]
-			sign=label.split('_')
-			sign=sign[1]
-			manager = Combinato(folderinfo[i][0]+'/'+folderinfo[i][1], sign, label)
-			groups = np.unique(np.append(manager.get_group_table()[:, 1], [-1, 0]))
-			existing_groups = manager.get_groups_joined().keys()
-			def f(x, existing_groups):
-    				if x <= 0:
-        				if x in existing_groups:
-        	    				return 1
-        				else:
-        	    				return 0
-        				return
-    				elif x in existing_groups:
-        				return manager.get_group_type(x)
-    				else:
-        				return 0
-			gtypes = np.array([(g, f(g, existing_groups)) for g in groups])
+    groups = np.unique(np.append(groups[:, 1], [-1, 0]))
+    gtypes = np.array([(g, f(g, existing_groups)) for g in groups])
 # vorerst noetig, bis leere Cluster geloescht:
 ###############################
-			cluster_types=gtypes[:2,1]
-			gtypes2=gtypes[2:,:]
-			cluster_types2=gtypes2[(gtypes[2:,1] != 0),1]
-			cluster_types_writeout = np.append(cluster_types,cluster_types2)
-###############################
-			folderinfosplit=folderinfo[i][0].split('/')
-			ch_numb = folderinfosplit[len(folderinfosplit)-1][3:]
-			row=np.append([ch_numb, manager.header['AcqEntName']],cluster_types_writeout)
-			writer.writerow(row)
+    cluster_types=gtypes[:2,1]
+    gtypes2=gtypes[2:,:]
+    cluster_types2=gtypes2[(gtypes[2:,1] != 0),1]
+    cluster_types_writeout = np.append(cluster_types,cluster_types2)
+#############################
+    folderinfosplit=sorting_path.split('/')
+    ch_numb = folderinfosplit[len(folderinfosplit)-2][3:]
+    ch_numb
+    AcqEnt
+    row=np.append([ch_numb, AcqEnt],cluster_types_writeout)
+    return row
 
 if __name__ == "__main__":
     parse_args()
