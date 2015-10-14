@@ -24,9 +24,9 @@ def convert_to_mat(groups, outfname):
 
     nsamp = group['spikes'].shape[1]
 
-    all_times = np.zeros(tot_nspk, np.float32)
+    all_times = np.zeros(tot_nspk, np.float64)
     all_spikes = np.zeros((tot_nspk, nsamp), np.float32)
-    all_classes = np.zeros(tot_nspk, np.float32) # type because later hstack
+    all_classes = np.zeros(tot_nspk, np.float64)  # type because later hstack
 
     start = 0
     next_cl = 1
@@ -49,14 +49,14 @@ def convert_to_mat(groups, outfname):
     cluster_class = np.vstack((all_classes, all_times)).T
 
     spikesdict = {'spikes': all_spikes,
-                 'index_ts': all_times}
+                  'index_ts': all_times}
 
     spikes_fname = outfname + '_spikes.mat'
 
     savemat(spikes_fname, spikesdict)
 
-    timesdict = { 'spikes': all_spikes,
-                'cluster_class': cluster_class.astype(float)}
+    timesdict = {'spikes': all_spikes,
+                 'cluster_class': cluster_class}
 
     times_fname = 'times_' + outfname + '.mat'
     savemat(times_fname, timesdict)
