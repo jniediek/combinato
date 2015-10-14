@@ -27,9 +27,9 @@ def convert_to_mat(groups, outfname):
 
     nsamp = group['spikes'].shape[1]
 
-    all_times = np.zeros(tot_nspk, np.float32)
+    all_times = np.zeros(tot_nspk, np.float64)
     all_spikes = np.zeros((tot_nspk, nsamp), np.float32)
-    all_classes = np.zeros(tot_nspk, np.float32) # type because later hstack
+    all_classes = np.zeros(tot_nspk, np.float64) # type because later hstack
 
     start = 0
     next_cl = 1
@@ -61,7 +61,7 @@ def convert_to_mat(groups, outfname):
     savemat(spikes_fname, spikesdict)
 
     timesdict = { 'spikes': all_spikes,
-                'cluster_class': cluster_class.astype(float)}
+                'cluster_class': cluster_class}
 
     times_fname = 'times_' + outfname + '.mat'
     savemat(times_fname, timesdict)
@@ -81,8 +81,10 @@ def main(fname_data, fname_sorting, sign, outfname):
         fn2 = os.path.basename(fname_sorting)
         print('Could not initialize {} {}'.format(fn1, fn2))
     else:
-        convert_to_mat(man.get_groups_joined(), outfname)
-        row = cluster_info(man.get_group_table(),man.get_groups_joined(),fname_sorting, sign, man.header['AcqEntName'])
+        ch_numb = os.path.basename(fname_data)[8:-3]
+        joined = man.get_groups_joined()
+        convert_to_mat(joined, outfname)
+        row = cluster_info(man.get_group_table(),joined, fname_sorting, sign, man.header['AcqEntName'], ch_numb)
         return row
 
 def parse_args():
@@ -95,6 +97,7 @@ def parse_args():
     parser.add_argument('--label')
     parser.add_argument('--h5file' )
     parser.add_argument('--neg', action='store_true', default=False)
+    parser.add_argument('--noInfo', action='store_true', default=False)
     args = parser.parse_args()
 
     label = args.label
@@ -106,12 +109,13 @@ def parse_args():
     else:
         rel_h5files = [args.h5file]
 
-    csvfile = open('cluster_info.csv', 'w')
-    writer = csv.writer(csvfile)
-    writer.writerow(['# Session:  ' + os.path.basename(os.getcwd())])
-    writer.writerow(['# Colums are listed below. For artefacts or unassigned signals a 1 means exists, a 0 exists not.'])
-    writer.writerow(['# For cluster 1, 2, ... a 1 means multiunit, a 2 singleunit.'])
-    writer.writerow(['# ChannelNumber, ChannelName, artefacts, unassigned, cluster 1, cluster 2, ...'])
+    if not args.noInfo:
+        csvfile = open('cluster_info.csv', 'w')
+    	writer = csv.writer(csvfile)
+    	writer.writerow(['# Session:  ' + os.path.basename(os.getcwd())])
+    	writer.writerow(['# Colums are listed below. For artefacts or unassigned signals a 1 means exists, a 0 exists not.'])
+    	writer.writerow(['# For cluster 1, 2, ... a 1 means multiunit, a 2 singleunit.'])
+    	writer.writerow(['# ChannelNumber, ChannelName, artefacts, unassigned, cluster 1, cluster 2, ...'])
 
     for dfile in rel_h5files:
         basedir = os.path.dirname(dfile)
@@ -120,7 +124,8 @@ def parse_args():
         outfname = basename[5:-3]
         try:
             row = main(dfile, sorting_path, sign, outfname)
-       	    writer.writerow(row)
+            if not args.noInfo:
+       	    	writer.writerow(row)
         except:
             print('No grouped spikes found in :',os.path.basename(dfile))
 
@@ -137,7 +142,7 @@ def f(x, existing_groups):
    	else:
    		return 0   
 
-def cluster_info(groups,existing_groups,sorting_path, sign, AcqEnt):
+def cluster_info(groups,existing_groups,sorting_path, sign, AcqEnt, ch_numb):
 #	"""
 #	write csv file containing group type
 #	"""
@@ -150,8 +155,8 @@ def cluster_info(groups,existing_groups,sorting_path, sign, AcqEnt):
     cluster_types2=gtypes2[(gtypes[2:,1] != 0),1]
     cluster_types_writeout = np.append(cluster_types,cluster_types2)
 #############################
-    folderinfosplit=sorting_path.split('/')
-    ch_numb = folderinfosplit[len(folderinfosplit)-2][3:]
+    #folderinfosplit=sorting_path.split('/')
+    #ch_numb = folderinfosplit[len(folderinfosplit)-2][3:]
     row=np.append([ch_numb, AcqEnt],cluster_types_writeout)
     return row
 
