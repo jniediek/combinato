@@ -149,6 +149,8 @@ and use `css-mask-artifacts --help` to read more about command line options.
 
 Use `css-plot-extracted` to create plots of the spikes after artifact removal. These plots display the different artifact types, and also visualize cumulative spike counts over time. `css-overview-gui` displays these plots in a convenient way.
 
+![Screenshot of css-overview-gui](doc/screenshot_css-overview-gui.png "Screenshot")
+
 
 ### Sorting spikes
 Combinato Spike Sorting works with *job files*, but using them is not mandatory.

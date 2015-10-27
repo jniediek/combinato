@@ -137,4 +137,4 @@ def h5files(path):
             if os.stat(h5cand).st_size > 0:
                 ret.append(h5cand)
 
-    return sorted(ret)
+    return sorted(ret, key=lambda x: int(os.path.basename(x)[8:-3]))

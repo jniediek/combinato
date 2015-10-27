@@ -288,9 +288,8 @@ def parse_args():
                 ranges = [float(x) for x in line.strip().split()]
                 exclude_ranges.append(ranges)
     else:
-        exlude_ranges = None
+        exclude_ranges = None
 
-        print(exclude_ranges)
     # main loop, could be done with parallel
     # processing (bad because of high I/O)
     for fname in files:
