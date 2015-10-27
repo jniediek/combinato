@@ -34,7 +34,7 @@ def read_matfile(fname):
     print(atimes.shape, fdata.shape)
     print(ts)
 
-    return fdata, atimes, ts 
+    return fdata, atimes, ts
 
 
 class ExtractNcsFile(object):
@@ -81,16 +81,20 @@ class ExtractNcsFile(object):
                   .format(self.fname, start, stop, err/1e3))
 
         atimes = np.hstack([t + self.timerange for t in times])/1e3
-        # MUST NOT USE dictionaries here, because they would persist in memory 
+        # MUST NOT USE dictionaries here, because they would persist in memory
         return (fdata, atimes, self.ncs_file.timestep)
 
 
 class OutFile(object):
-    def __init__(self, name, fname, spoints=64):
+    """
+    write out file to hdf5 tables
+    """
+    def __init__(self, name, fname, spoints=64, destination=''):
 
-        if not os.path.isdir(name):
-            os.mkdir(name)
-        fname = os.path.join(name, fname)
+        dirname = os.path.join(destination, name)
+        if not os.path.isdir(dirname):
+            os.mkdir(dirname)
+        fname = os.path.join(dirname, fname)
         f = tables.open_file(fname, 'w')
         f.create_group('/', 'pos', 'positive spikes')
         f.create_group('/', 'neg', 'negative spikes')

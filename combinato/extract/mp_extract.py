@@ -43,7 +43,8 @@ def save(q, ctarget):
             if not sjob['name'] in openfiles:
                 
                  spoints = data[0][0].shape[1]
-                 openfiles[sjob['name']] = OutFile(sjob['name'], sjob['filename'], spoints)
+                 openfiles[sjob['name']] = OutFile(sjob['name'], sjob['filename'],
+                                                   spoints, sjob['destination'])
 
             print('saving {}, count {}'.format(sjob['name'], sjob['count']))
             openfiles[sjob['name']].write(data)

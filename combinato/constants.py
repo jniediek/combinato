@@ -17,12 +17,12 @@ if DO_CHECKS:
         if 'DISPLAY' not in os.environ:
             print('You are using linux without graphical environment. '
                   'Plotting will not work. Try ssh -X.')
-        try:
-            subprocess.call('montage', stdout=subprocess.PIPE)
-        except OSError as error:
-            print(error)
-            print("'montage' from ImageMagick not found. "
-                  "Plotting continuous data will not work")
+    try:
+        subprocess.call('montage', stdout=subprocess.PIPE)
+    except OSError as error:
+        print(error)
+        print("'montage' from ImageMagick not found. "
+              "Plotting continuous data will not work")
 
 
 TYPE_ART = -1
