@@ -240,10 +240,11 @@ def main(fname, concurrent_edges=None, concurrent_bin=None, exlude_ranges=None):
             print('Marked {} {} spikes as detected twice'.
                 format(arti_by_double.sum(), sign))
 
-        arti_by_ranges, range_id = mark_range_detection(times, exlude_ranges)
-        artifacts[arti_by_ranges != 0] = range_id
-        if DEBUG:
-            print('Marked {} {} spikes within supplied range '.
+        if exlude_ranges is not None:
+            arti_by_ranges, range_id = mark_range_detection(times, exlude_ranges)
+            artifacts[arti_by_ranges != 0] = range_id
+            if DEBUG:
+                print('Marked {} {} spikes within supplied range '.
                 format(arti_by_ranges.sum(), sign))
 
         h5fid.close()
