@@ -39,14 +39,32 @@ options_double = {'art_id': 8,
                   'relevant_idx': 18,  # look here for decision, very specific!
                   'min_dist': 1.5}  # means 1.5 ms minimum distance
 
+options_ranges = {'art_id': 16,
+                  'name': 'range'}
+
 artifact_types = (options_by_diff, options_by_height,
-                  options_by_bincount, options_double)
+                  options_by_bincount, options_double, options_ranges)
 
 id_to_name = {}
 
 for options in artifact_types:
     id_to_name[options['art_id']] = options['name']
+
+
+def mark_range_detection(times, ranges):
+    """
+    Ranges contains a list of 2-tuples. All timestamps within
+    such a 2-tuple are excluded.
+    """
+    artifacts = np.zeros(times.shape[0], dtype=bool)
+    for this_range in ranges:
+        idx = (times >= this_range[0]) & (times <= this_range[1])
+        print(this_range, times[0], times[-1])
+        print(idx.sum())
+        artifacts[idx] |= True
     
+    return artifacts, options_ranges['art_id']
+
 
 def mark_double_detection(times, spikes, sign):
     """
@@ -157,7 +175,7 @@ def mark_by_height(spikes, sign):
     return artifacts, options_by_height['art_id']
 
 
-def main(fname, concurrent_edges=None, concurrent_bin=None):
+def main(fname, concurrent_edges=None, concurrent_bin=None, exlude_ranges=None):
     """
     creates table to store artifact information
     """
@@ -218,6 +236,15 @@ def main(fname, concurrent_edges=None, concurrent_bin=None):
 
         arti_by_double, double_id = mark_double_detection(times, spikes, sign)
         artifacts[arti_by_double != 0] = double_id
+        if DEBUG:
+            print('Marked {} {} spikes as detected twice'.
+                format(arti_by_double.sum(), sign))
+
+        arti_by_ranges, range_id = mark_range_detection(times, exlude_ranges)
+        artifacts[arti_by_ranges != 0] = range_id
+        if DEBUG:
+            print('Marked {} {} spikes within supplied range '.
+                format(arti_by_ranges.sum(), sign))
 
         h5fid.close()
 
@@ -229,6 +256,8 @@ def parse_args():
     parser.add_argument('--no-concurrent', action='store_true',
                         default=False)
     parser.add_argument('--concurrent-file', nargs=1)
+    parser.add_argument('--exclude-ranges', nargs=1,
+                        help='supply a file with timestamp ranges to exclude')
     args = parser.parse_args()
 
     if not args.no_concurrent:
@@ -251,12 +280,22 @@ def parse_args():
     else:
         files = [fname]
 
+    if args.exclude_ranges:
+        fname = args.exclude_ranges[0]
+        exclude_ranges = []
+        with open(fname, 'r') as fid:
+            for line in fid.readlines():
+                ranges = [float(x) for x in line.strip().split()]
+                exclude_ranges.append(ranges)
+    else:
+        exclude_ranges = None
+
     # main loop, could be done with parallel
     # processing (bad because of high I/O)
     for fname in files:
         if DEBUG:
             print('Starting ' + fname)
-        main(fname, concurrent_edges, concurrent_bin)
+        main(fname, concurrent_edges, concurrent_bin, exclude_ranges)
 
 if __name__ == "__main__":
     parse_args()
