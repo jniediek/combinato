@@ -29,7 +29,7 @@ def main():
                         help='job file contains one filename per row')
     parser.add_argument('--matfile', nargs=1,
                         help='extract data from a matlab file')
-    parser.add_argument('--destination', nargs=1, default='',
+    parser.add_argument('--destination', nargs=1,
                         help='folder where spikes should be saved')
     args = parser.parse_args()
 
@@ -39,7 +39,10 @@ def main():
         print('Supply either files or jobs or matfile.')
         return
 
-    destination = args.destination[0]
+    if args.destination is not None:
+        destination = args.destination[0]
+    else:
+        destination = ''
 
     # special case for a matlab file
     if args.matfile is not None:
