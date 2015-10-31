@@ -18,6 +18,7 @@ from matplotlib.gridspec import GridSpec
 from .spike_heatmap import spike_heatmap
 from .plot_cumulative_time import spike_cumulative
 from .. import artifact_id_to_name, get_channels, SortingManagerGrouped
+from .. import h5files
 
 SIGNS = ('pos', 'neg')
 SPIKES_PER_PLOT = 5000
@@ -194,15 +195,22 @@ def parse_args():
     """
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('--datafile', nargs='+')
+    parser.add_argument('--datafiles', nargs='+')
 
     args = parser.parse_args()
 
     if not os.path.exists(OVERVIEW):
         os.mkdir(OVERVIEW)
 
-    if args.datafile:
-        for fname in args.datafile:
-            process_file(fname)
+    # process_folder(os.getcwd())
+    # JN 2015-10-31
+    # process_folder assumes that ncs files are still in place
+    # let's reform this today
+
+    if args.datafiles is not None:
+        files = args.datafiles
     else:
-        process_folder(os.getcwd())
+        files = h5files(os.getcwd())
+
+    for fname in files:
+        process_file(fname)
