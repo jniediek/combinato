@@ -50,6 +50,8 @@ I am not a trained software engineer, and when I started this project, I had lit
 
 Most commands have command line options. I'm working on a more unified syntax for these.
 
+## Testing
+After the installation, you can run the small script `test_installation.py` in the `tools` directory of this respository. It checks whether your paths are set correctly.
 
 ## Main executables 
 Combinato Spike Sorting consists of the following main executables
