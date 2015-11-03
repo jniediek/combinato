@@ -71,7 +71,7 @@ def loop_channels(channel_list, sign):
         del man
         stat = create_statistics(artifacts)
         # stat[0] is the total count
-        row = [cscname, side, region, wire, stat[0]]
+        row = [str(cscname), str(side), str(region), int(wire), stat[0]]
         for i in iterator:
             row.append(stat[i+1])
         res.append(row)
@@ -83,6 +83,7 @@ def loop_channels(channel_list, sign):
 def main():
     """
     standard main function
+    pass e.g. do_extract.txt as an argument
     """
     h5files = create_channel_list(sys.argv[1])
     frame = loop_channels(h5files, 'pos')
