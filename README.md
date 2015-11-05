@@ -14,14 +14,42 @@ Combinato is a collection of a few command-line tools and two GUIs, written in P
 
 ## Installation
 
-Spike sorting depends on the binary `cluster_linux.exe` (on Windows: `Cluster.exe`) described [in this article][1] and [available online][2] (click on _Codes_).
+Spike sorting depends on the binary `cluster_linux.exe` (on Windows: `Cluster.exe`, on OS X: `cluster_maci.exe`) described [in this article][1] and [available online][2] (click on _Codes_).
 
 
 ### On Linux 
-Clone this repository to a folder where python sees it. For example, save it to `/usr/local/lib/python2.7/dist-packages` or save it to `~/python-packages` and add `~/python-packages` to your `PYTHONPATH`.
 
-Also add the repository folder to your `PATH`, so that you can just type the command names without specifying the full path.
+If you do not have `git` installed, use your distribution's package manager to install it.
 
+Then clone combinato's repository:
+
+`git clone https://github.com/wasserverein/combinato.git`,
+
+or, if you have uploaded your public key,
+
+`git clone git@github.com:wasserverein/combinato.git`.
+
+
+#### Setting paths on Linux (this also applies to OS X)
+The relevant executables all reside in the root folder of the repository. You probably want to call them from the command line, so add the folder `combinato` to your `$PATH`.
+
+I also recommend making the `combinato` module (this is a folder _inside_ the repository) visible to Python. You can either create a symbolic link in `/usr/local/lib/python2.7/dist-packages` pointing to the `combinato` folder, or you can add the `combinato` folder to your `$PYTHONPATH`.
+
+##### Example
+I use the following setup:
+
+The repository is
+`/home/johannes/combinato`.
+
+My shell's configuration contains
+
+`PATH=$PATH:/home/johannes/combinato`
+
+`PYTHONPATH=$PYTHONPATH:/home/johannes/combinato`
+
+`export PATH PYTHONPATH`
+
+#### Dependencies
 Combinato Spike Sorting tools depend on
 `numpy`, `scipy`, `pywt`, `matplotlib`, `pytables`, and `pyqt`.
 
