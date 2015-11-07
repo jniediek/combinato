@@ -147,7 +147,7 @@ class SessionManager(object):
         # index and ident are always there
         self.index = None
         self.ident = None
-        self.is_sorted = False # default
+        self.is_sorted = False  # default
 
         # these are there for sorted classes
         self.classes = None
@@ -189,11 +189,12 @@ class SessionManager(object):
         except tables.NoSuchNodeError:
             pass
 
-        if None not in [self.classes, self.matches, self.artifact_scores]:
-            self.is_sorted = True
+        if True in [x is None for x in
+                    (self.classes, self.matches, self.artifact_scores)]:
+            self.is_sorted = False
         else:
+            self.is_sorted = True
             print('Unsorted session, not loading sorting data')
-
 
         if self.artifact_scores is not None:
             self.all_ids = self.artifact_scores[:, 0]

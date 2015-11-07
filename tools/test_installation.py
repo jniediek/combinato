@@ -45,6 +45,15 @@ def initial_test():
     return True
 
 
+def manager_test(fname, label, ts):
+    """
+    Test if we can load a sorted session and retrieve data.
+    Requires certain files to be present
+    """
+    from combinato.manager.manager_cat import test
+    test(fname, label, ts)
+
+
 def plotting_test():
     """
     run a rudimentary test whether plotting will work
@@ -70,3 +79,6 @@ if __name__ == '__main__':
         print('Re-run after fixing problems.')
 
     plotting_test()
+
+    if len(sys.argv) > 3:
+        manager_test(sys.argv[1], sys.argv[2], sys.argv[3])
