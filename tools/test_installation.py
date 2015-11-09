@@ -19,20 +19,13 @@ def initial_test():
     try:
         import combinato.default_options
     except ImportError as error:
-        print('Module combinato not found: {}'.format(error))
-        print('Check your PYTHONPATH')
+        print('Unable to load Combinato: {}'.format(error))
+        print('Check your PYTHONPATH and make sure to copy\n'
+              'combinato/default_options.py to combinato/options.py')
         return False
     print('Found Combinato')
 
-    def_opt_path = combinato.default_options.__file__
-    try:
-        import combinato.options
-    except ImportError as error:
-        print('Combinato options not found: {}'.format(error))
-        print('Copy {} to options.py in the folder'.format(def_opt_path))
-        return False
-    print('Found options.py')
-
+    # now check if SPC binary is callable
     try:
         subprocess.call(combinato.options['ClusterPath'],
                         stdout=subprocess.PIPE)
