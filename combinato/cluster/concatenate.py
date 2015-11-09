@@ -60,6 +60,9 @@ def read_all_info(managers):
         man = managers[ses]
         t_size = man.index.shape[0]
         sorted_index[curr_idx:curr_idx+t_size] = man.index
+        overfull = (np.diff(sorted_index[:curr_idx+t_size]) == 0).sum()
+        if overfull:
+            print(ses, overfull, "ALARM")
         t_classes = man.classes
         idx = t_classes != 0
         t_classes[idx] += old_max_class

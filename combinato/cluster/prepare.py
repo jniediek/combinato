@@ -13,7 +13,7 @@ DEBUG = options['Debug']
 
 
 def make_arguments(filename, sign, mode, start=0,
-                   stop=None, max_nspk_session=20000):
+                   stop=None, max_nspk_session=20000, add_one=False):
     """
     prepare arguments for clustering
     mode:
@@ -33,9 +33,13 @@ def make_arguments(filename, sign, mode, start=0,
         times = h5manager.get_data_by_name_and_index('times',
                                                      non_artifact_idx,
                                                      sign=sign)[:]
-        # print(times[0], times[-1])
         start_idx = np.searchsorted(times, start)
         stop_idx = np.searchsorted(times, stop)
+
+        # this is useful for later concatenation
+        if add_one:
+            start_idx += 1
+            stop_idx -= 1
         print('Converted time to {}-{}'.format(start_idx, stop_idx))
 
     else:
@@ -47,10 +51,12 @@ def make_arguments(filename, sign, mode, start=0,
     # partition into blocks of length 'max_nspk_session'
     starts = range(start_idx, stop_idx, max_nspk_session)
     stops = starts[1:]
-    stops.append(min(stop_idx, non_artifact_idx[-1]))
+    min_stop = min(stop_idx, non_artifact_idx[-1])
+    stops.append(min_stop)
 
     if len(stops) > 1:
         if stops[-1] - stops[-2] < max_nspk_session/5:
+            print('Adjusting stop to have some spikes')
             stops[-2] = stops[-1]
             del starts[-1], stops[-1]
 
@@ -59,23 +65,28 @@ def make_arguments(filename, sign, mode, start=0,
     ret = []
 
     for start, stop in zip(starts, stops):
+        # print('Start: ', start, non_artifact_idx[start])
+        # print('Stop: ', stop, non_artifact_idx[stop])
         ret.append(non_artifact_idx[start:stop])
 
     return ret
 
 
-def main(fnames, sign, mode, start, stop, max_nspk_session, label, replace):
+def main(fnames, sign, mode, start, stop, max_nspk_session, label,
+         replace, add_one=False):
     """
     creates clustering directories for given arguments
     """
 
     ret = []
 
-    print('running {} {} {} {} {} {} {} {}'.format(fnames, sign, mode, start,
-        stop, max_nspk_session, label, 'replace' if replace else 'no replace'))
+    print('running {} {} {} {} {} {} {} {}'.
+          format(fnames, sign, mode, start, stop, max_nspk_session,
+                 label, 'replace' if replace else 'no replace'))
 
     for name in fnames:
-        jobs = make_arguments(name, sign, mode, start, stop, max_nspk_session)
+        jobs = make_arguments(name, sign, mode, start, stop,
+                              max_nspk_session, add_one)
         if jobs is None:
             continue
         dirname = os.path.dirname(name)
@@ -139,6 +150,8 @@ def parse_arguments():
         print('Supply either list file or data file, not both')
         return
 
+    add_one = False
+
     if args.times is not None:
         mode = 'time'
         start_stop = []
@@ -153,6 +166,7 @@ def parse_arguments():
         if args.between:
             # 2nd timestamp of 1st file to 1st timestamp of 2nd file
             start_stop = [(start_stop[0][1], start_stop[1][0])]
+            add_one = True
 
     else:
         mode = 'index'
@@ -170,7 +184,7 @@ def parse_arguments():
         with open(args.jobs[0], 'r') as fpn:
             fnames = fpn.read().splitlines()
         fpn.close()
-        
+
         if (mode == 'index') and (None in (args.start, args.stop)):
             start_stop = [(0, None)]
             print('Automatically using all spikes'.format(*start_stop))
@@ -187,8 +201,8 @@ def parse_arguments():
         sign = 'neg' if args.neg else 'pos'
 
     for start, stop in start_stop:
-        sessions = main(fnames, sign, mode, start,
-                        stop, args.max_nspk, args.label, True)
+        sessions = main(fnames, sign, mode, start, stop, args.max_nspk,
+                        args.label, replace=True, add_one=add_one)
 
         if write_log:
             outfname = "sort_{}_{}.txt".format(sign, args.label)
