@@ -258,7 +258,6 @@ class SortingManagerGrouped(object):
                 idx = self.sorting.get_cluster_index(clid)
                 # shorten it
                 sel = (idx >= self.start_idx) & (idx <= self.stop_idx)
-                print(gid, sel.sum())
                 idx = idx[sel] - self.start_idx
 
                 if idx.any():
@@ -437,7 +436,7 @@ def test(name, label, ts):
     if not man.initialized:
         return
     print('Working on {}, from time {} to {} ({:.1f} min)'
-          .format(name, start, stop, (stop-start)/7e6))
+          .format(name, start, stop, (stop-start)/6e4))
     start_idx, stop_idx = man.get_start_stop_index('pos', start, stop)
     print('Setting start index: {}, stop index: {}'.
           format(start_idx, stop_idx))
