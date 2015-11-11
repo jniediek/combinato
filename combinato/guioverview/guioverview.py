@@ -13,14 +13,15 @@ from PyQt4 import QtGui as qg
 
 from .ui_guioverview import Ui_MainWindow
 from .model import (ChannelTableModel, DO_SORT_STR_POS,
-    DO_SORT_STR_NEG, DO_EXTRACT_STR, DONE_STR, SORT_MANUAL_STR_POS,
-    SORT_MANUAL_STR_NEG, DROP_STR_POS, DROP_STR_NEG, SIGNAL, POSITIVE, NEGATIVE, SORTED_POS_IM, SORTED_NEG_IM)
+                    DO_SORT_STR_NEG, DO_EXTRACT_STR, DONE_STR,
+                    SORT_MANUAL_STR_POS, SORT_MANUAL_STR_NEG,
+                    DROP_STR_POS, DROP_STR_NEG, SIGNAL, POSITIVE,
+                    NEGATIVE, SORTED_POS_IM, SORTED_NEG_IM)
 
 from .. import get_channels, check_status
-DEBUG = False 
+DEBUG = False
 
 SCROLL_AREA_MIN_WIDTH = 50
-FROM_H5FILES = False 
 TABLE_HEIGHT = 50
 IMAGE_LABELS = ['None', 'Continuous', 'Pos. spikes', 'Neg. spikes',
                 'Sorted pos. spikes', 'Sorted neg. spikes']
@@ -163,7 +164,8 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
             label = None
         self.current_label = label
 
-        channels = get_channels(path, FROM_H5FILES)
+        from_h5files = self.checkBoxInitH5.isChecked()
+        channels = get_channels(path, from_h5files)
 
         dirname_overview = os.path.join(path, 'overview')
         has_overview = os.path.isdir(dirname_overview)

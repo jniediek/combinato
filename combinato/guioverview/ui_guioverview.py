@@ -48,6 +48,9 @@ class Ui_MainWindow(object):
         self.lineEditLabel.setSizePolicy(sizePolicy)
         self.lineEditLabel.setObjectName(_fromUtf8("lineEditLabel"))
         self.horizontalLayout.addWidget(self.lineEditLabel)
+        self.checkBoxInitH5 = QtGui.QCheckBox(self.centralwidget)
+        self.checkBoxInitH5.setObjectName(_fromUtf8("checkBoxInitH5"))
+        self.horizontalLayout.addWidget(self.checkBoxInitH5)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout_3.addLayout(self.horizontalLayout)
@@ -154,6 +157,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.labelLabel.setText(_translate("MainWindow", "Label for sorted sessions:", None))
+        self.checkBoxInitH5.setText(_translate("MainWindow", "Initialize from h5-files", None))
         self.menuActions.setTitle(_translate("MainWindow", "&Actions", None))
         self.action_Initialize_from_current_folder.setText(_translate("MainWindow", "&Initialize from current folder", None))
         self.action_Initialize_from_current_folder.setShortcut(_translate("MainWindow", "Ctrl+I", None))
