@@ -368,7 +368,7 @@ def create_rep(num2name, name2num, crefs, lrefs, grefs):
     return out_str
 
 
-def check_logfile(fname, write_csv=False):
+def check_logfile(fname, write_csv=False, nback=0):
     """
     run over a Cheetah logfile and analyzed reference settings etc
     """
@@ -386,10 +386,22 @@ def check_logfile(fname, write_csv=False):
         print(msg)
         print('Start: {}'.format(setting.start_rec[1]))
         print('Stop: {}'.format(setting.stop_rec[1]))
+        # print('Duration: {} min'.
+        #      format((setting.stop_rec[1] - setting.start_rec[1])))
         out_str = create_rep(setting.num2name, setting.name2num,
                              setting.crefs, setting.lrefs, setting.grefs)
     if write_csv:
-        outfname = base_name + '_{:02d}.csv'.format(i_setting)
+        setting = all_settings[-nback-1]
+
+        if setting.folder is None:
+            msg = 'Warning: Recording Stop -> Start without folder change!'
+        else:
+            msg = setting.folder
+
+        out_str = create_rep(setting.num2name, setting.name2num,
+                             setting.crefs, setting.lrefs, setting.grefs)
+        outfname = base_name + '_{:02d}.csv'.\
+            format(len(all_settings) - nback - 1)
         with open(outfname, 'w') as outf:
             outf.write('# {} {} {}\n'.format(msg,
                                              setting.start_rec[1],
@@ -404,11 +416,14 @@ if __name__ == '__main__':
     aparser = ArgumentParser(epilog='Johannes Niediek (jonied@posteo.de)')
     aparser.add_argument('--write-csv', action='store_true', default=False,
                          help='Write out to logfile_number.csv')
-    aparser.add_argument('--logfile', nargs=1, help='Logfile, default: CheetahLogFile.txt')
+    aparser.add_argument('--logfile', nargs=1,
+                         help='Logfile, default: CheetahLogFile.txt')
+    aparser.add_argument('--nback', nargs=1, type=int,
+                         help='Save last-n\'th setting', default=[0])
     args = aparser.parse_args()
     if not args.logfile:
         logfile = 'CheetahLogFile.txt'
     else:
         logfile = args.logfile[0]
 
-    check_logfile(logfile, args.write_csv)
+    check_logfile(logfile, args.write_csv, args.nback[0])

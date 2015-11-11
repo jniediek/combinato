@@ -76,6 +76,7 @@ class SortingFile(object):
         all_idx = []
 
         for clid in clids:
+            # print('Getting index for {}'.format(clid))
             all_idx.append(self.get_cluster_index(clid))
 
         return np.sort(np.hstack(all_idx))
@@ -446,6 +447,8 @@ def test(name, label, ts):
         return
     print(man.sorting.index.shape)
     groups = man.get_groups()
+    print('Retrieved Groups')
+    all_groups = man.get_groups_joined()
     # print('By index', (man.sorting.classes == 0).sum())
     # print('By times', groups[0][0]['times'].shape[0])
 
@@ -478,7 +481,6 @@ def test(name, label, ts):
 
     print('Total has {} elements'.format(total['times'].shape[0]))
 
-    all_groups = man.get_groups_joined()
 
     for gid, group in all_groups.items():
         print('Group {} has {} times and type {}'.
