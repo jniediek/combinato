@@ -174,9 +174,10 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         if dialog.exec_():
             item = str(dialog.sessionList.selectedItems()[0].text()).split()
-            folder = item[0]
-            datafile = item[1]
-            sortingfile = item[2]
+            folder = ' '.join(item[0:-2])
+            datafile = item[-2]
+            sortingfile = item[-1]
+            print(folder, datafile, sortingfile)
             item = str(dialog.timesList.selectedItems()[0].text()).split()
             try:
                 start_time_ms = int(item[1])/1000
