@@ -19,9 +19,8 @@ from .. import h5files
 SIGNS = ('pos', 'neg')
 DEBUG = True
 RESET = True  # set artifacts to 0 before analysis
-RESET = False
-USE_OR = True  # use logical or instead of reset
-READONLY = True
+READONLY = False
+MODE = 'first'  # MODE can be 'first', 'last', or 'OR'
 
 
 options_by_diff = {'art_id': 1,   # to identify this type of artifact
@@ -50,22 +49,39 @@ artifact_types = (options_by_diff, options_by_height,
 
 id_to_name = {}
 
+for options in artifact_types:
+    id_to_name[options['art_id']] = options['name']
 
-def add_id(artifacts, index, art_id):
+
+def add_id(artifacts, index, art_id, sign):
     """
     use either logical OR or reset to mask artifacts
     """
+    if DEBUG:
+        detected = index.sum()
+        if MODE == 'first':
+            masked = ((index != 0) & (artifacts[:] == 0)).sum()
+        else:
+            masked = detected
+        print('{}: detected {} {} spikes, masked {} in mode "{}"'.
+              format(id_to_name[art_id], detected, sign, masked, MODE))
+
     if READONLY:
-        print(artifacts.shape[0], index.sum(), art_id)
         return
-    if USE_OR:
-        artifacts[index] |= art_id
-    else:
+
+    if MODE == 'last':
+        # only the last one counts
         artifacts[index] = art_id
+    elif MODE == 'OR':
+        # do a logical OR
+        artifacts[index] |= art_id
+    elif MODE == 'first':
+        # only the first one counts
+        artifacts[index & (artifacts[:] == 0)] = art_id
+    else:
+        raise ValueError('Unknown artifact storage mode: {}'.format(MODE))
 
-
-for options in artifact_types:
-    id_to_name[options['art_id']] = options['name']
+    print('Total: ', (artifacts[:] != 0).sum())
 
 
 def mark_range_detection(times, ranges):
@@ -231,53 +247,52 @@ def main(fname, concurrent_edges=None, concurrent_bin=None,
             h5fid.create_array('/' + sign, 'artifacts',
                                atom=tables.Int8Atom(), shape=(num_spk, ))
             artifacts = h5fid.get_node('/' + sign + '/artifacts')
-
         if RESET:
             artifacts[:] = 0
 
         arti_by_diff, arti_by_diff_id = mark_by_diff(times)
-        add_id(artifacts, arti_by_diff, arti_by_diff_id)
+        add_id(artifacts, arti_by_diff, arti_by_diff_id, sign)
         # artifacts[arti_by_diff != 0] = arti_by_diff_id
 
-        if DEBUG:
-            print('Marked {} {} spikes by diff'.
-                  format(arti_by_diff.sum(), sign))
+        # if DEBUG:
+        #    print('Marked {} {} spikes by diff'.
+        #          format(arti_by_diff.sum(), sign))
 
         arti_by_height, arti_by_height_id = mark_by_height(spikes, sign)
-        add_id(artifacts, arti_by_height, arti_by_height_id)
+        add_id(artifacts, arti_by_height, arti_by_height_id, sign)
 
         # artifacts[arti_by_height != 0] = arti_by_height_id
-        if DEBUG:
-            print('Marked {} {} spikes by height'.
-                  format(arti_by_height.sum(), sign))
+        # if DEBUG:
+        #    print('Marked {} {} spikes by height'.
+        #          format(arti_by_height.sum(), sign))
+
+        arti_by_double, double_id = mark_double_detection(times, spikes, sign)
+        add_id(artifacts, arti_by_double, double_id, sign)
+        # artifacts[arti_by_double != 0] = double_id
+        # if DEBUG:
+        #    print('Marked {} {} spikes as detected twice'.
+        #          format(arti_by_double.sum(), sign))
 
         if concurrent_edges is not None:
             arti_by_conc, arti_by_conc_id = mark_by_bincount(times,
                                                              concurrent_edges,
                                                              concurrent_bin)
+            add_id(artifacts, arti_by_conc, arti_by_conc_id, sign)
 
-            add_id(artifacts, arti_by_conc, arti_by_conc_id)
             # artifacts[arti_by_conc != 0] = arti_by_conc_id
-            if DEBUG:
-                print('Marked {} {} spikes by concurrent occurence'.
-                      format(arti_by_conc.sum(), sign))
-
-        arti_by_double, double_id = mark_double_detection(times, spikes, sign)
-        add_id(artifacts, arti_by_double, double_id)
-        # artifacts[arti_by_double != 0] = double_id
-        if DEBUG:
-            print('Marked {} {} spikes as detected twice'.
-                  format(arti_by_double.sum(), sign))
+            # if DEBUG:
+            #    print('Marked {} {} spikes by concurrent occurence'.
+            #          format(arti_by_conc.sum(), sign))
 
         if exlude_ranges is not None:
             arti_by_ranges, range_id = mark_range_detection(times,
                                                             exlude_ranges)
-            add_id(artifacts, arti_by_ranges, range_id)
+            add_id(artifacts, arti_by_ranges, range_id, sign)
             # artifacts[arti_by_ranges != 0] = range_id
 
-            if DEBUG:
-                print('Marked {} {} spikes within supplied range '.
-                      format(arti_by_ranges.sum(), sign))
+            # if DEBUG:
+            #    print('Marked {} {} spikes within supplied range '.
+            #          format(arti_by_ranges.sum(), sign))
 
         h5fid.close()
 
