@@ -19,6 +19,9 @@ from .. import h5files
 SIGNS = ('pos', 'neg')
 DEBUG = True
 RESET = True  # set artifacts to 0 before analysis
+RESET = False
+USE_OR = True  # use logical or instead of reset
+READONLY = True
 
 
 options_by_diff = {'art_id': 1,   # to identify this type of artifact
@@ -47,6 +50,20 @@ artifact_types = (options_by_diff, options_by_height,
 
 id_to_name = {}
 
+
+def add_id(artifacts, index, art_id):
+    """
+    use either logical OR or reset to mask artifacts
+    """
+    if READONLY:
+        print(artifacts.shape[0], index.sum(), art_id)
+        return
+    if USE_OR:
+        artifacts[index] |= art_id
+    else:
+        artifacts[index] = art_id
+
+
 for options in artifact_types:
     id_to_name[options['art_id']] = options['name']
 
@@ -62,7 +79,7 @@ def mark_range_detection(times, ranges):
         print(this_range, times[0], times[-1])
         print(idx.sum())
         artifacts[idx] |= True
-    
+
     return artifacts, options_ranges['art_id']
 
 
@@ -126,7 +143,7 @@ def bincount_to_edges(concurrent_fname):
     """
     helper, transforms bincount to edges
     """
-    conc_fid = tables.open_file(concurrent_fname)
+    conc_fid = tables.open_file(concurrent_fname, 'r')
     count = conc_fid.root.count[:]
     attrs = conc_fid.root.count.attrs
     num_channels = attrs['nch']
@@ -147,8 +164,8 @@ def mark_by_bincount(times, left_edges, bin_len):
     marks bins with events in too many other channels (specified by counts)
     """
     if DEBUG:
-        print('all channel rejection, looping over {} edges'.\
-               format(left_edges.shape[0]))
+        print('all channel rejection, looping over {} edges'.
+              format(left_edges.shape[0]))
 
     artifacts = np.zeros(times.shape[0], dtype=bool)
 
@@ -175,13 +192,19 @@ def mark_by_height(spikes, sign):
     return artifacts, options_by_height['art_id']
 
 
-def main(fname, concurrent_edges=None, concurrent_bin=None, exlude_ranges=None):
+def main(fname, concurrent_edges=None, concurrent_bin=None,
+         exlude_ranges=None):
     """
     creates table to store artifact information
     """
     for sign in SIGNS:
 
-        h5fid = tables.open_file(fname, 'r+')
+        # why is this here?
+        if READONLY:
+            mode = 'r'
+        else:
+            mode = 'r+'
+        h5fid = tables.open_file(fname, mode)
 
         try:
             node = h5fid.get_node('/' + sign + '/times')
@@ -213,13 +236,17 @@ def main(fname, concurrent_edges=None, concurrent_bin=None, exlude_ranges=None):
             artifacts[:] = 0
 
         arti_by_diff, arti_by_diff_id = mark_by_diff(times)
-        artifacts[arti_by_diff != 0] = arti_by_diff_id
+        add_id(artifacts, arti_by_diff, arti_by_diff_id)
+        # artifacts[arti_by_diff != 0] = arti_by_diff_id
+
         if DEBUG:
             print('Marked {} {} spikes by diff'.
                   format(arti_by_diff.sum(), sign))
 
         arti_by_height, arti_by_height_id = mark_by_height(spikes, sign)
-        artifacts[arti_by_height != 0] = arti_by_height_id
+        add_id(artifacts, arti_by_height, arti_by_height_id)
+
+        # artifacts[arti_by_height != 0] = arti_by_height_id
         if DEBUG:
             print('Marked {} {} spikes by height'.
                   format(arti_by_height.sum(), sign))
@@ -229,23 +256,28 @@ def main(fname, concurrent_edges=None, concurrent_bin=None, exlude_ranges=None):
                                                              concurrent_edges,
                                                              concurrent_bin)
 
-            artifacts[arti_by_conc != 0] = arti_by_conc_id
+            add_id(artifacts, arti_by_conc, arti_by_conc_id)
+            # artifacts[arti_by_conc != 0] = arti_by_conc_id
             if DEBUG:
                 print('Marked {} {} spikes by concurrent occurence'.
                       format(arti_by_conc.sum(), sign))
 
         arti_by_double, double_id = mark_double_detection(times, spikes, sign)
-        artifacts[arti_by_double != 0] = double_id
+        add_id(artifacts, arti_by_double, double_id)
+        # artifacts[arti_by_double != 0] = double_id
         if DEBUG:
             print('Marked {} {} spikes as detected twice'.
-                format(arti_by_double.sum(), sign))
+                  format(arti_by_double.sum(), sign))
 
         if exlude_ranges is not None:
-            arti_by_ranges, range_id = mark_range_detection(times, exlude_ranges)
-            artifacts[arti_by_ranges != 0] = range_id
+            arti_by_ranges, range_id = mark_range_detection(times,
+                                                            exlude_ranges)
+            add_id(artifacts, arti_by_ranges, range_id)
+            # artifacts[arti_by_ranges != 0] = range_id
+
             if DEBUG:
                 print('Marked {} {} spikes within supplied range '.
-                format(arti_by_ranges.sum(), sign))
+                      format(arti_by_ranges.sum(), sign))
 
         h5fid.close()
 
