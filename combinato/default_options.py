@@ -64,7 +64,8 @@ options = {
     'histtype': 'stepfilled',
     'folder_patterns': ('CSC?', 'CSC??', 'CSC???', 'test', 'L??',
                         'R??', 'L???', 'R???', 'L????', 'R????',
-                        'simulation_*')
+                        'simulation_*'),
+    'guistyle': 'gtk'
 }
 
 artifact_criteria = {

@@ -637,7 +637,7 @@ def main():
     start the qt app
     """
     app = QApplication(sys.argv)
-    app.setStyle('gtk')
+    app.setStyle(options['guistyle'])
     win = SpikeSorter(parent=None, arg=sys.argv)
     win.setWindowTitle('Combinato Spike Sorter')
     win.showMaximized()

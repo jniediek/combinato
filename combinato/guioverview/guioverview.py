@@ -18,7 +18,7 @@ from .model import (ChannelTableModel, DO_SORT_STR_POS,
                     DROP_STR_POS, DROP_STR_NEG, SIGNAL, POSITIVE,
                     NEGATIVE, SORTED_POS_IM, SORTED_NEG_IM)
 
-from .. import get_channels, check_status
+from .. import get_channels, check_status, options
 DEBUG = False
 
 SCROLL_AREA_MIN_WIDTH = 50
@@ -472,7 +472,7 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
 
 def main():
     APP = qg.QApplication(sys.argv)
-    APP.setStyle('gtk')
+    APP.setStyle(options['guistyle'])
     WIN = GuiOverview()
     WIN.setWindowTitle('Combinato channel overview')
     WIN.showMaximized()
