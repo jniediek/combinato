@@ -198,7 +198,7 @@ class GroupOverviewFigure(MplCanvas):
         # ISI plot
         data = group.isidata
 
-        if len(data):
+        if len(data) > 1:
             nBins = options['isi_n_bins']
             n, _, _ = self.isiAx.hist(data, nBins,
                                       color=options['histcolor'],
@@ -212,6 +212,7 @@ class GroupOverviewFigure(MplCanvas):
             titlestr = '{:.1%} < {} ms'.format(too_short,
                                                options['isi_too_short_ms'])
         else:
+            self.isiAx.cla()
             titlestr = ''
 
         self.isiAx.set_title(titlestr)
