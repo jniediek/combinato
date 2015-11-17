@@ -8,24 +8,24 @@ from matplotlib.pyplot import cm
 
 cmap = cm.Blues
 
-# idea taken from http://stackoverflow.com/a/14779462 
+# idea taken from http://stackoverflow.com/a/14779462
 cmaplist = [cmap(i) for i in range(int(cmap.N/4), cmap.N)]
-# set first color to white 
+# set first color to white
 cmaplist[0] = (1, 1, 1, 1)
 # set last color to black
 cmaplist[-1] = (0, 0, 0, 1)
 
 cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
-spDisplayBorder = 5 # µV additional border in display
+spDisplayBorder = 5  # µV additional border in display
 
 
-def spike_heatmap(ax, spikes, x=None):
+def spike_heatmap(ax, spikes, x=None, log=False):
     """
     takes spikes, plots heatmap over samples and mean/std line
     """
     spMin = spikes.min()
     spMax = spikes.max()
-    spBins = np.arange(spMin, spMax)
+    spBins = np.linspace(spMin, spMax, 2*spMax)
     if spBins.shape[0] < 3:
         spBins = np.linspace(spMin, spMax, 3)
 
@@ -37,17 +37,21 @@ def spike_heatmap(ax, spikes, x=None):
     imdata = np.zeros((len(spBins) - 1, nSamp))
 
     for col in range(nSamp):
-        imdata[:, col] = np.histogram(spikes[:, col], bins=spBins)[0] 
+        data = np.histogram(spikes[:, col], bins=spBins)[0]
+        if log:
+            imdata[:, col] = np.log(1 + data)
+        else:
+            imdata[:, col] = data
 
     ydiff = (spBins[1] - spBins[0])/2.
-    extent = [ x[0], x[-1], spMin-ydiff, spMax-ydiff]
+    extent = [x[0], x[-1], spMin-ydiff, spMax-ydiff]
 
-    ax.imshow(imdata, 
-            cmap=cmap, 
-            interpolation='hanning', 
-            aspect='auto', 
-            origin=0, 
-            extent=extent)
+    ax.imshow(imdata,
+              cmap=cmap,
+              interpolation='hanning',
+              aspect='auto',
+              origin=0,
+              extent=extent)
 
     spMean = spikes.mean(0)
     spStd = spikes.std(0)
