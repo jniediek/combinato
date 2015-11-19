@@ -147,11 +147,14 @@ def parse_args():
     else:
         rel_h5files = [args.h5file]
 
+    # for cluster_info.mat:
+    all_info = [[None]*len(rel_h5files), [None]*len(rel_h5files)]
+
     if do_info:
         session_name = os.path.dirname(rel_h5files[0])
         date = time.strftime('%Y-%m-%d_%H:%M:%S')
         csvfile = open('cluster_info.csv', 'w')
-    	writer = csv.writer(csvfile)
+        writer = csv.writer(csvfile)
         writer.writerow(['# Session:  {}, Converted: {}'.
             format(session_name, date)])
         writer.writerow(['# For Artifacts, 0 means there are none, 1 means '
@@ -172,6 +175,16 @@ def parse_args():
         info = main(dfile, sorting_path, sign, outfname, drop_artifacts)
         if do_info and (info is not None):
             writer.writerow(info)
+            all_info[0][rel_h5files.index(dfile)] = info[4:]
+            all_info[1][rel_h5files.index(dfile)] = info[1]
+
+    if do_info:
+        info_dict = {'cluster_info': all_info, 'label_info':
+                     ' 1 = MU\n 2 = SU\n-1 = Artif.\nRefers to '
+                     '"cluster_class"-values 1 and up.\nIgnores Unassigned '
+                     '(value 0)'}
+        info_fname = "cluster_info"
+        savemat(info_fname, info_dict)
 
 if __name__ == "__main__":
     parse_args()
