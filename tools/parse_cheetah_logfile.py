@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # JN 2015-07-29
+
 """
-Simple log file parser for Cheetah
+Log file parser for Cheetah
 At the moment, this script reads out the reference settings
 by sequentially following all crs, rbs, and gbd commands
 """
@@ -257,6 +258,8 @@ def analyze_drs(protocol):
         if msg2.startswith(set_channel_string):
             # log channel numbers
             if '%' in msg2:
+                if 'Processing line' in msg2:
+                    continue
                 print(msg2)
                 print(variables)
                 var, ch_num = channel_number_pattern_var.match(msg2).groups()
