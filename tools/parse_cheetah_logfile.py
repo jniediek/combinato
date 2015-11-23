@@ -254,16 +254,17 @@ def analyze_drs(protocol):
             # assigning a variable
             var, val = variable_pattern.match(msg2).groups()
             variables[var] = val
-
         if msg2.startswith(set_channel_string):
             # log channel numbers
             if '%' in msg2:
-                if 'Processing line' in msg2:
-                    continue
-                print(msg2)
-                print(variables)
                 var, ch_num = channel_number_pattern_var.match(msg2).groups()
-                ch_name = variables[var]
+                try:
+                    ch_name = variables[var]
+                except KeyError:
+                    print('{}, but something is wrong with setting channel'
+                          'numbers. Check for errors'
+                          ' in the Cheetah logfile itself.'.format(msg2))
+                    continue
                 if '%' in ch_num:
                     ch_num = variables[ch_num]
             else:
@@ -298,7 +299,12 @@ def create_rep(num2name, name2num, crefs, lrefs, grefs):
 
     out_str = []
     for name in chnames:
-        chan = name2num[name]
+        try:
+            chan = name2num[name]
+        except KeyError:
+            print('Processing {}, but no channel number was '
+                  'assigned. Check results carefully!'.format(name))
+            continue
         ch_board, ch_board_num = chan_to_board_num(chan)
 
         local_ref_num = crefs[chan]  # gives the local ref number
