@@ -247,13 +247,11 @@ def test_joblist(joblist):
     simple test to detect whether the same job is
     requested more than once
     """
-    print(joblist)
-    unique_joblist = set()
+    unique_joblist = set(joblist)
     if len(joblist) != len(unique_joblist):
         # there are duplicates!
         counter = dict()
         for item in joblist:
-            print(item)
             if item in counter:
                 counter[item] += 1
             else:
