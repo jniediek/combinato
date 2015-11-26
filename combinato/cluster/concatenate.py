@@ -20,6 +20,7 @@ from .. import SessionManager, SortingManager, options, SPIKE_MATCHED_2,\
 from .dist import distances_euclidean, get_means
 from .create_groups import main as create_groups_main
 from .artifacts import find_artifacts
+from .cluster import test_joblist
 
 COL_CLASS = 0
 COL_GROUP = 1
@@ -359,8 +360,9 @@ def parse_args():
 
     else:
         label = args.jobs.name[:-4]
-        jobs = [x.split() for x in args.jobs.readlines()]
+        jobs = tuple((tuple(x.split()) for x in args.jobs.readlines()))
         args.jobs.close()
+        test_joblist(jobs)
         jobdict = dict()
 
         for job in jobs:

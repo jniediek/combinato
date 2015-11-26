@@ -242,6 +242,29 @@ def write_options(fname='css-cluster-log.txt'):
     fid.close()
 
 
+def test_joblist(joblist):
+    """
+    simple test to detect whether the same job is
+    requested more than once
+    """
+    print(joblist)
+    unique_joblist = set()
+    if len(joblist) != len(unique_joblist):
+        # there are duplicates!
+        counter = dict()
+        for item in joblist:
+            print(item)
+            if item in counter:
+                counter[item] += 1
+            else:
+                counter[item] = 1
+
+        for key, val in counter.items():
+            if val > 1:
+                print('Job {} requested {} times'.format(key, val))
+        raise ValueError('Duplicate jobs requested')
+
+
 def argument_parser():
     """
     standard argument parsing
@@ -277,7 +300,8 @@ def argument_parser():
 
     else:
         jobdata = args.jobs.read().splitlines()
-        joblist = [line.split() for line in jobdata]
+        joblist = tuple((tuple(line.split()) for line in jobdata))
+        test_joblist(joblist)
 
     n_cores = 1 if args.single else cpu_count() + 1
 

@@ -200,6 +200,8 @@ where `pos` or `neg` is the amplitude polarity of the spikes, and `abc` are the 
 
 Note that `sort_pos_abc.txt` is just a text file in the current folder, created by `css-prepare-sorting`. You can read, edit, and rename it as you prefer.
 
+*Warning:* If you run `css-prepare-sorting` more than once, it appends new jobs to `sort_pos_abc.txt`. That means that you have to be careful not to end up with a `sort_pos_abc.txt` containing several identical jobs, which would mess up the clustering process. Therefore, `css-cluster` and `css-combine` raise an error when duplicate jobs are requested.
+
 If you want to exclude channels from sorting (e.g. because they contain only artifacts), call `css-plot-extracted` and then `css-overview-gui` to exclude those channels that you do not want to sort.
 
 Some paramters in `options.py` control details of the sorting process. The most relevant ones are listed here.

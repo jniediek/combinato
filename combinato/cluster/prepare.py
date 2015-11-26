@@ -96,7 +96,6 @@ def main(fnames, sign, mode, start, stop, max_nspk_session, label,
                 continue
             session_name = create_session(dirname, sign, label, job, replace)
             ret.append((name, sign, os.path.join(dirname, session_name)))
-            # print(name, session_name)
 
     return ret
 
