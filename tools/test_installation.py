@@ -35,6 +35,20 @@ def initial_test():
         return False
     print('Found SPC binary')
 
+    # check for version of tables
+    try:
+        import tables
+    except ImportError as error:
+        print('Unable to import tables: {}'.format(error))
+        print('Please install pytables')
+        return False
+
+    tabversion = tables.__version__
+    print('Your version of pytables is ' + tabversion)
+    if int(tabversion[0]) < 3:
+        print('But you need at least 3.0.0')
+        return False
+
     return True
 
 
