@@ -42,14 +42,17 @@ class Backend(object):
         self.x = np.arange(self.sorting_manager.get_samples_per_spike())
         self.sessions = Sessions(self)
         thresholds = self.sorting_manager.get_thresholds()
-        if (thresholds[-1, 1] - thresholds[0, 0]) > 24*60*60*1000:
-            thresholds[:, :2] /= 1e3  # this is necessary for some old files
+        if thresholds is not None:
+            if (thresholds[-1, 1] - thresholds[0, 0]) > 24*60*60*1000:
+                thresholds[:, :2] /= 1e3  # this is necessary for some old files
         self.thresholds = thresholds
 
     def get_thresholds(self):
         """
         returns thresholds for the current time range
         """
+        if self.thresholds is None:
+            return None
         start = self.sessions.start_time
         stop = self.sessions.stop_time
         start_idx = self.thresholds[:, 0] >= start - 300e3

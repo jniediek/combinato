@@ -255,21 +255,22 @@ class GroupOverviewFigure(MplCanvas):
 
         # thresholds
         # print((self.thresholds[-1, 1] - self.thresholds[0, 0])/6e4)
-        thr_times = self.thresholds[:, :2].ravel() - self.startTime
-        thr_times /= 6e4  # now in minutes
-        tthr = (self.thresholds[:, 2], self.thresholds[:, 2])
-        thrs = np.vstack(tthr).T.ravel()
-        if self.sign == 'neg':
-            thrs *= -1
-        self.overTimeAx.plot(thr_times, thrs, 'm', lw=2)
-        # print(thr_times)
+        if self.thresholds is not None:
+            thr_times = self.thresholds[:, :2].ravel() - self.startTime
+            thr_times /= 6e4  # now in minutes
+            tthr = (self.thresholds[:, 2], self.thresholds[:, 2])
+            thrs = np.vstack(tthr).T.ravel()
+            if self.sign == 'neg':
+                thrs *= -1
+            self.overTimeAx.plot(thr_times, thrs, 'm', lw=2)
+            # print(thr_times)
 
-        if len(thrs) > 1:
-            self.maxDistrAx.axvline(np.median(thrs), color='m', lw=2)
-            self.maxDistrAx.axvline(thrs.min(), color='m')
-            self.maxDistrAx.axvline(thrs.max(), color='m')
-        else:
-            self.maxDistrAx.axvline(thrs[0], color='m')
+            if len(thrs) > 1:
+                self.maxDistrAx.axvline(np.median(thrs), color='m', lw=2)
+                self.maxDistrAx.axvline(thrs.min(), color='m')
+                self.maxDistrAx.axvline(thrs.max(), color='m')
+            else:
+                self.maxDistrAx.axvline(thrs[0], color='m')
 
         # Density plot
         data = group.densitydata

@@ -31,7 +31,7 @@ def convert(fname_in, fname_out, sign='pos', time_factor=1, volt_factor=1):
     empty_times = np.zeros(1)
 
     dur = (in_times[-1] - in_times[0])/6e4
-    print('Read {} spikes from a {} minute recording'.format(n_spk, dur))
+    print('Read {} spikes from a {:.0f} minute recording'.format(n_spk, dur))
 
     # fill the other sign with empty data
     other_sign = 'pos' if sign == 'neg' else 'neg'
@@ -47,6 +47,8 @@ def convert(fname_in, fname_out, sign='pos', time_factor=1, volt_factor=1):
         out_file.create_group('/', sign)
         out_file.create_array('/' + sign, 'times', times[sign])
         out_file.create_array('/' + sign, 'spikes', spikes[sign])
+
+    out_file.close()
 
 
 def parse_arguments():
@@ -79,7 +81,7 @@ def parse_arguments():
 
     if args.micro:
         time_factor = .001
-        time_unit = 'microsecionds'
+        time_unit = 'microseconds'
     else:
         time_factor = 1
         time_unit = 'milliseconds'

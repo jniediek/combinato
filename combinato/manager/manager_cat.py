@@ -158,7 +158,12 @@ class SortingManagerGrouped(object):
         """
         get extraction thresholds
         """
-        return self.h5datafile.root.thr[:, :]
+        try:
+            thr = self.h5datafile.root.thr[:, :]
+        except tables.exceptions.NoSuchNodeError:
+            print('Extraction thresholds were not saved!')
+            thr = None
+        return thr
 
     def init_header(self):
         """
