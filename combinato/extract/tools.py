@@ -77,7 +77,7 @@ class ExtractNcsFile(object):
         err = expected_length - times[-1] + times[0]
         if err != 0:
             print("Timestep mismatch in {}"
-                  "between records {} and {}: {:.1f} ms"
+                  " between records {} and {}: {:.1f} ms"
                   .format(self.fname, start, stop, err/1e3))
 
         atimes = np.hstack([t + self.timerange for t in times])/1e3
