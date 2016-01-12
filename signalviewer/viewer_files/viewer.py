@@ -17,12 +17,12 @@ from matplotlib.dates import AutoDateLocator, num2date
 from matplotlib.ticker import FuncFormatter
 # from matplotlib.patches import Rectangle
 
-import ui_viewer
+from .ui_viewer import Ui_MainWindow
 
-from sWidgets import *
+from .sWidgets import *
 from .. import H5Manager, debug, options
-from sleepstg import SleepStg
-from spikes import SpikeView
+# from sleepstg import SleepStg
+from .spikes import SpikeView
 
 
 stylesheet = 'QListView:focus { background-color: rgb(240, 255, 255)}'
@@ -54,7 +54,7 @@ def fmtfunc(x, pos=None):
     return out
 
 
-class SimpleViewer(QMainWindow, ui_viewer.Ui_MainWindow):
+class SimpleViewer(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(SimpleViewer, self).__init__(parent)
         self.setupUi(self)
@@ -89,8 +89,8 @@ class SimpleViewer(QMainWindow, ui_viewer.Ui_MainWindow):
         self.init_h5man()
         dt = time() - t1
         debug('Init h5 took {:.1f} s'.format(dt))
-        self.sleepstg = SleepStg()
-        self.use_date = self.sleepstg.use_date
+        # self.sleepstg = SleepStg()
+        # self.use_date = self.sleepstg.use_date
         self.setopts()
         self.labelFolder.setText(os.path.split(os.getcwd())[1])
         min_len = options['yn_min_ms']
