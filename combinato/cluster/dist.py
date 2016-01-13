@@ -68,12 +68,19 @@ def template_match(spikes, sort_idx, match_idx, factor):
     match_idx[unmatched_idx] = minimizers
 
 
-def distance_groups(in1, in2):
+def distance_groups(in1, in2, sign='pos'):
     """
     calculates a distance between mean spikes
     """
     dist = in1 - in2
-    dist /= min(in1.max(), in2.max())
+
+    if sign == 'pos':
+        dist /= min(in1.max(), in2.max())
+    elif sign == 'neg':
+        dist /= max(in1.min(), in2.min())
+    else:
+        raise Warning('Undefined sign: {}'.format(sign))
+
     l2_dist = np.sqrt((dist**2).sum())
     # return l2
     # purely heuristical metric!
@@ -82,7 +89,7 @@ def distance_groups(in1, in2):
     return (l2_dist + 7 * linf)/2
 
 
-def find_nearest(means):
+def find_nearest(means, sign='pos'):
     """
     finds nearest match of two groups
     (might be useful to convert this to cython)
@@ -94,7 +101,7 @@ def find_nearest(means):
     for gr1, mean1 in means.items():
         for gr2, mean2 in means.items():
             if gr2 > gr1:
-                dist = distance_groups(mean1, mean2)
+                dist = distance_groups(mean1, mean2, sign)
                 if dist < minimum:
                     minimum = dist
                     min1 = gr1

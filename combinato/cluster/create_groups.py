@@ -35,7 +35,7 @@ def make_means(spikes, classes, clids):
     return groups, means, nspks
 
 
-def create_groups(groups, means, nspks):
+def create_groups(groups, means, nspks, sign='pos'):
     """
     join closest groups iteratively
     """
@@ -43,7 +43,7 @@ def create_groups(groups, means, nspks):
     crit = options['MaxDistMatchGrouping']
 
     while True:
-        key1, key2, minimum = find_nearest(means)
+        key1, key2, minimum = find_nearest(means, sign)
         if minimum > crit:
             break
         if None in (key1, key2):
@@ -96,7 +96,7 @@ def main(datafname, sorting_fname, read_only=False):
     print('Classes: {}'.format(clids))
 
     groups, means, nspks = make_means(spikes, classes, clids)
-    groups = create_groups(groups, means, nspks)
+    groups = create_groups(groups, means, nspks, sign)
 
     for grid, orig_grid in enumerate(sorted(groups.keys())):
         clids = groups[orig_grid]
