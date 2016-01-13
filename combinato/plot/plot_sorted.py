@@ -131,7 +131,11 @@ def run_file(fname, savefolder, sign, label):
         gtype = manager.get_group_type(gid)
         groups[gid]['type'] = gtype
         for clid in image_dict[gid]:
-            groups[gid]['images'].append(image_dict[gid][clid]['image'])
+            try:
+                groups[gid]['images'].append(image_dict[gid][clid]['image'])
+            except KeyError as error:
+                print(error)
+                continue
 
     wext = os.path.splitext(os.path.basename(fname))[0]
     ncs_fname = wext[5:]
