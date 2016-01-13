@@ -26,7 +26,7 @@ def bincount(ts_beg, ts_end, files, sign='pos'):
             nch += 1 
             count += (np.histogram(times, bins)[0] > 0)
             if DEBUG:
-                print('Added {}/{}'.format(i, len(files)))
+                print('Added {}/{}'.format(i + 1, len(files)))
 
     return count, bins, nch 
 
