@@ -105,10 +105,9 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
         self.h5man = H5Manager(cands)
 
         for chn in self.h5man.chs:
-            if 'Ref' not in chn:
-                action = self.menuChannels.addAction(chn)
-                action.setCheckable(True)
-                action.triggered.connect(self.setch)
+            action = self.menuChannels.addAction(chn)
+            action.setCheckable(True)
+            action.triggered.connect(self.setch)
 
         debug('Available channels: {}'.format(self.h5man.chs))
         for a in self.actionsdir:
@@ -144,30 +143,31 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
         return True
 
     def save_image(self):
-        fname = str(QFileDialog.getSaveFileName(self, 'Save Image', '~', 'Images (*.jpg, *.pdf, *.png)'))
+        fname = str(QFileDialog.getSaveFileName(self,
+                    'Save Image', '~', 'Images (*.jpg, *.pdf, *.png)'))
         self.figure.fig.savefig(fname, dpi=150)
 
-    def plot_traces(self, ch, start, stop, offset, ctime):
-        data, adbitvolts = self.h5man.get_data(
-            ch, start, stop,
-            self.traces)
+    def plot_traces(self, ch, start_time, stop_time, offset):
+        """
+        read time and data for ch and plot it with an offset
+        """
+        data, adbitvolts = self.h5man.get_data(ch, start_time,
+                                               stop_time, self.traces)
+        time = self.h5man.get_time(ch, start_time, stop_time)
 
         for tr in self.traces:
             c = colordict[tr]
             d = np.array(data[tr], 'float64')
             d *= adbitvolts
-            if tr == 'lfp':
+            if tr == 'rawdata':
                 d *= self.lfpfactor
-            self.ax.plot(ctime, d + offset, c, lw=1)
+            self.ax.plot(time, d + offset, c, lw=1)
 
-    def plotit(self, chs, ctime, start, stop):
+    def plotit(self, start_time, stop_time):
 
-        self.set_traces()
-
-        for ich, ch in enumerate(chs):
+        for ich, ch in enumerate(self.checked_channels):
             ioff = self.offset * ich
-
-            self.plot_traces(ch, start, stop, ioff, ctime)
+            self.plot_traces(ch, start_time, stop_time, ioff)
 
             # if self.actionShow_SWR_boxes.isChecked():
             #    self.plot_swr_boxes(ch, start, stop, ioff, ctime)
@@ -179,18 +179,20 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
 
     def plot_spikes(self, ch, offset):
         self.h5man.spm.set_beg_end(ch,
-                    self.current_start_time,
-                    self.current_stop_time)
+                                   self.current_start_time,
+                                   self.current_stop_time)
         ptimes = []
         if ch in self.h5man.spm.sortedfiles:
             print('getting sorted data!')
-            clu = self.h5man.spm.get_sorted_data(ch, self.current_start_time, self.current_stop_time)
+            clu = self.h5man.spm.get_sorted_data(ch, self.current_start_time,
+                                                 self.current_stop_time)
 
             for c, cl in clu.items():
                 print(c, cl['times'].shape[0])
                 if len(cl['times']):
                     ptimes.append(self.sleepstg.convert_time(cl['times']/1000))
-                    print (self.current_start_time, self.current_stop_time, cl['times'][0])
+                    print (self.current_start_time,
+                           self.current_stop_time, cl['times'][0])
 
         else:
             sptimes = self.h5man.spm.get_sp_data(ch)
@@ -210,17 +212,18 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
             return
         if self.ax is None:
             self.ax = self.figure.fig.add_subplot(gs[0])
-        chs = self.checked_channels
-        start = self.start
-        stop = start + self.recs
-        time = self.h5man.get_time(start, stop)
-        self.current_start_time = time[0]
-        self.current_stop_time = time[-1]
-        ctime = self.sleepstg.convert_time(time/1000)
+        start_time = self.start
+        stop_time = start + self.recs
+        # time = self.h5man.get_time(start, stop)
+        # self.current_start_time = time[0]
+        # self.current_stop_time = time[-1]
+        # ctime = self.sleepstg.convert_time(time/1000)
+        # ctime = time
         self.ax.cla()
         self.ax.set_ylabel(u'µV')
+        self.set_traces()
 
-        self.plotit(chs, ctime, start, stop)
+        self.plotit(start_time, stop_time)
 
         self.ax.set_xlabel('time')
         self.ax.set_xlim((ctime[0], ctime[-1]))

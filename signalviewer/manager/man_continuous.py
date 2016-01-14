@@ -3,21 +3,28 @@
 
 from __future__ import print_function, division, absolute_import
 import os
-import tables
-import numpy as np
 import csv
+import numpy as np
+import tables
 from .man_spikes import SpikeManager
 from .tools import expandts, debug
 
 
 class H5Manager(object):
+    """
+    Backend for h5 files containing continuously sampled data
+    """
     def __init__(self, files):
+        """
+        Initialize with given files
+        """
         self.timesteps = {}
         self.qs = {}
         self.entnames = {}
         self.bitvolts = {}
         self.fid = {}
         self.spm = None
+        self.time_factors = {}
 
         self.init_meta()
         for fname in files:
@@ -29,8 +36,6 @@ class H5Manager(object):
         self.chs = sorted(self.fid.keys())
         if not len(self.chs):
             raise(ValueError('No channels found'))
-
-        self.infoch = self.fid[self.chs[0]]
 
     def init_spikes(self, sign, label):
         self.spm = SpikeManager()
@@ -53,9 +58,9 @@ class H5Manager(object):
             reader = csv.reader(fid, delimiter=';')
             metad = list(reader)
 
-        for flds in metad:
-            print(flds)
+        effective_ts = {}
 
+        for flds in metad:
             key = flds[0]
             entname = flds[1]
             adbitvolts = float(flds[2])
@@ -63,8 +68,22 @@ class H5Manager(object):
             self.bitvolts[entname] = adbitvolts
             self.qs[entname] = int(flds[3])
             self.timesteps[entname] = float(flds[4])/1e3
+            effective_ts[entname] = self.qs[entname] * self.timesteps[entname]
 
-        print(self.entnames, self.bitvolts, self.qs, self.timesteps)
+        # calculate the relative sampling rates and store the multiplication
+        # factor
+        min_effective_ts = min(effective_ts.values())
+        for name, ts in effective_ts.items():
+            rel = ts/min_effective_ts
+            if rel - int(rel) > 1e-6:
+                raise Warning("Relative sampling rates have to be integers")
+            self.time_factors[name] = int(rel)
+
+        # for each channel, store the multiplication factor
+
+        debug((self.entnames, self.bitvolts, self.qs,
+              self.timesteps))
+        debug(self.time_factors)
 
     def _mod_times(self, q, start, stop):
         """
@@ -76,6 +95,14 @@ class H5Manager(object):
         tstop = stop/512 + 1
 
         return tstart, tstop
+
+    def translate(self, ch, sample):
+        """
+        transform samples according to relative times
+        """
+        factor = self.time_factors[ch]
+        print(factor)
+        return int(sample/factor)
 
     def get_time(self, ch, start, stop):
         q = self.qs[ch]
@@ -93,14 +120,14 @@ class H5Manager(object):
         adbitvolts = self.bitvolts[ch]
         # make it an array of columns here
         temp = []
-        print(self.fid.keys())
+        debug(self.fid.keys())
         obj = self.fid[ch]
         for trace in traces:
             try:
                 temp_d = obj.get_node('/data', trace)[start:stop]
                 temp.append(temp_d)
             except tables.NoSuchNodeError as error:
-                print(error)
+                debug(error)
         data = np.hstack(temp)
         return data, adbitvolts
 
@@ -110,15 +137,24 @@ def test():
     simple test function
     """
     from argparse import ArgumentParser
+    import matplotlib.pyplot as mpl
     parser = ArgumentParser()
     parser.add_argument('fnames', nargs='+')
     args = parser.parse_args()
     h5man = H5Manager(args.fnames)
-    import matplotlib.pyplot as mpl
-    d, adbitvolts = h5man.get_data('C3', 0, 10000, ['rawdata', 'filtered'])
-    time = h5man.get_time('C3', 0, 10000)
-    print('Plotting {} seconds of data'.format((time[-1] - time[0])/1e3))
-    mpl.plot(time, d * adbitvolts)
+    chs = h5man.chs
+    start = 10000
+    nblocks = 60000
+
+    for i, ch in enumerate(chs):
+        print(ch)
+        start_ch = h5man.translate(ch, start)
+        stop_ch = start_ch + h5man.translate(ch, nblocks)
+        d, adbitvolts = h5man.get_data(ch, start_ch, stop_ch,
+                                       ['rawdata', 'filtered'])
+        time = h5man.get_time(ch, start_ch, stop_ch)
+        print('Plotting {} seconds of data'.format((time[-1] - time[0])/1e3))
+        mpl.plot(time, d * adbitvolts + 100*i, 'darkblue')
     mpl.show()
 
     del h5man
