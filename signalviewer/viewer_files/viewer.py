@@ -7,9 +7,7 @@ import os
 from glob import glob
 from time import time
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
+import PyQt4.QtGui as qtgui
 
 import numpy as np
 from matplotlib.gridspec import GridSpec
@@ -19,7 +17,8 @@ from matplotlib.ticker import FuncFormatter
 
 from .ui_viewer import Ui_MainWindow
 
-from .sWidgets import *
+from .sWidgets import MplCanvas
+# from .sWidgets import
 from .. import H5Manager, debug, options
 # from sleepstg import SleepStg
 from .spikes import SpikeView
@@ -32,7 +31,7 @@ print(sys.version)
 DEBUG = True
 
 colordict = {
-    'lfp': 'b',
+    'rawdata': 'b',
     'ripple': 'g',
     'logothetis': 'r',
     'simple': '#999900',
@@ -54,7 +53,7 @@ def fmtfunc(x, pos=None):
     return out
 
 
-class SimpleViewer(QMainWindow, Ui_MainWindow):
+class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(SimpleViewer, self).__init__(parent)
         self.setupUi(self)
@@ -62,14 +61,7 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
         self.ax = None
         self.ylim = None
         self.lfpfactor = 1
-        self.verticalLayout.addWidget(self.figure)
-        self.pushButtonGo.clicked.connect(self.update)
-        self.pushButtonAdvance.clicked.connect(self.advance)
-        self.pushButtonSet.clicked.connect(self.setopts)
-        self.pushButtonSpikes.clicked.connect(self.open_spike_dialog)
-        self.pushButtonSave.clicked.connect(self.save_image)
-        self.sstglabel = QLabel(self)
-        self.statusBar().addWidget(self.sstglabel)
+
         self.ts_start_nlx = None
         self.ts_start_mpl = None
         self.use_date = False
@@ -78,13 +70,13 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
         self.formatter = FuncFormatter(fmtfunc)
         self.offset = 150
         self.actionsdir = {
-            self.actionLFP: 'lfp',
+            self.actionLFP: 'rawdata',
             self.actionFiltered: 'ripple',
             self.actionLogothetis: 'logothetis',
             self.actionSimple: 'simple',
             self.actionYuval_Nir: 'ynir'
             }
-
+        self.setup_gui()
         t1 = time()
         self.init_h5man()
         dt = time() - t1
@@ -93,13 +85,24 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
         # self.use_date = self.sleepstg.use_date
         self.setopts()
         self.labelFolder.setText(os.path.split(os.getcwd())[1])
+
+    def setup_gui(self):
+        self.verticalLayout.addWidget(self.figure)
+        self.pushButtonGo.clicked.connect(self.update)
+        self.pushButtonAdvance.clicked.connect(self.advance)
+        self.pushButtonSet.clicked.connect(self.setopts)
+        self.pushButtonSpikes.clicked.connect(self.open_spike_dialog)
+        self.pushButtonSave.clicked.connect(self.save_image)
+        self.sstglabel = qtgui.QLabel(self)
+        self.statusBar().addWidget(self.sstglabel)
         min_len = options['yn_min_ms']
         max_len = options['yn_max_ms']
         self.spinBoxYNirMin.setValue(min_len)
         self.spinBoxYNirMax.setValue(max_len)
 
     def init_h5man(self):
-        cands = glob('CSC*_ds.h5')
+        # cands = glob('CSC*_ds.h5')
+        cands = []
         if not len(cands):
             cands = glob('*_ds.h5')
         self.h5man = H5Manager(cands)
@@ -143,32 +146,30 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
         return True
 
     def save_image(self):
-        fname = str(QFileDialog.getSaveFileName(self,
+        fname = str(qtgui.QFileDialog.getSaveFileName(self,
                     'Save Image', '~', 'Images (*.jpg, *.pdf, *.png)'))
         self.figure.fig.savefig(fname, dpi=150)
 
-    def plot_traces(self, ch, start_time, stop_time, offset):
-        """
-        read time and data for ch and plot it with an offset
-        """
-        data, adbitvolts = self.h5man.get_data(ch, start_time,
-                                               stop_time, self.traces)
-        time = self.h5man.get_time(ch, start_time, stop_time)
-
-        for tr in self.traces:
-            c = colordict[tr]
-            d = np.array(data[tr], 'float64')
-            d *= adbitvolts
-            if tr == 'rawdata':
-                d *= self.lfpfactor
-            self.ax.plot(time, d + offset, c, lw=1)
-
-    def plotit(self, start_time, stop_time):
-
+    def plotit(self, start, nblocks):
+        # try to deal with references here, later
         for ich, ch in enumerate(self.checked_channels):
             ioff = self.offset * ich
-            self.plot_traces(ch, start_time, stop_time, ioff)
+            # self.plot_traces(ch, start_time, stop_time, ioff)
 
+            start_ch = self.h5man.translate(ch, start)
+            stop_ch = start_ch + self.h5man.translate(ch, nblocks)
+            d, adbitvolts = self.h5man.get_data(ch, start_ch, stop_ch,
+                                                self.traces)
+            data = d * adbitvolts
+            time = self.h5man.get_time(ch, start_ch, stop_ch)
+            self.ax.plot(time, data + ioff, 'darkblue', lw=1)
+
+        self.ax.set_xlabel('time')
+        self.ax.set_xlim((time[0], time[-1]))
+
+           # print('Plotting {} seconds of data'.format((time[-1] - time[0])/1e3))
+            # mpl.plot(time, (d - ref) * adbitvolts + 100*i, 'darkblue')
+     
             # if self.actionShow_SWR_boxes.isChecked():
             #    self.plot_swr_boxes(ch, start, stop, ioff, ctime)
 
@@ -212,8 +213,6 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
             return
         if self.ax is None:
             self.ax = self.figure.fig.add_subplot(gs[0])
-        start_time = self.start
-        stop_time = start + self.recs
         # time = self.h5man.get_time(start, stop)
         # self.current_start_time = time[0]
         # self.current_stop_time = time[-1]
@@ -223,10 +222,7 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
         self.ax.set_ylabel(u'µV')
         self.set_traces()
 
-        self.plotit(start_time, stop_time)
-
-        self.ax.set_xlabel('time')
-        self.ax.set_xlim((ctime[0], ctime[-1]))
+        self.plotit(self.start, self.recs)
 
         if self.use_date:
             sstgnow = self.sleepstg.get_sleepstage(ctime[0], ctime[-1])
@@ -236,19 +232,19 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
 
         if self.ylim is not None:
             if self.ylim == (0, 0):
-                self.ax.set_ylim((-200, len(chs) * self.offset))
+                self.ax.set_ylim((-200,
+                                  len(self.checked_channels) * self.offset))
             else:
                 self.ax.set_ylim(self.ylim)
 
         self.figure.draw()
 
-
     def advance(self):
 
-        if not self.readlineEdits(): return
+        if not self.readlineEdits():
+            return
         self.lineEditStart.setText(str(self.start + self.recs))
         self.update()
-
 
     def setopts(self):
 
@@ -256,12 +252,11 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
         ylimhigh = int(self.spinBoxYlimHigh.value())
 
         self.ylim = (ylimlow, ylimhigh)
-        
+
         lfpperc = float(self.spinBoxLFPpercent.value())
         self.lfpfactor = lfpperc/100
-        
+
         self.update()
-        
 
     def open_spike_dialog(self):
         dialog = SpikeView(self)
@@ -269,10 +264,10 @@ class SimpleViewer(QMainWindow, Ui_MainWindow):
 
 
 def main():
-    app = QApplication(sys.argv)
+    app = qtgui.QApplication(sys.argv)
     w = SimpleViewer()
     w.show()
     app.exec_()
-        
+
 if __name__ == "__main__":
-    main() 
+    main()

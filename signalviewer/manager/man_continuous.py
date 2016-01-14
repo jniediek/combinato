@@ -144,7 +144,14 @@ def test():
     h5man = H5Manager(args.fnames)
     chs = h5man.chs
     start = 10000
-    nblocks = 60000
+    nblocks = 20000
+
+    # this is to test referencing
+    ch = 'Cb1'
+    start_ch = h5man.translate(ch, start)
+    stop_ch = start_ch + h5man.translate(ch, nblocks)
+    ref, adbitvolts = h5man.get_data(ch, start_ch, stop_ch,
+                                     ['rawdata', 'filtered'])
 
     for i, ch in enumerate(chs):
         print(ch)
@@ -154,7 +161,8 @@ def test():
                                        ['rawdata', 'filtered'])
         time = h5man.get_time(ch, start_ch, stop_ch)
         print('Plotting {} seconds of data'.format((time[-1] - time[0])/1e3))
-        mpl.plot(time, d * adbitvolts + 100*i, 'darkblue')
+        mpl.plot(time, (d - ref) * adbitvolts + 100*i, 'darkblue')
+        mpl.text(time[0], i*100, ch, backgroundcolor='w')
     mpl.show()
 
     del h5man
