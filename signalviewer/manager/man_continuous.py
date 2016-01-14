@@ -101,7 +101,6 @@ class H5Manager(object):
         transform samples according to relative times
         """
         factor = self.time_factors[ch]
-        print(factor)
         return int(sample/factor)
 
     def get_time(self, ch, start, stop):
@@ -120,7 +119,7 @@ class H5Manager(object):
         adbitvolts = self.bitvolts[ch]
         # make it an array of columns here
         temp = []
-        debug(self.fid.keys())
+        # debug(self.fid.keys())
         obj = self.fid[ch]
         for trace in traces:
             try:

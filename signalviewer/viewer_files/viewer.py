@@ -150,33 +150,28 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                     'Save Image', '~', 'Images (*.jpg, *.pdf, *.png)'))
         self.figure.fig.savefig(fname, dpi=150)
 
+    def convert_time(self, time):
+        """
+        this will be used to convert to real times etc
+        """
+        return time/1000
+
     def plotit(self, start, nblocks):
         # try to deal with references here, later
         for ich, ch in enumerate(self.checked_channels):
             ioff = self.offset * ich
-            # self.plot_traces(ch, start_time, stop_time, ioff)
-
             start_ch = self.h5man.translate(ch, start)
             stop_ch = start_ch + self.h5man.translate(ch, nblocks)
             d, adbitvolts = self.h5man.get_data(ch, start_ch, stop_ch,
                                                 self.traces)
-            data = d * adbitvolts
+            data = d * adbitvolts * self.lfpfactor
             time = self.h5man.get_time(ch, start_ch, stop_ch)
+            time = self.convert_time(time)
             self.ax.plot(time, data + ioff, 'darkblue', lw=1)
+            self.ax.text(time[0], ioff, ch, backgroundcolor='w')
 
         self.ax.set_xlabel('time')
         self.ax.set_xlim((time[0], time[-1]))
-
-           # print('Plotting {} seconds of data'.format((time[-1] - time[0])/1e3))
-            # mpl.plot(time, (d - ref) * adbitvolts + 100*i, 'darkblue')
-     
-            # if self.actionShow_SWR_boxes.isChecked():
-            #    self.plot_swr_boxes(ch, start, stop, ioff, ctime)
-
-            # if self.actionShow_spikes.isChecked():
-            #    self.plot_spikes(ch, ioff)
-
-            # self.ax.text(ctime[0], ioff, ch, backgroundcolor='#EEEEEE')
 
     def plot_spikes(self, ch, offset):
         self.h5man.spm.set_beg_end(ch,
@@ -213,12 +208,8 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
             return
         if self.ax is None:
             self.ax = self.figure.fig.add_subplot(gs[0])
-        # time = self.h5man.get_time(start, stop)
-        # self.current_start_time = time[0]
-        # self.current_stop_time = time[-1]
-        # ctime = self.sleepstg.convert_time(time/1000)
-        # ctime = time
         self.ax.cla()
+        self.ax.grid(True)
         self.ax.set_ylabel(u'µV')
         self.set_traces()
 
@@ -232,10 +223,12 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
 
         if self.ylim is not None:
             if self.ylim == (0, 0):
-                self.ax.set_ylim((-200,
-                                  len(self.checked_channels) * self.offset))
+                ylim = (-200, len(self.checked_channels) * self.offset)
+                self.ax.set_ylim(ylim)
             else:
                 self.ax.set_ylim(self.ylim)
+            self.ax.set_yticks(range(0, ylim[1] + 100, 100))
+            self.ax.set_yticklabels([0, 100])
 
         self.figure.draw()
 
