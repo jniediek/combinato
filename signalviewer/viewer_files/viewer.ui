@@ -19,7 +19,26 @@
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="3">
+        <item row="1" column="7">
+         <widget class="QSpinBox" name="spinBoxLFPpercent">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="minimum">
+           <number>10</number>
+          </property>
+          <property name="maximum">
+           <number>200</number>
+          </property>
+          <property name="singleStep">
+           <number>5</number>
+          </property>
+          <property name="value">
+           <number>50</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
          <widget class="QLabel" name="labelYlimMin">
           <property name="enabled">
            <bool>true</bool>
@@ -29,7 +48,7 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
+        <item row="1" column="5">
          <widget class="QSpinBox" name="spinBoxYlimLow">
           <property name="enabled">
            <bool>true</bool>
@@ -48,33 +67,7 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="5">
-         <widget class="QLabel" name="labelYNirMin">
-          <property name="text">
-           <string>Y. Nir min</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="6">
-         <widget class="QSpinBox" name="spinBoxYNirMin">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimum">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <number>500</number>
-          </property>
-          <property name="singleStep">
-           <number>5</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="7">
          <widget class="QLabel" name="labelLFP">
           <property name="enabled">
            <bool>true</bool>
@@ -84,7 +77,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="4">
+        <item row="2" column="5">
          <widget class="QSpinBox" name="spinBoxYlimHigh">
           <property name="enabled">
            <bool>true</bool>
@@ -103,14 +96,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="5">
-         <widget class="QLabel" name="labelYNirMax">
-          <property name="text">
-           <string>Y. Nir max</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="3">
+        <item row="2" column="4">
          <widget class="QLabel" name="labelYlimMax">
           <property name="enabled">
            <bool>true</bool>
@@ -170,25 +156,6 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="6">
-         <widget class="QSpinBox" name="spinBoxYNirMax">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimum">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <number>500</number>
-          </property>
-          <property name="singleStep">
-           <number>5</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="0">
          <widget class="QLabel" name="labelRecords">
           <property name="enabled">
@@ -212,26 +179,7 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="8">
-         <widget class="QSpinBox" name="spinBoxLFPpercent">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimum">
-           <number>10</number>
-          </property>
-          <property name="maximum">
-           <number>200</number>
-          </property>
-          <property name="singleStep">
-           <number>5</number>
-          </property>
-          <property name="value">
-           <number>50</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="8">
+        <item row="2" column="7">
          <widget class="QPushButton" name="pushButtonSet">
           <property name="enabled">
            <bool>true</bool>
@@ -241,17 +189,24 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="9">
+        <item row="1" column="8">
          <widget class="QPushButton" name="pushButtonSpikes">
           <property name="text">
            <string>Spikes</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="9">
+        <item row="2" column="8">
          <widget class="QPushButton" name="pushButtonSave">
           <property name="text">
            <string>Save Image</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QPushButton" name="pushButtonBack">
+          <property name="text">
+           <string>Back</string>
           </property>
          </widget>
         </item>
@@ -280,7 +235,7 @@
      <x>0</x>
      <y>0</y>
      <width>877</width>
-     <height>19</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuChannels">
@@ -293,19 +248,21 @@
      <string>Traces</string>
     </property>
     <addaction name="actionLFP"/>
-    <addaction name="actionFiltered"/>
-    <addaction name="actionLogothetis"/>
-    <addaction name="actionSimple"/>
-    <addaction name="actionYuval_Nir"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
      <string>Options</string>
     </property>
-    <addaction name="actionShow_SWR_boxes"/>
+    <addaction name="actionShowBoxes"/>
     <addaction name="actionShow_spikes"/>
    </widget>
+   <widget class="QMenu" name="menuRefs">
+    <property name="title">
+     <string>Montages</string>
+    </property>
+   </widget>
    <addaction name="menuChannels"/>
+   <addaction name="menuRefs"/>
    <addaction name="menuTraces"/>
    <addaction name="menuOptions"/>
   </widget>
@@ -321,7 +278,7 @@
     <string>Raw</string>
    </property>
   </action>
-  <action name="actionFiltered">
+  <action name="actionShowBoxes">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -329,29 +286,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Ripple (BP [80 180])</string>
-   </property>
-  </action>
-  <action name="actionLogothetis">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Logothetis (BP [5 200], LP 20)</string>
-   </property>
-  </action>
-  <action name="actionShow_SWR_boxes">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show SWR boxes</string>
+    <string>Show detection boxes</string>
    </property>
   </action>
   <action name="actionShow_spikes">
@@ -365,17 +300,6 @@
     <string>Show spikes</string>
    </property>
   </action>
-  <action name="actionYuval_Nir">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Yuval Nir</string>
-   </property>
-  </action>
   <action name="actionSimple">
    <property name="checkable">
     <bool>true</bool>
@@ -385,6 +309,22 @@
    </property>
    <property name="text">
     <string>Simple</string>
+   </property>
+  </action>
+  <action name="actionAdvance">
+   <property name="text">
+    <string>Advance</string>
+   </property>
+   <property name="shortcut">
+    <string>Right</string>
+   </property>
+  </action>
+  <action name="actionBack">
+   <property name="text">
+    <string>Back</string>
+   </property>
+   <property name="shortcut">
+    <string>Left</string>
    </property>
   </action>
  </widget>

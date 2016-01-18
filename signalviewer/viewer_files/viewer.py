@@ -6,6 +6,7 @@ import sys
 import os
 from glob import glob
 from time import time
+from collections import defaultdict
 
 import PyQt4.QtGui as qtgui
 
@@ -13,7 +14,7 @@ import numpy as np
 from matplotlib.gridspec import GridSpec
 from matplotlib.dates import AutoDateLocator, num2date
 from matplotlib.ticker import FuncFormatter
-# from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle
 
 from .ui_viewer import Ui_MainWindow
 
@@ -29,21 +30,6 @@ stylesheet = 'QListView:focus { background-color: rgb(240, 255, 255)}'
 gs = GridSpec(1, 1, top=.95, bottom=.05, left=.05, right=.95)
 print(sys.version)
 DEBUG = True
-
-colordict = {
-    'rawdata': 'b',
-    'ripple': 'g',
-    'logothetis': 'r',
-    'simple': '#999900',
-    'ynir': 'm'
-}
-
-swrboxcolors = {
-    'logothetis': '#990000',
-    'ynir_short': '#009900',
-    'ynir_long': '#000099',
-    'our': '#999900'
-}
 
 
 def fmtfunc(x, pos=None):
@@ -66,16 +52,12 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.ts_start_mpl = None
         self.use_date = False
         self.checked_channels = []
+        self.montage = None
+        self.positions = None
         self.locator = AutoDateLocator()
         self.formatter = FuncFormatter(fmtfunc)
         self.offset = 150
-        self.actionsdir = {
-            self.actionLFP: 'rawdata',
-            self.actionFiltered: 'ripple',
-            self.actionLogothetis: 'logothetis',
-            self.actionSimple: 'simple',
-            self.actionYuval_Nir: 'ynir'
-            }
+        self.actionsdir = {self.actionLFP: 'rawdata'}
         self.setup_gui()
         t1 = time()
         self.init_h5man()
@@ -85,26 +67,37 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         # self.use_date = self.sleepstg.use_date
         self.setopts()
         self.labelFolder.setText(os.path.split(os.getcwd())[1])
+        self.init_events('')
+        self.init_montages()
 
     def setup_gui(self):
         self.verticalLayout.addWidget(self.figure)
+        self.addAction(self.actionBack)
+        self.addAction(self.actionAdvance)
         self.pushButtonGo.clicked.connect(self.update)
         self.pushButtonAdvance.clicked.connect(self.advance)
+        self.pushButtonBack.clicked.connect(self.back)
         self.pushButtonSet.clicked.connect(self.setopts)
         self.pushButtonSpikes.clicked.connect(self.open_spike_dialog)
         self.pushButtonSave.clicked.connect(self.save_image)
+        self.actionBack.triggered.connect(self.back)
+        self.actionAdvance.triggered.connect(self.advance)
         self.sstglabel = qtgui.QLabel(self)
         self.statusBar().addWidget(self.sstglabel)
-        min_len = options['yn_min_ms']
-        max_len = options['yn_max_ms']
-        self.spinBoxYNirMin.setValue(min_len)
-        self.spinBoxYNirMax.setValue(max_len)
+
+    def init_events(self, pattern):
+        """
+        read events from a text or h5 file
+        can be plotted as boxes
+        """
+        self.event_times = {}
+        for name in self.h5man.chs:
+            fname = name + pattern + '.txt'
+            if os.path.exists(fname):
+                self.event_times[name] = np.loadtxt(fname)
 
     def init_h5man(self):
-        # cands = glob('CSC*_ds.h5')
-        cands = []
-        if not len(cands):
-            cands = glob('*_ds.h5')
+        cands = glob('*_ds.h5')
         self.h5man = H5Manager(cands)
 
         for chn in self.h5man.chs:
@@ -116,7 +109,42 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         for a in self.actionsdir:
             a.triggered.connect(self.set_traces)
 
-        # self.one_ms = 1./self.h5man.timestep/self.h5man.q
+    def init_montages(self):
+        """
+        Make a list of montage files
+        """
+        cands = glob('*2_montage.txt')
+        for cand in cands:
+            name = cand[:-4]
+            action = self.menuRefs.addAction(name)
+            action.triggered.connect(lambda x=cand: self.set_montage(cand))
+
+    def set_montage(self, montage_file):
+        """
+        Read a montage file and activate it
+        """
+        print(montage_file)
+        self.checked_channels = []
+        montage = defaultdict(list)
+        positions = dict()
+        with open(montage_file, 'r') as fid:
+            lines = fid.readlines()
+            for il, line in enumerate(lines):
+                line = line.strip()
+                res = line.split('-')
+                if len(res) == 2:
+                    main, ref = res
+                elif len(res) == 1:
+                    main = res[0]
+                    ref = 0
+                if (main in self.h5man.chs):
+                    if (ref in self.h5man.chs) or (ref == 0):
+                        montage[ref].append(main)
+                        positions[main] = il
+
+        self.montage = montage
+        print(montage)
+        self.positions = positions
 
     def set_traces(self):
         traces = []
@@ -124,9 +152,6 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
             if a.isChecked():
                 traces.append(s)
         self.traces = traces
-
-        # self.yn_min_samp = self.spinBoxYNirMin.value() * self.one_ms
-        # self.yn_max_samp = self.spinBoxYNirMax.value() * self.one_ms
 
     def setch(self):
         checked_actions = [a for a in self.menuChannels.children()
@@ -158,20 +183,113 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
 
     def plotit(self, start, nblocks):
         # try to deal with references here, later
-        for ich, ch in enumerate(self.checked_channels):
-            ioff = self.offset * ich
-            start_ch = self.h5man.translate(ch, start)
-            stop_ch = start_ch + self.h5man.translate(ch, nblocks)
-            d, adbitvolts = self.h5man.get_data(ch, start_ch, stop_ch,
-                                                self.traces)
-            data = d * adbitvolts * self.lfpfactor
-            time = self.h5man.get_time(ch, start_ch, stop_ch)
-            time = self.convert_time(time)
-            self.ax.plot(time, data + ioff, 'darkblue', lw=1)
-            self.ax.text(time[0], ioff, ch, backgroundcolor='w')
+        allstart = 0
+        allstop = np.inf
+
+        if self.montage is None:
+            for ich, ch in enumerate(self.checked_channels):
+                ioff = self.offset * ich
+                start_ch = self.h5man.translate(ch, start)
+                stop_ch = start_ch + self.h5man.translate(ch, nblocks)
+                d, adbitvolts = self.h5man.get_data(ch, start_ch, stop_ch,
+                                                    self.traces)
+                data = d * adbitvolts * self.lfpfactor
+                time = self.h5man.get_time(ch, start_ch, stop_ch)
+                allstart = max(allstart, time[0])
+                allstop = min(allstop, time[-1])
+
+                time = self.convert_time(time)
+                # if using a montage, first read all segments that appear as
+                # references; then plot the channels that have this reference
+                # this means that the montage should be represented as
+                # a dict of channels for each reference
+                # if len(montage)
+                # for ref_ch, target_chs in montage.items():
+                # the default montage has 0 as a key,
+                # meaning do not subtract anything
+                self.ax.plot(time, data + ioff, 'darkblue', lw=1)
+                self.ax.text(time[0], ioff, ch, backgroundcolor='w')
+        else:
+            for ref_ch in self.montage:
+                ref_data = 0
+                ref_time = None
+                print('Reference now: ' + str(ref_ch))
+
+                if ref_ch != 0:
+                    start_ch_ref = self.h5man.translate(ref_ch, start)
+                    stop_ch_ref = start_ch_ref + self.h5man.translate(ref_ch,
+                                                                      nblocks)
+                    ref_d, adbitvolts = self.h5man.get_data(ref_ch,
+                                                            start_ch_ref,
+                                                            stop_ch_ref,
+                                                            self.traces)
+                    ref_data = ref_d * adbitvolts
+                    time = self.h5man.get_time(ref_ch, start_ch_ref,
+                                               stop_ch_ref)
+
+                for ch in self.montage[ref_ch]:
+                    print('Updating {}-{}'.format(ch, ref_ch))
+                    start_ch = self.h5man.translate(ch, start)
+                    stop_ch = start_ch + self.h5man.translate(ch, nblocks)
+
+                    if ref_ch != 0:
+                        assert start_ch == start_ch_ref
+                        assert stop_ch == stop_ch_ref
+                    d, adbitvolts = self.h5man.get_data(ch, start_ch, stop_ch,
+                                                        self.traces)
+
+                    data = ((d * adbitvolts) - ref_data) * self.lfpfactor
+
+                    if ref_time is not None:
+                        time = ref_time
+                    else:
+                        time = self.h5man.get_time(ch, start_ch,
+                                                   stop_ch)
+                    allstart = max(allstart, time[0])
+                    allstop = min(allstop, time[-1])
+
+                    plot_time = self.convert_time(time)
+                    shift = self.positions[ch] * self.offset
+                    self.ax.plot(plot_time, shift + data, 'darkblue', lw=1)
+                    print(plot_time[0:10], shift+data[0:10])
+
+                    if ref_ch == 0:
+                        label = ch
+                    else:
+                        label = '{}-{}'.format(ch, ref_ch)
+                    self.ax.text(plot_time[0], shift, label,
+                                 backgroundcolor='w')
 
         self.ax.set_xlabel('time')
-        self.ax.set_xlim((time[0], time[-1]))
+        self.ax.set_xlim([self.convert_time(t) for t in (allstart, allstop)])
+
+        self.allstart = allstart
+        self.allstop = allstop
+
+        if self.actionShowBoxes.isChecked():
+            for ich, ch in enumerate(self.checked_channels):
+                if ch in self.event_times:
+                    ioff = self.offset * ich
+                    self.plot_boxes(ch, ioff)
+
+    def plot_boxes(self, ch, offset):
+        """
+        If there are events, plot them
+        """
+        events = self.event_times[ch]
+        idx = (events[:, 0] >= self.allstart) & (events[:, 1] <= self.allstop)
+        print(idx.sum())
+
+        for row in events[idx, :]:
+            start = self.convert_time(row[0])
+            stop = self.convert_time(row[1])
+            rec = Rectangle((start, offset - self.offset/2),
+                            stop - start,
+                            self.offset,
+                            edgecolor='none',
+                            alpha=options['alpha'],
+                            facecolor='y')
+            self.ax.add_artist(rec)
 
     def plot_spikes(self, ch, offset):
         self.h5man.spm.set_beg_end(ch,
@@ -204,7 +322,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
     def update(self):
         if not self.readlineEdits():
             return
-        if not len(self.checked_channels):
+        if (len(self.checked_channels) == 0) and (self.montage is None):
             return
         if self.ax is None:
             self.ax = self.figure.fig.add_subplot(gs[0])
@@ -221,14 +339,14 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
             self.ax.xaxis.set_major_locator(self.locator)
             self.ax.xaxis.set_major_formatter(self.formatter)
 
-        if self.ylim is not None:
-            if self.ylim == (0, 0):
-                ylim = (-200, len(self.checked_channels) * self.offset)
-                self.ax.set_ylim(ylim)
-            else:
-                self.ax.set_ylim(self.ylim)
-            self.ax.set_yticks(range(0, ylim[1] + 100, 100))
-            self.ax.set_yticklabels([0, 100])
+        # if self.ylim is not None:
+        #    if self.ylim == (0, 0):
+        #        ylim = (-200, len(self.checked_channels) * self.offset)
+        #        self.ax.set_ylim(ylim)
+        #    else:
+        #        self.ax.set_ylim(self.ylim)
+        #    self.ax.set_yticks(range(0, ylim[1] + 100, 100))
+        #    self.ax.set_yticklabels([0, 100])
 
         self.figure.draw()
 
@@ -237,6 +355,12 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         if not self.readlineEdits():
             return
         self.lineEditStart.setText(str(self.start + self.recs))
+        self.update()
+
+    def back(self):
+        if not self.readlineEdits():
+            return
+        self.lineEditStart.setText(str(self.start - self.recs))
         self.update()
 
     def setopts(self):
