@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!env /usr/bin/python
 # -*- coding: utf-8 -*-
 # JN 2016-01-12 ncs data viewer
 from __future__ import division, print_function, absolute_import
@@ -28,7 +28,6 @@ from .spikes import SpikeView
 stylesheet = 'QListView:focus { background-color: rgb(240, 255, 255)}'
 
 gs = GridSpec(1, 1, top=.95, bottom=.05, left=.05, right=.95)
-print(sys.version)
 DEBUG = True
 
 
@@ -113,7 +112,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         """
         Make a list of montage files
         """
-        cands = glob('*2_montage.txt')
+        cands = glob('*_montage.txt')
         for cand in cands:
             name = cand[:-4]
             action = self.menuRefs.addAction(name)
@@ -143,7 +142,6 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                         positions[main] = il
 
         self.montage = montage
-        print(montage)
         self.positions = positions
 
     def set_traces(self):
@@ -251,7 +249,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                     plot_time = self.convert_time(time)
                     shift = self.positions[ch] * self.offset
                     self.ax.plot(plot_time, shift + data, 'darkblue', lw=1)
-                    print(plot_time[0:10], shift+data[0:10])
+                    # print(plot_time[0:10], shift+data[0:10])
 
                     if ref_ch == 0:
                         label = ch
@@ -260,7 +258,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                     self.ax.text(plot_time[0], shift, label,
                                  backgroundcolor='w')
 
-        self.ax.set_xlabel('time')
+        self.ax.set_xlabel('seconds')
         self.ax.set_xlim([self.convert_time(t) for t in (allstart, allstop)])
 
         self.allstart = allstart

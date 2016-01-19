@@ -18,16 +18,21 @@ def downsampling(ncsfname, h5fname, Q=16):
     """
     Main routine for downsampling
     """
-
     ncsf = NcsFile(ncsfname)
     chname = ncsf.header['AcqEntName']
     h5f = initfile(h5fname, ncsf, Q)
     nrec = ncsf.num_recs
+    ds_order = 8
+    ts = ncsf.timestep
 
     if DEBUG:
         print('{} has {} records'.format(ncsfname, nrec))
 
     blocks = make_blocks(nrec, min(100000, nrec))
+    if Q > 1:
+        # design filter for lowpass filtering before downsampling
+        # use 80% of the Nyquist frequency as cutoff
+        b_down, a_down = scipy.signal.cheby1(ds_order, .05, 0.8/Q)
 
     for start, stop in blocks:
         if DEBUG:
@@ -36,7 +41,11 @@ def downsampling(ncsfname, h5fname, Q=16):
         h5f.root.time.append(ts)
 
         if Q > 1:
-            ds_data = scipy.signal.decimate(data, Q)
+            # Warning!
+            # scipy.signal.decimate uses lfilt,
+            # so the decimated signal has a phase shift
+            # for this reason, we use 
+            ds_data = scipy.signal.filtfilt(b_down, a_down, data)[::Q]
         else:
             ds_data = data
 
