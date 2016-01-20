@@ -27,6 +27,7 @@ from .spikes import SpikeView
 
 stylesheet = 'QListView:focus { background-color: rgb(240, 255, 255)}'
 
+COLORS = ['darkblue', 'red', 'magenta', 'black', 'green']
 gs = GridSpec(1, 1, top=.95, bottom=.05, left=.05, right=.95)
 DEBUG = True
 
@@ -149,7 +150,8 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         for a, s in self.actionsdir.items():
             if a.isChecked():
                 traces.append(s)
-        self.traces = traces
+        # self.traces = traces
+        self.traces = ['rawdata', 'simple']
 
     def setch(self):
         checked_actions = [a for a in self.menuChannels.children()
@@ -197,15 +199,9 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                 allstop = min(allstop, time[-1])
 
                 time = self.convert_time(time)
-                # if using a montage, first read all segments that appear as
-                # references; then plot the channels that have this reference
-                # this means that the montage should be represented as
-                # a dict of channels for each reference
-                # if len(montage)
-                # for ref_ch, target_chs in montage.items():
-                # the default montage has 0 as a key,
-                # meaning do not subtract anything
-                self.ax.plot(time, data + ioff, 'darkblue', lw=1)
+
+                for itr, trace in enumerate(data):
+                    self.ax.plot(time, trace + ioff, COLORS[itr], lw=1)
                 self.ax.text(time[0], ioff, ch, backgroundcolor='w')
         else:
             for ref_ch in self.montage:
@@ -259,7 +255,8 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                                  backgroundcolor='w')
 
         self.ax.set_xlabel('seconds')
-        self.ax.set_xlim([self.convert_time(t) for t in (allstart, allstop)])
+        conv_start, conv_stop = [self.convert_time(t) for t in (allstart, allstop)]
+        self.ax.set_xlim((conv_start, conv_stop))
 
         self.allstart = allstart
         self.allstop = allstop

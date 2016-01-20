@@ -146,7 +146,8 @@ class H5Manager(object):
                 temp.append(temp_d)
             except tables.NoSuchNodeError as error:
                 debug(error)
-        data = np.hstack(temp)
+        data = np.vstack(temp)
+        print(data.shape)
         return data, adbitvolts
 
 
