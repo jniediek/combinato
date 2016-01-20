@@ -14,7 +14,7 @@ class H5Manager(object):
     """
     Backend for h5 files containing continuously sampled data
     """
-    def __init__(self, files):
+    def __init__(self, files, modify=False):
         """
         Initialize with given files
         """
@@ -25,10 +25,14 @@ class H5Manager(object):
         self.fid = {}
         self.spm = None
         self.time_factors = {}
-
+        self.modify = modify
         self.init_meta()
+        if modify:
+            mode = 'r+'
+        else:
+            mode = 'r'
         for fname in files:
-            fid = tables.open_file(fname, 'r')
+            fid = tables.open_file(fname, mode)
             key = fname[:-6]
             if key in self.entnames:
                 entname = self.entnames[key]
@@ -48,6 +52,21 @@ class H5Manager(object):
         if hasattr(self, 'fid'):
             for fid in self.fid.values():
                 fid.close()
+
+    def add_trace(self, ch, trace_name):
+        """
+        add a trace
+        """
+        size = self.fid[ch].root.data.rawdata.shape[0]
+        zeros = np.zeros(size, np.int16)
+        if not self.modify:
+            print('Cannot add trace because modify is False')
+            return
+        try:
+            self.fid[ch].create_array('/data', trace_name, zeros)
+        except tables.exceptions.NodeError as error:
+            print(error)
+            print('Not re-creating')
 
     def init_meta(self):
         if not os.path.exists('h5meta.txt'):
