@@ -9,7 +9,7 @@ from __future__ import print_function, division, absolute_import
 import os
 import scipy.signal
 from combinato.basics.nlxio import NcsFile
-from convert_tools import initfile, make_blocks
+from .convert_tools import initfile, make_blocks
 
 DEBUG = True
 
@@ -70,7 +70,10 @@ def helper(job):
     downsampling(fname, h5fname, Q)
 
 
-if __name__ == "__main__":
+def main():
+    """
+    argument parsing as usual
+    """
     from argparse import ArgumentParser
     from multiprocessing import Pool
     from time import time
