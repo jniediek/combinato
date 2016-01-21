@@ -7,6 +7,7 @@ import os
 from glob import glob
 from time import time
 from collections import defaultdict
+import datetime
 
 import PyQt4.QtGui as qtgui
 
@@ -19,11 +20,8 @@ from matplotlib.patches import Rectangle
 from .ui_viewer import Ui_MainWindow
 
 from .sWidgets import MplCanvas
-# from .sWidgets import
-from .. import H5Manager, debug, options
-# from sleepstg import SleepStg
+from .. import H5Manager, debug, options, DATE_FNAME
 from .spikes import SpikeView
-
 
 stylesheet = 'QListView:focus { background-color: rgb(240, 255, 255)}'
 
@@ -69,6 +67,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.labelFolder.setText(os.path.split(os.getcwd())[1])
         self.init_events('')
         self.init_montages()
+        self.init_realtime()
 
     def setup_gui(self):
         self.verticalLayout.addWidget(self.figure)
@@ -108,6 +107,28 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         debug('Available channels: {}'.format(self.h5man.chs))
         for a in self.actionsdir:
             a.triggered.connect(self.set_traces)
+
+    def init_realtime(self):
+        """
+        try to find the real date and time of the recording
+        """
+        if not os.path.exists(DATE_FNAME):
+            return
+
+        with open(DATE_FNAME, 'r') as fid:
+            lines = [line.strip() for line in fid.readlines()]
+
+        for line in lines:
+            if line[0] == '#':
+                continue
+            fields = line.split()
+            if fields[0] == 'start_recording':
+                dtime, micro = fields[2].split('.')
+                dstr = fields[1] + ' ' + dtime
+                dfmt = '%Y-%m-%d %H:%M:%S'
+                start_date = datetime.datetime.strptime(dstr, dfmt)
+                start_date += datetime.timedelta(microseconds=int(micro))
+                print(start_date, int(fields[3]))
 
     def init_montages(self):
         """
