@@ -13,7 +13,7 @@ import PyQt4.QtGui as qtgui
 
 import numpy as np
 from matplotlib.gridspec import GridSpec
-from matplotlib.dates import AutoDateLocator, num2date
+from matplotlib.dates import AutoDateLocator, num2date, date2num
 from matplotlib.ticker import FuncFormatter
 from matplotlib.patches import Rectangle
 
@@ -128,7 +128,12 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                 dfmt = '%Y-%m-%d %H:%M:%S'
                 start_date = datetime.datetime.strptime(dstr, dfmt)
                 start_date += datetime.timedelta(microseconds=int(micro))
-                print(start_date, int(fields[3]))
+                break
+
+        self.ts_start_nlx = float(fields[3])/1000
+        self.ts_start_mpl = date2num(start_date)
+        if DEBUG:
+            print(self.ts_start_nlx, self.ts_start_mpl)
 
     def init_montages(self):
         """
@@ -200,7 +205,13 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         """
         this will be used to convert to real times etc
         """
-        return time/1000
+        if self.use_date:
+            time = (time - self.ts_start_nlx)/(1000*24*60*60)
+            time += self.ts_start_mpl
+        else:
+            time /= 1000
+
+        return time
 
     def plotit(self, start, nblocks):
         # try to deal with references here, later
@@ -219,11 +230,11 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                 allstart = max(allstart, time[0])
                 allstop = min(allstop, time[-1])
 
-                time = self.convert_time(time)
+                plot_time = self.convert_time(time)
 
                 for itr, trace in enumerate(data):
-                    self.ax.plot(time, trace + ioff, COLORS[itr], lw=1)
-                self.ax.text(time[0], ioff, ch, backgroundcolor='w')
+                    self.ax.plot(plot_time, trace + ioff, COLORS[itr], lw=1)
+                self.ax.text(plot_time[0], ioff, ch, backgroundcolor='w')
         else:
             for ref_ch in self.montage:
                 ref_data = 0
@@ -276,8 +287,8 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                                  backgroundcolor='w')
 
         self.ax.set_xlabel('seconds')
-        conv_start, conv_stop = [self.convert_time(t) for t in (allstart, allstop)]
-        self.ax.set_xlim((conv_start, conv_stop))
+        plot_start, plot_stop = [self.convert_time(t) for t in (allstart, allstop)]
+        self.ax.set_xlim((plot_start, plot_stop))
 
         self.allstart = allstart
         self.allstop = allstop
@@ -349,9 +360,14 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
 
         self.plotit(self.start, self.recs)
 
+        if self.actionUse_wall_time.isChecked():
+            self.use_date = True
+        else:
+            self.use_date = False
+
         if self.use_date:
-            sstgnow = self.sleepstg.get_sleepstage(ctime[0], ctime[-1])
-            self.sstglabel.setText(sstgnow)
+            # sstgnow = self.sleepstg.get_sleepstage(ctime[0], ctime[-1])
+            # self.sstglabel.setText(sstgnow)
             self.ax.xaxis.set_major_locator(self.locator)
             self.ax.xaxis.set_major_formatter(self.formatter)
 

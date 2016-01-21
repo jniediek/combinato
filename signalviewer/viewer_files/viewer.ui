@@ -255,6 +255,7 @@
     </property>
     <addaction name="actionShowBoxes"/>
     <addaction name="actionShow_spikes"/>
+    <addaction name="actionUse_wall_time"/>
    </widget>
    <widget class="QMenu" name="menuRefs">
     <property name="title">
@@ -325,6 +326,14 @@
    </property>
    <property name="shortcut">
     <string>Left</string>
+   </property>
+  </action>
+  <action name="actionUse_wall_time">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use wall time</string>
    </property>
   </action>
  </widget>
