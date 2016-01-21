@@ -11,7 +11,41 @@ from __future__ import print_function, absolute_import, division
 import os
 import re
 from collections import defaultdict
+import datetime
 from csv import writer as csv_writer
+
+DATE_FNAME = 'start_stop_datetime.txt'
+
+
+def parse_times(setting):
+    """
+    read out the date and times of a recording
+    """
+    def timestr2timeobj(time_str):
+        """
+        convert a time string with milliseconds to a datetime object
+        """
+        time, milli = time_str.split('.')
+        time = datetime.datetime.strptime(time, '%H:%M:%S')
+        time += datetime.timedelta(seconds=int(milli)/1000)
+        return time
+
+    tstart, tstop = [timestr2timeobj(rec[1])
+                     for rec in setting.start_rec, setting.stop_rec]
+    if setting.folder is None:
+        folder_date_obj = None
+    else:
+        date_str = date_pattern.match(setting.folder).groups()[0]
+        folder_date_obj = datetime.datetime.strptime(date_str,
+                                                     r'%Y-%m-%d_%H-%M-%S')
+        tstart = datetime.datetime.combine(folder_date_obj, tstart.time())
+        tstop = datetime.datetime.combine(folder_date_obj, tstop.time())
+
+    # by default assume that recording is stopped once every day
+    if tstop < tstart:
+        tstop += datetime.timedelta(days=1)
+
+    return folder_date_obj, tstart, tstop
 
 
 class Setting(object):
@@ -26,6 +60,8 @@ class Setting(object):
         self.crefs = None
         self.start_rec = None
         self.stop_rec = None
+        self.start_timestamp = None
+        self.stop_timestamp = None
         self.folder = None
 
 DEBUG = False
@@ -44,6 +80,8 @@ channel_number_pattern_var = re.compile(r'.* (.*) (.*)')
 drs_command_pattern = re.compile(r'DRS Command\(b(\w) (\w*)\s{1,2}'
                                  r'(\d*)\s{0,2}(\d*)')
 variable_pattern = re.compile(r'.*(%\w*) = \"?(\w*)\"?')
+date_pattern = re.compile(r'.*(\d{4}-\d{1,2}-\d{1,2}_'
+                          '\d{1,2}-\d{1,2}-\d{1,2}).*')
 
 
 def board_num_to_chan(board, num):
@@ -179,7 +217,7 @@ def analyze_drs(protocol):
     temp_setting = None
 
     for line in protocol:
-        time, _, msg1, msg2 = line
+        time, timestamp, msg1, msg2 = line
 
         if temp_setting is None:
             temp_setting = Setting()
@@ -242,14 +280,15 @@ def analyze_drs(protocol):
             temp_setting.grefs = global_refs.copy()
             temp_setting.crefs = channel_refs.copy()
             temp_setting.start_rec = (msg1, time)
-            # print(msg1, time)
+            temp_setting.start_timestamp = timestamp
 
         elif 'StopRecording' in msg1:
             # here, the setting is definite and has to be saved
             temp_setting.stop_rec = (msg1, time)
+            temp_setting.stop_timestamp = timestamp
             all_settings.append(temp_setting)
             temp_setting = None
-            # print(msg1, time)
+
         elif ' = ' in msg2:
             # assigning a variable
             var, val = variable_pattern.match(msg2).groups()
@@ -377,7 +416,7 @@ def create_rep(num2name, name2num, crefs, lrefs, grefs):
     return out_str
 
 
-def check_logfile(fname, write_csv=False, nback=0):
+def check_logfile(fname, write_csv=False, nback=0, write_datetime=False):
     """
     run over a Cheetah logfile and analyzed reference settings etc
     """
@@ -393,8 +432,10 @@ def check_logfile(fname, write_csv=False, nback=0):
             msg = setting.folder
 
         print(msg)
-        print('Start: {}'.format(setting.start_rec[1]))
-        print('Stop: {}'.format(setting.stop_rec[1]))
+        print('Start: {} ({})'.format(setting.start_rec[1],
+                                      setting.start_timestamp))
+        print('Stop: {} ({})'.format(setting.stop_rec[1],
+                                     setting.stop_timestamp))
         # print('Duration: {} min'.
         #      format((setting.stop_rec[1] - setting.start_rec[1])))
         out_str = create_rep(setting.num2name, setting.name2num,
@@ -419,12 +460,45 @@ def check_logfile(fname, write_csv=False, nback=0):
             for line in out_str:
                 csvwriter.writerow(line)
 
+    if write_datetime:
+        setting = all_settings[-nback-1]
+        date, start, stop = parse_times(setting)
+        print(date, start, stop)
+        if date is None:
+            out = '# Date not guessed because Recording was stopped'\
+                  ' and re-started without folder change!\n'
+
+        else:
+            out = '# {}\ncreate_folder {}\n'.\
+                   format(setting.folder, date.strftime('%Y-%m-%d %H:%M:%S'))
+
+        start_ts = setting.start_timestamp
+        stop_ts = setting.stop_timestamp
+
+        for name, d, t in (('start', start, start_ts),
+                           ('stop', stop, stop_ts)):
+            out += name + '_recording {} {} {}\n'.\
+                   format(d.date().isoformat(), d.time().isoformat(), t)
+
+        diff_time = (stop_ts - start_ts)/1e6 - (stop - start).seconds
+
+        out += 'cheetah_ahead: {}\n'.format(diff_time)
+
+        if os.path.exists(DATE_FNAME):
+            print('{} exists, not overwriting!'.format(DATE_FNAME))
+        else:
+            with open(DATE_FNAME, 'w') as fid:
+                fid.write(out)
+
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
     aparser = ArgumentParser(epilog='Johannes Niediek (jonied@posteo.de)')
     aparser.add_argument('--write-csv', action='store_true', default=False,
                          help='Write out to logfile_number.csv')
+    aparser.add_argument('--write-datetime', action='store_true',
+                         default=False, help='Write start/stop timestamps to'
+                         ' file {}'.format(DATE_FNAME))
     aparser.add_argument('--logfile', nargs=1,
                          help='Logfile, default: CheetahLogFile.txt')
     aparser.add_argument('--nback', nargs=1, type=int,
@@ -435,4 +509,4 @@ if __name__ == '__main__':
     else:
         logfile = args.logfile[0]
 
-    check_logfile(logfile, args.write_csv, args.nback[0])
+    check_logfile(logfile, args.write_csv, args.nback[0], args.write_datetime)
