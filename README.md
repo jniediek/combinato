@@ -2,7 +2,9 @@ Jump to
 [Signalviewer](/doc/README_viewer.md)
 [Introduction](#introduction)
 [Installation](#installation)
-
+[Main executables](#main-executables)
+[Workflow](#workflow)
+[Sample](#sample-workflow-with-new-files-after-each-step)
 # Combinato Spike Sorting
 
 ![Screenshot of css-gui](doc/screenshot_css-gui.png "Screenshot")
