@@ -19,7 +19,7 @@
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="7">
+        <item row="1" column="5">
          <widget class="QSpinBox" name="spinBoxLFPpercent">
           <property name="enabled">
            <bool>true</bool>
@@ -39,70 +39,12 @@
          </widget>
         </item>
         <item row="1" column="4">
-         <widget class="QLabel" name="labelYlimMin">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>max Y</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="5">
-         <widget class="QSpinBox" name="spinBoxYlimLow">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimum">
-           <number>-1000</number>
-          </property>
-          <property name="maximum">
-           <number>0</number>
-          </property>
-          <property name="singleStep">
-           <number>50</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="6">
          <widget class="QLabel" name="labelLFP">
           <property name="enabled">
            <bool>true</bool>
           </property>
           <property name="text">
            <string>LFP scale %</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="5">
-         <widget class="QSpinBox" name="spinBoxYlimHigh">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimum">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <number>100000</number>
-          </property>
-          <property name="singleStep">
-           <number>50</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="4">
-         <widget class="QLabel" name="labelYlimMax">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>max Y</string>
           </property>
          </widget>
         </item>
@@ -179,7 +121,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="7">
+        <item row="2" column="5">
          <widget class="QPushButton" name="pushButtonSet">
           <property name="enabled">
            <bool>true</bool>
@@ -189,14 +131,17 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="8">
+        <item row="1" column="6">
          <widget class="QPushButton" name="pushButtonSpikes">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Spikes</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="8">
+        <item row="2" column="6">
          <widget class="QPushButton" name="pushButtonSave">
           <property name="text">
            <string>Save Image</string>

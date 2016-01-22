@@ -43,13 +43,12 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.figure = MplCanvas(self.centralwidget)
         self.ax = None
-        self.ylim = None
+        self.ylim = (0, 0)
         self.lfpfactor = 1
 
         self.ts_start_nlx = None
         self.ts_start_mpl = None
         self.use_date = False
-        self.checked_channels = []
         self.montage = None
         self.positions = None
         self.locator = AutoDateLocator()
@@ -143,33 +142,46 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         for cand in cands:
             name = cand[:-4]
             action = self.menuRefs.addAction(name)
-            action.triggered.connect(lambda x=cand: self.set_montage(cand))
+            action.setCheckable(True)
+            action.triggered.connect(self.read_montage)
 
-    def set_montage(self, montage_file):
+    def read_montage(self):
         """
-        Read a montage file and activate it
+        read a montage from file
         """
-        print(montage_file)
-        self.checked_channels = []
+        checked_montages = [a for a in self.menuRefs.children()
+                            if a.isChecked()]
+        fnames = [str(a.text()) + '.txt' for a in checked_montages]
+        all_lines = []
+        for fname in fnames:
+            print(fname)
+            with open(fname, 'r') as fid:
+                lines = [line.strip() for line in fid.readlines()]
+            all_lines += lines
+
+        self.set_montage(all_lines)
+
+    def set_montage(self, lines):
+        """
+        Set a montage from channel name lines
+        """
         montage = defaultdict(list)
         positions = dict()
-        with open(montage_file, 'r') as fid:
-            lines = fid.readlines()
-            for il, line in enumerate(lines):
-                line = line.strip()
-                res = line.split('-')
-                if len(res) == 2:
-                    main, ref = res
-                elif len(res) == 1:
-                    main = res[0]
-                    ref = 0
-                if (main in self.h5man.chs):
-                    if (ref in self.h5man.chs) or (ref == 0):
-                        montage[ref].append(main)
-                        positions[main] = il
+        for il, line in enumerate(lines):
+            res = line.split('-')
+            if len(res) == 2:
+                main, ref = res
+            elif len(res) == 1:
+                main = res[0]
+                ref = 0
+            if (main in self.h5man.chs):
+                if (ref in self.h5man.chs) or (ref == 0):
+                    montage[ref].append(main)
+                    positions[main] = il
 
         self.montage = montage
         self.positions = positions
+        self.n_disp_chs = len(lines)
 
     def set_traces(self):
         traces = []
@@ -182,7 +194,8 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
     def setch(self):
         checked_actions = [a for a in self.menuChannels.children()
                            if a.isChecked()]
-        self.checked_channels = [str(a.text()) for a in checked_actions]
+        checked_channels = [str(a.text()) for a in checked_actions]
+        self.set_montage(checked_channels)
 
     def readlineEdits(self):
         try:
@@ -219,87 +232,76 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         allstop = np.inf
 
         if self.montage is None:
-            for ich, ch in enumerate(self.checked_channels):
-                ioff = self.offset * ich
+            return
+
+        # iterate over all references
+        for ref_ch in self.montage:
+            ref_data = 0
+            ref_time = None
+            print('Reference now: ' + str(ref_ch))
+
+            if ref_ch != 0:
+                start_ch_ref = self.h5man.translate(ref_ch, start)
+                stop_ch_ref = start_ch_ref + self.h5man.translate(ref_ch,
+                                                                  nblocks)
+                ref_d, adbitvolts = self.h5man.get_data(ref_ch,
+                                                        start_ch_ref,
+                                                        stop_ch_ref,
+                                                        self.traces)
+                ref_data = ref_d * adbitvolts
+                time = self.h5man.get_time(ref_ch, start_ch_ref,
+                                           stop_ch_ref)
+
+            # iterate over all channels with that reference
+            for ch in self.montage[ref_ch]:
+                print('Updating {}-{}'.format(ch, ref_ch))
                 start_ch = self.h5man.translate(ch, start)
                 stop_ch = start_ch + self.h5man.translate(ch, nblocks)
+
+                if ref_ch != 0:
+                    assert start_ch == start_ch_ref
+                    assert stop_ch == stop_ch_ref
                 d, adbitvolts = self.h5man.get_data(ch, start_ch, stop_ch,
                                                     self.traces)
-                data = d * adbitvolts * self.lfpfactor
-                time = self.h5man.get_time(ch, start_ch, stop_ch)
+
+                data = ((d * adbitvolts) - ref_data) * self.lfpfactor
+
+                if ref_time is not None:
+                    time = ref_time
+                else:
+                    time = self.h5man.get_time(ch, start_ch,
+                                               stop_ch)
                 allstart = max(allstart, time[0])
                 allstop = min(allstop, time[-1])
 
                 plot_time = self.convert_time(time)
+                shift = self.positions[ch] * self.offset
+                for irow, row in enumerate(data):
+                    self.ax.plot(plot_time, shift + row,
+                                 COLORS[irow], lw=1)
 
-                for itr, trace in enumerate(data):
-                    self.ax.plot(plot_time, trace + ioff, COLORS[itr], lw=1)
-                self.ax.text(plot_time[0], ioff, ch, backgroundcolor='w')
-        else:
-            for ref_ch in self.montage:
-                ref_data = 0
-                ref_time = None
-                print('Reference now: ' + str(ref_ch))
+                if ref_ch == 0:
+                    label = ch
+                else:
+                    label = '{}-{}'.format(ch, ref_ch)
+                self.ax.text(plot_time[0], shift, label,
+                             backgroundcolor='w')
 
-                if ref_ch != 0:
-                    start_ch_ref = self.h5man.translate(ref_ch, start)
-                    stop_ch_ref = start_ch_ref + self.h5man.translate(ref_ch,
-                                                                      nblocks)
-                    ref_d, adbitvolts = self.h5man.get_data(ref_ch,
-                                                            start_ch_ref,
-                                                            stop_ch_ref,
-                                                            self.traces)
-                    ref_data = ref_d * adbitvolts
-                    time = self.h5man.get_time(ref_ch, start_ch_ref,
-                                               stop_ch_ref)
+        if not self.use_date:
+            self.ax.set_xlabel('seconds')
 
-                for ch in self.montage[ref_ch]:
-                    print('Updating {}-{}'.format(ch, ref_ch))
-                    start_ch = self.h5man.translate(ch, start)
-                    stop_ch = start_ch + self.h5man.translate(ch, nblocks)
-
-                    if ref_ch != 0:
-                        assert start_ch == start_ch_ref
-                        assert stop_ch == stop_ch_ref
-                    d, adbitvolts = self.h5man.get_data(ch, start_ch, stop_ch,
-                                                        self.traces)
-
-                    data = ((d * adbitvolts) - ref_data) * self.lfpfactor
-
-                    if ref_time is not None:
-                        time = ref_time
-                    else:
-                        time = self.h5man.get_time(ch, start_ch,
-                                                   stop_ch)
-                    allstart = max(allstart, time[0])
-                    allstop = min(allstop, time[-1])
-
-                    plot_time = self.convert_time(time)
-                    shift = self.positions[ch] * self.offset
-                    for irow, row in enumerate(data):
-                        self.ax.plot(plot_time, shift + row,
-                                     COLORS[irow], lw=1)
-                    # print(plot_time[0:10], shift+data[0:10])
-
-                    if ref_ch == 0:
-                        label = ch
-                    else:
-                        label = '{}-{}'.format(ch, ref_ch)
-                    self.ax.text(plot_time[0], shift, label,
-                                 backgroundcolor='w')
-
-        self.ax.set_xlabel('seconds')
-        plot_start, plot_stop = [self.convert_time(t) for t in (allstart, allstop)]
+        plot_start, plot_stop = [self.convert_time(t)
+                                 for t in (allstart, allstop)]
         self.ax.set_xlim((plot_start, plot_stop))
 
         self.allstart = allstart
         self.allstop = allstop
 
-        if self.actionShowBoxes.isChecked():
-            for ich, ch in enumerate(self.checked_channels):
-                if ch in self.event_times:
-                    ioff = self.offset * ich
-                    self.plot_boxes(ch, ioff)
+        # if self.actionShowBoxes.isChecked():
+        #    for ich, ch in enumerate(self.checked_channels):
+        #        if ch in self.event_times:
+        #            ioff = self.offset * ich
+        #            self.plot_boxes(ch, ioff)
 
     def plot_boxes(self, ch, offset):
         """
@@ -351,17 +353,13 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
     def update(self):
         if not self.readlineEdits():
             return
-        if (len(self.checked_channels) == 0) and (self.montage is None):
+        if self.montage is None:
             return
         if self.ax is None:
             self.ax = self.figure.fig.add_subplot(gs[0])
         self.ax.cla()
         self.ax.grid(True)
         self.ax.set_ylabel(u'µV')
-        self.set_traces()
-
-        self.plotit(self.start, self.recs)
-
         if self.actionUse_wall_time.isChecked():
             self.use_date = True
         else:
@@ -373,14 +371,17 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
             self.ax.xaxis.set_major_locator(self.locator)
             self.ax.xaxis.set_major_formatter(self.formatter)
 
-        # if self.ylim is not None:
-        #    if self.ylim == (0, 0):
-        #        ylim = (-200, len(self.checked_channels) * self.offset)
-        #        self.ax.set_ylim(ylim)
-        #    else:
-        #        self.ax.set_ylim(self.ylim)
-        #    self.ax.set_yticks(range(0, ylim[1] + 100, 100))
-        #    self.ax.set_yticklabels([0, 100])
+        self.set_traces()
+        self.plotit(self.start, self.recs)
+
+        if self.ylim is not None:
+            if self.ylim == (0, 0):
+                ylim = (-200, self.n_disp_chs * self.offset)
+                self.ax.set_ylim(ylim)
+            else:
+                self.ax.set_ylim(self.ylim)
+            self.ax.set_yticks(range(0, ylim[1] + 100, 100))
+            self.ax.set_yticklabels([0, 100])
 
         self.figure.draw()
 
@@ -399,10 +400,10 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
 
     def setopts(self):
 
-        ylimlow = int(self.spinBoxYlimLow.value())
-        ylimhigh = int(self.spinBoxYlimHigh.value())
+        # ylimlow = int(self.spinBoxYlimLow.value())
+        # ylimhigh = int(self.spinBoxYlimHigh.value())
 
-        self.ylim = (ylimlow, ylimhigh)
+        # self.ylim = (ylimlow, ylimhigh)
 
         lfpperc = float(self.spinBoxLFPpercent.value())
         self.lfpfactor = lfpperc/100

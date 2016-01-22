@@ -1,3 +1,8 @@
+Jump to
+[Signalviewer](/doc/README_viewer.md)
+[Introduction](#introduction)
+[Installation](#installation)
+
 # Combinato Spike Sorting
 
 ![Screenshot of css-gui](doc/screenshot_css-gui.png "Screenshot")
