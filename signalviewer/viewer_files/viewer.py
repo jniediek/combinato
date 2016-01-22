@@ -276,7 +276,9 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
 
                     plot_time = self.convert_time(time)
                     shift = self.positions[ch] * self.offset
-                    self.ax.plot(plot_time, shift + data, 'darkblue', lw=1)
+                    for irow, row in enumerate(data):
+                        self.ax.plot(plot_time, shift + row,
+                                     COLORS[irow], lw=1)
                     # print(plot_time[0:10], shift+data[0:10])
 
                     if ref_ch == 0:

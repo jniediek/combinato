@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# JN 2016-01-22
 """
 Create a csv file containing downsampling information from all channels
 """
@@ -7,6 +8,19 @@ Create a csv file containing downsampling information from all channels
 from __future__ import print_function, division, absolute_import
 import tables
 import csv
+
+FNAME_OUT = 'h5meta.txt'
+
+
+def to_file(msg, outname):
+    """
+    write h5information to file
+    """
+
+    with open(outname, 'w') as fid:
+        writer = csv.writer(fid, delimiter=';')
+        writer.writerows(msg)
+    fid.close()
 
 
 def make_attrs(h5files):
@@ -30,7 +44,10 @@ def make_attrs(h5files):
     return msgs
 
 
-if __name__ == "__main__":
+def main():
+    """
+    main function
+    """
     from glob import glob
     from argparse import ArgumentParser
     parser = ArgumentParser()
@@ -43,9 +60,8 @@ if __name__ == "__main__":
         fnames = args.fnames
 
     msg = make_attrs(fnames)
-    print(msg)
+    to_file(msg, FNAME_OUT)
 
-    with open('h5meta.txt', 'w') as fid:
-        writer = csv.writer(fid, delimiter=';')
-        writer.writerows(msg)
-    fid.close()
+
+if __name__ == "__main__":
+    main()

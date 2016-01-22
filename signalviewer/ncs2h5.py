@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # JN 2016-01-12
 
@@ -8,8 +7,8 @@ Downsample ncs files and save as h5
 from __future__ import print_function, division, absolute_import
 import os
 import scipy.signal
-from combinato.basics.nlxio import NcsFile
-from .convert_tools import initfile, make_blocks
+from .helper.helper import initfile, make_blocks
+from combinato import NcsFile
 
 DEBUG = True
 

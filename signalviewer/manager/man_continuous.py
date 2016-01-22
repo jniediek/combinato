@@ -4,10 +4,14 @@
 from __future__ import print_function, division, absolute_import
 import os
 import csv
+import glob
 import numpy as np
 import tables
 from .man_spikes import SpikeManager
 from .tools import expandts, debug
+from .. import make_attrs
+
+FNAME_H5META = 'h5meta.txt'
 
 
 class H5Manager(object):
@@ -69,13 +73,13 @@ class H5Manager(object):
             print('Not re-creating')
 
     def init_meta(self):
-        if not os.path.exists('h5meta.txt'):
-            raise(ValueError('H5 Meta file not found'))
-            return
-
-        with open('h5meta.txt', 'r') as fid:
-            reader = csv.reader(fid, delimiter=';')
-            metad = list(reader)
+        if os.path.exists(FNAME_H5META):
+            with open(FNAME_H5META, 'r') as fid:
+                reader = csv.reader(fid, delimiter=';')
+                metad = list(reader)
+        else:
+            cand = glob.glob('*_ds.h5')
+            metad = make_attrs(cand)
 
         effective_ts = {}
 
