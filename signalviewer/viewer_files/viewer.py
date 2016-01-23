@@ -287,6 +287,9 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                 self.ax.text(plot_time[0], shift, label,
                              backgroundcolor='w')
 
+                if self.actionShowBoxes.isChecked():
+                    self.plot_events(ch, start_ch, stop_ch, shift)
+
         if not self.use_date:
             self.ax.set_xlabel('seconds')
 
@@ -297,11 +300,24 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.allstart = allstart
         self.allstop = allstop
 
-        # if self.actionShowBoxes.isChecked():
-        #    for ich, ch in enumerate(self.checked_channels):
-        #        if ch in self.event_times:
-        #            ioff = self.offset * ich
-        #            self.plot_boxes(ch, ioff)
+    def plot_events(self, ch, start_ch, stop_ch, shift):
+        """
+        Add boxes for detected events
+        """
+        for itr, trace in enumerate(self.traces):
+            events = self.h5man.get_events(ch, start_ch, stop_ch,
+                                           trace)
+            for event in events:
+                times = self.h5man.get_time(ch, event[0], event[1])
+                start_ev, stop_ev = [self.convert_time(t)
+                                     for t in (times[0], times[-1])]
+                rec = Rectangle((start_ev, shift - self.offset/2),
+                                stop_ev - start_ev,
+                                self.offset,
+                                edgecolor='none',
+                                alpha=options['alpha'],
+                                facecolor=COLORS[itr])
+                self.ax.add_artist(rec)
 
     def plot_boxes(self, ch, offset):
         """

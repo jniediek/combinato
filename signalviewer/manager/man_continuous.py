@@ -160,26 +160,22 @@ class H5Manager(object):
         print(data.shape)
         return data, adbitvolts
 
-    def get_events(self, ch, start, stop, traces=[]):
+    def get_events(self, ch, start, stop, trace):
         """
         read events in the given window
         """
         obj = self.events[ch]
-        temp = []
-        for trace in traces:
-            try:
-                # this is a bit unefficient because we just need
-                # certain parts, but it's not easy to do better
-                print(trace)
-                temp_d = obj.get_node('/', trace)[:, :]
-            except tables.NoSuchNodeError:
-                pass
 
-            idx = (temp_d[:, 0] >= start) & (temp_d[:, 1] <= stop)
-            if idx.any():
-                temp.append(temp_d[idx, :])
-        data = np.vstack(temp)
-        return data
+        try:
+            # this is a bit unefficient because we just need
+            # certain parts, but it's not easy to do better
+            print(trace)
+            temp_d = obj.get_node('/', trace)[:, :]
+        except tables.NoSuchNodeError:
+            return []
+
+        idx = (temp_d[:, 0] >= start) & (temp_d[:, 1] <= stop)
+        return temp_d[idx, :]
 
     def add_trace(self, ch, trace_name):
         """
