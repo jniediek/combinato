@@ -29,50 +29,55 @@ class H5Manager(object):
         self.fid = {}
         self.spm = None
         self.time_factors = {}
+        self.events = {}
         self.modify = modify
         self.init_meta()
+
         if modify:
             mode = 'r+'
         else:
             mode = 'r'
+
+        # open the requested files
         for fname in files:
             fid = tables.open_file(fname, mode)
             key = fname[:-6]
             if key in self.entnames:
                 entname = self.entnames[key]
                 self.fid[entname] = fid
+
+            # check if events exist
+            event_fname = key + '_events.h5'
+            if os.path.exists(event_fname):
+                debug('Loading ' + event_fname)
+                self.events[entname] = tables.open_file(event_fname, 'r')
+
         self.chs = sorted(self.fid.keys())
         if not len(self.chs):
             raise(ValueError('No channels found'))
 
-    def init_spikes(self, sign, label):
-        self.spm = SpikeManager()
-        for key, entname in self.entnames.items():
-            self.spm.check_add(key, entname)
-
     def __del__(self):
+        """
+        close the h5 files
+        """
         if hasattr(self, 'spm'):
             del self.spm
         if hasattr(self, 'fid'):
             for fid in self.fid.values():
                 fid.close()
 
-    def add_trace(self, ch, trace_name):
+    def init_spikes(self, sign, label):
         """
-        add a trace
+        initialize unsorted or sorted spike data
         """
-        size = self.fid[ch].root.data.rawdata.shape[0]
-        zeros = np.zeros(size, np.int16)
-        if not self.modify:
-            print('Cannot add trace because modify is False')
-            return
-        try:
-            self.fid[ch].create_array('/data', trace_name, zeros)
-        except tables.exceptions.NodeError as error:
-            print(error)
-            print('Not re-creating')
+        self.spm = SpikeManager()
+        for key, entname in self.entnames.items():
+            self.spm.check_add(key, entname)
 
     def init_meta(self):
+        """
+        initialize the meta information for all channels
+        """
         if os.path.exists(FNAME_H5META):
             with open(FNAME_H5META, 'r') as fid:
                 reader = csv.reader(fid, delimiter=';')
@@ -93,16 +98,14 @@ class H5Manager(object):
             self.timesteps[entname] = float(flds[4])/1e3
             effective_ts[entname] = self.qs[entname] * self.timesteps[entname]
 
-        # calculate the relative sampling rates and store the multiplication
-        # factor
+        # calculate the relative sampling rates
         min_effective_ts = min(effective_ts.values())
         for name, ts in effective_ts.items():
             rel = ts/min_effective_ts
             if rel - int(rel) > 1e-6:
                 raise Warning("Relative sampling rates have to be integers")
+            # for each channel, store the multiplication factor
             self.time_factors[name] = int(rel)
-
-        # for each channel, store the multiplication factor
 
         debug((self.entnames, self.bitvolts, self.qs,
               self.timesteps))
@@ -139,6 +142,9 @@ class H5Manager(object):
         return time
 
     def get_data(self, ch, start, stop, traces=[]):
+        """
+        read data
+        """
         adbitvolts = self.bitvolts[ch]
         # make it an array of columns here
         temp = []
@@ -153,6 +159,42 @@ class H5Manager(object):
         data = np.vstack(temp)
         print(data.shape)
         return data, adbitvolts
+
+    def get_events(self, ch, start, stop, traces=[]):
+        """
+        read events in the given window
+        """
+        obj = self.events[ch]
+        temp = []
+        for trace in traces:
+            try:
+                # this is a bit unefficient because we just need
+                # certain parts, but it's not easy to do better
+                print(trace)
+                temp_d = obj.get_node('/', trace)[:, :]
+            except tables.NoSuchNodeError:
+                pass
+
+            idx = (temp_d[:, 0] >= start) & (temp_d[:, 1] <= stop)
+            if idx.any():
+                temp.append(temp_d[idx, :])
+        data = np.vstack(temp)
+        return data
+
+    def add_trace(self, ch, trace_name):
+        """
+        add a trace
+        """
+        size = self.fid[ch].root.data.rawdata.shape[0]
+        zeros = np.zeros(size, np.int16)
+        if not self.modify:
+            print('Cannot add trace because modify is False')
+            return
+        try:
+            self.fid[ch].create_array('/data', trace_name, zeros)
+        except tables.exceptions.NodeError as error:
+            print(error)
+            print('Not re-creating')
 
 
 def test():

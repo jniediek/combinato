@@ -189,7 +189,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
             if a.isChecked():
                 traces.append(s)
         # self.traces = traces
-        self.traces = ['rawdata', 'simple']
+        self.traces = ['rawdata', 'simple', 'logothetis']
 
     def setch(self):
         checked_actions = [a for a in self.menuChannels.children()
