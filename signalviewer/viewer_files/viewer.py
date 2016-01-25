@@ -54,8 +54,8 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.locator = AutoDateLocator()
         self.formatter = FuncFormatter(fmtfunc)
         self.offset = 150
-        self.actionsdir = {self.actionLFP: 'rawdata'}
         self.setup_gui()
+        self.init_traces()
         t1 = time()
         self.init_h5man()
         dt = time() - t1
@@ -64,9 +64,32 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         # self.use_date = self.sleepstg.use_date
         self.setopts()
         self.labelFolder.setText(os.path.split(os.getcwd())[1])
-        self.init_events('')
         self.init_montages()
         self.init_realtime()
+
+    def init_traces(self):
+        """
+        Read trace names from file
+        Each trace has a display scale factor,
+        which we store in the dictionary self.all_traces
+        """
+        fname_trace = 'traces.txt'
+        if os.path.exists(fname_trace):
+            self.all_traces = dict()
+            with open(fname_trace, 'r') as fid:
+                lines = [line.strip() for line in fid.readlines()]
+
+            for line in lines:
+                fields = line.split(' ')
+                self.all_traces[fields[0]] = int(fields[1])
+        else:
+            self.all_traces = {'rawdata': 1}
+        debug(self.all_traces)
+        for trace in sorted(self.all_traces.keys()):
+            action = self.menuTraces.addAction(trace)
+            action.setCheckable(True)
+            if trace == 'rawdata':
+                action.setChecked(True)
 
     def setup_gui(self):
         self.verticalLayout.addWidget(self.figure)
@@ -83,17 +106,6 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.sstglabel = qtgui.QLabel(self)
         self.statusBar().addWidget(self.sstglabel)
 
-    def init_events(self, pattern):
-        """
-        read events from a text or h5 file
-        can be plotted as boxes
-        """
-        self.event_times = {}
-        for name in self.h5man.chs:
-            fname = name + pattern + '.txt'
-            if os.path.exists(fname):
-                self.event_times[name] = np.loadtxt(fname)
-
     def init_h5man(self):
         cands = glob('*_ds.h5')
         self.h5man = H5Manager(cands)
@@ -104,8 +116,6 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
             action.triggered.connect(self.setch)
 
         debug('Available channels: {}'.format(self.h5man.chs))
-        for a in self.actionsdir:
-            a.triggered.connect(self.set_traces)
 
     def init_realtime(self):
         """
@@ -184,12 +194,12 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.n_disp_chs = len(lines)
 
     def set_traces(self):
-        traces = []
-        for a, s in self.actionsdir.items():
-            if a.isChecked():
-                traces.append(s)
-        # self.traces = traces
-        self.traces = ['rawdata', 'simple', 'logothetis']
+        """
+        simply list the names of the checked traces
+        """
+        self.checked_traces = [str(act.text())
+                               for act in self.menuTraces.children()
+                               if act.isChecked()]
 
     def setch(self):
         checked_actions = [a for a in self.menuChannels.children()
@@ -247,7 +257,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                 ref_d, adbitvolts = self.h5man.get_data(ref_ch,
                                                         start_ch_ref,
                                                         stop_ch_ref,
-                                                        self.traces)
+                                                        self.checked_traces)
                 ref_data = ref_d * adbitvolts
                 time = self.h5man.get_time(ref_ch, start_ch_ref,
                                            stop_ch_ref)
@@ -262,7 +272,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                     assert start_ch == start_ch_ref
                     assert stop_ch == stop_ch_ref
                 d, adbitvolts = self.h5man.get_data(ch, start_ch, stop_ch,
-                                                    self.traces)
+                                                    self.checked_traces)
 
                 data = ((d * adbitvolts) - ref_data) * self.lfpfactor
 
@@ -276,7 +286,11 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
 
                 plot_time = self.convert_time(time)
                 shift = self.positions[ch] * self.offset
-                for irow, row in enumerate(data):
+
+                for irow, (row, name) in enumerate(
+                        zip(data, self.checked_traces)):
+                    # multiply each trace by its factor
+                    row *= self.all_traces[name]
                     self.ax.plot(plot_time, shift + row,
                                  COLORS[irow], lw=1)
 
@@ -304,7 +318,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         """
         Add boxes for detected events
         """
-        for itr, trace in enumerate(self.traces):
+        for itr, trace in enumerate(self.checked_traces):
             events = self.h5man.get_events(ch, start_ch, stop_ch,
                                            trace)
             for event in events:
@@ -318,25 +332,6 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                                 alpha=options['alpha'],
                                 facecolor=COLORS[itr])
                 self.ax.add_artist(rec)
-
-    def plot_boxes(self, ch, offset):
-        """
-        If there are events, plot them
-        """
-        events = self.event_times[ch]
-        idx = (events[:, 0] >= self.allstart) & (events[:, 1] <= self.allstop)
-        print(idx.sum())
-
-        for row in events[idx, :]:
-            start = self.convert_time(row[0])
-            stop = self.convert_time(row[1])
-            rec = Rectangle((start, offset - self.offset/2),
-                            stop - start,
-                            self.offset,
-                            edgecolor='none',
-                            alpha=options['alpha'],
-                            facecolor='y')
-            self.ax.add_artist(rec)
 
     def plot_spikes(self, ch, offset):
         self.h5man.spm.set_beg_end(ch,
@@ -415,11 +410,6 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.update()
 
     def setopts(self):
-
-        # ylimlow = int(self.spinBoxYlimLow.value())
-        # ylimhigh = int(self.spinBoxYlimHigh.value())
-
-        # self.ylim = (ylimlow, ylimhigh)
 
         lfpperc = float(self.spinBoxLFPpercent.value())
         self.lfpfactor = lfpperc/100

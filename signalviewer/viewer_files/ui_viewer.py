@@ -136,7 +136,6 @@ class Ui_MainWindow(object):
         self.actionUse_wall_time = QtGui.QAction(MainWindow)
         self.actionUse_wall_time.setCheckable(True)
         self.actionUse_wall_time.setObjectName(_fromUtf8("actionUse_wall_time"))
-        self.menuTraces.addAction(self.actionLFP)
         self.menuOptions.addAction(self.actionShowBoxes)
         self.menuOptions.addAction(self.actionShow_spikes)
         self.menuOptions.addAction(self.actionUse_wall_time)

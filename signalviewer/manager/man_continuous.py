@@ -164,7 +164,10 @@ class H5Manager(object):
         """
         read events in the given window
         """
-        obj = self.events[ch]
+        if ch in self.events:
+            obj = self.events[ch]
+        else:
+            return []
 
         try:
             # this is a bit unefficient because we just need

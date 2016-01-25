@@ -192,7 +192,6 @@
     <property name="title">
      <string>Traces</string>
     </property>
-    <addaction name="actionLFP"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
