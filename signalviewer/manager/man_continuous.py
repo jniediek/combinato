@@ -31,6 +31,7 @@ class H5Manager(object):
         self.time_factors = {}
         self.events = {}
         self.modify = modify
+        self.folder = os.path.dirname(files[0])
         self.init_meta()
 
         if modify:
@@ -41,14 +42,14 @@ class H5Manager(object):
         # open the requested files
         for fname in files:
             fid = tables.open_file(fname, mode)
-            key = fname[:-6]
+            key = os.path.basename(fname)[:-6]
             if key in self.entnames:
                 entname = self.entnames[key]
                 self.fid[entname] = fid
 
             # check if events exist
             if load_events:
-                event_fname = key + '_events.h5'
+                event_fname = os.path.join(self.folder, key + '_events.h5')
                 if os.path.exists(event_fname):
                     debug('Loading ' + event_fname)
                     self.events[entname] = tables.open_file(event_fname, 'r')
@@ -79,14 +80,13 @@ class H5Manager(object):
         """
         initialize the meta information for all channels
         """
-        if os.path.exists(FNAME_H5META):
+        if os.path.exists(os.path.join(self.folder, FNAME_H5META)):
             with open(FNAME_H5META, 'r') as fid:
                 reader = csv.reader(fid, delimiter=';')
                 metad = list(reader)
         else:
-            cand = glob.glob('*_ds.h5')
+            cand = glob.glob(os.path.join(self.folder, '*_ds.h5'))
             metad = make_attrs(cand)
-
         effective_ts = {}
 
         for flds in metad:
@@ -116,12 +116,11 @@ class H5Manager(object):
         """
         helper function for time stamp conversion
         """
-        start *= q
-        stop *= q
-        tstart = start/512
-        tstop = stop/512 + 1
+        tstart = int(start*q/512)
+        tstop = int(stop*q/512) + 1
+        shift = int((start*q % 512)/q)
 
-        return tstart, tstop
+        return tstart, tstop, shift
 
     def translate(self, ch, sample):
         """
@@ -133,11 +132,13 @@ class H5Manager(object):
     def get_time(self, ch, start, stop):
         q = self.qs[ch]
         ts = self.timesteps[ch]
-        tstart, tstop = self._mod_times(q, start, stop)
+        tstart, tstop, shift = self._mod_times(q, start, stop)
         obj = self.fid[ch]
-        timeraw = obj.root.time[tstart:tstop]
-        tar = np.array(timeraw, 'float64') / 1000
-        time = expandts(tar, ts, q)[:stop-start]
+        timeraw = obj.root.time[tstart:tstop+512/q]
+        tar = np.array(timeraw, 'float64')/1000
+        # time needs to be shifted
+        time = expandts(tar, ts, q)[shift:stop-start+shift]
+        print(time.shape)
         assert(time.shape[0] == (stop - start))
 
         return time
@@ -173,7 +174,6 @@ class H5Manager(object):
         try:
             # this is a bit unefficient because we just need
             # certain parts, but it's not easy to do better
-            print(trace)
             temp_d = obj.get_node('/', trace)[:, :]
         except tables.NoSuchNodeError:
             return []
@@ -216,14 +216,14 @@ def test():
     start_ch = h5man.translate(ch, start)
     stop_ch = start_ch + h5man.translate(ch, nblocks)
     ref, adbitvolts = h5man.get_data(ch, start_ch, stop_ch,
-                                     ['rawdata', 'filtered'])
+                                     ['rawdata'])
 
     for i, ch in enumerate(chs):
         print(ch)
         start_ch = h5man.translate(ch, start)
         stop_ch = start_ch + h5man.translate(ch, nblocks)
         d, adbitvolts = h5man.get_data(ch, start_ch, stop_ch,
-                                       ['rawdata', 'filtered'])
+                                       ['rawdata'])
         time = h5man.get_time(ch, start_ch, stop_ch)
         print('Plotting {} seconds of data'.format((time[-1] - time[0])/1e3))
         mpl.plot(time, (d - ref) * adbitvolts + 100*i, 'darkblue')

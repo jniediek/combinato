@@ -6,6 +6,7 @@ Create a csv file containing downsampling information from all channels
 """
 
 from __future__ import print_function, division, absolute_import
+import os
 import tables
 import csv
 
@@ -32,7 +33,8 @@ def make_attrs(h5files):
     for fname in h5files:
         fid = tables.open_file(fname, 'r')
         attrs = fid.root.data.rawdata.attrs
-        msg = [fname[:-6],
+        shortname = os.path.basename(fname)[:-6]
+        msg = [shortname,
                attrs.AcqEntName.decode('utf-8'),
                attrs.ADBitVolts * 1e6,
                attrs.Q,
