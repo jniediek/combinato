@@ -5,7 +5,7 @@ Jump to
 [Main executables](#main-executables)
 [Workflow](#workflow)
 [Sample](#sample-workflow-with-new-files-after-each-step)
-[Post-sorting artifact rejection](/doc/Readme_post_sorting_artifacts.md)
+[Post-sorting artifact rejection](/doc/README_post_sorting_artifacts.md)
 # Combinato Spike Sorting
 
 ![Screenshot of css-gui](doc/screenshot_css-gui.png "Screenshot")
