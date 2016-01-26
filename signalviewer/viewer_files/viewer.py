@@ -321,7 +321,10 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         for itr, trace in enumerate(self.checked_traces):
             events = self.h5man.get_events(ch, start_ch, stop_ch,
                                            trace)
-            for event in events:
+            print('Plotting {} events'.format(len(events)))
+            for iev, event in enumerate(events):
+                if event[0] == event[1]:
+                    continue
                 times = self.h5man.get_time(ch, event[0], event[1])
                 start_ev, stop_ev = [self.convert_time(t)
                                      for t in (times[0], times[-1])]

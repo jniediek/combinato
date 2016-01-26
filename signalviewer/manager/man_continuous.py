@@ -18,7 +18,7 @@ class H5Manager(object):
     """
     Backend for h5 files containing continuously sampled data
     """
-    def __init__(self, files, modify=False):
+    def __init__(self, files, modify=False, load_events=True):
         """
         Initialize with given files
         """
@@ -47,10 +47,11 @@ class H5Manager(object):
                 self.fid[entname] = fid
 
             # check if events exist
-            event_fname = key + '_events.h5'
-            if os.path.exists(event_fname):
-                debug('Loading ' + event_fname)
-                self.events[entname] = tables.open_file(event_fname, 'r')
+            if load_events:
+                event_fname = key + '_events.h5'
+                if os.path.exists(event_fname):
+                    debug('Loading ' + event_fname)
+                    self.events[entname] = tables.open_file(event_fname, 'r')
 
         self.chs = sorted(self.fid.keys())
         if not len(self.chs):
