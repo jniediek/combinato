@@ -116,9 +116,13 @@ class H5Manager(object):
         """
         helper function for time stamp conversion
         """
-        tstart = int(start*q/512)
-        tstop = int(stop*q/512) + 1
-        shift = int((start*q % 512)/q)
+        start *= q
+        stop *= q
+        tstart = int(start/512)
+        tstop = int(stop/512) + 1
+        shift = int((start % 512)/q)
+        if tstart > tstop:
+            raise Warning('Time stamp conversion failure!')
 
         return tstart, tstop, shift
 
