@@ -142,7 +142,6 @@ class H5Manager(object):
         tar = np.array(timeraw, 'float64')/1000
         # time needs to be shifted
         time = expandts(tar, ts, q)[shift:stop-start+shift]
-        print(time.shape)
         assert(time.shape[0] == (stop - start))
 
         return time
@@ -163,7 +162,6 @@ class H5Manager(object):
             except tables.NoSuchNodeError as error:
                 debug(error)
         data = np.vstack(temp)
-        print(data.shape)
         return data, adbitvolts
 
     def get_events(self, ch, start, stop, trace):
