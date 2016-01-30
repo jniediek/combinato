@@ -8,10 +8,10 @@ from glob import glob
 from time import time
 from collections import defaultdict
 import datetime
+import numpy as np
 
 import PyQt4.QtGui as qtgui
 
-import numpy as np
 from matplotlib.gridspec import GridSpec
 from matplotlib.dates import AutoDateLocator, num2date, date2num
 from matplotlib.ticker import FuncFormatter
@@ -29,6 +29,10 @@ COLORS = ['darkblue', 'red', 'magenta', 'black', 'green']
 gs = GridSpec(1, 1, top=.95, bottom=.05, left=.05, right=.95)
 DEBUG = True
 
+sleepdtype = np.dtype([('starttime', float),
+                       ('stoptime', float),
+                       ('stage', 'S1')])
+
 
 def fmtfunc(x, pos=None):
     d = num2date(x)
@@ -45,7 +49,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.ax = None
         self.ylim = (0, 0)
         self.lfpfactor = 1
-
+        self.sleepstages = []
         self.ts_start_nlx = None
         self.ts_start_mpl = None
         self.use_date = False
@@ -95,16 +99,30 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.verticalLayout.addWidget(self.figure)
         self.addAction(self.actionBack)
         self.addAction(self.actionAdvance)
+        self.addAction(self.actionSampUp)
+        self.addAction(self.actionSampDown)
         self.pushButtonGo.clicked.connect(self.update)
         self.pushButtonAdvance.clicked.connect(self.advance)
         self.pushButtonBack.clicked.connect(self.back)
         self.pushButtonSet.clicked.connect(self.setopts)
         self.pushButtonSpikes.clicked.connect(self.open_spike_dialog)
         self.pushButtonSave.clicked.connect(self.save_image)
+        self.pushButtonSampUp.clicked.connect(self.samp_up)
+        self.pushButtonSampDown.clicked.connect(self.samp_down)
         self.actionBack.triggered.connect(self.back)
         self.actionAdvance.triggered.connect(self.advance)
+        self.actionSampUp.triggered.connect(self.samp_up)
+        self.actionSampDown.triggered.connect(self.samp_down)
         self.sstglabel = qtgui.QLabel(self)
         self.statusBar().addWidget(self.sstglabel)
+        pairs = ((self.action_W, self.set_w),
+                 (self.action_N1, self.set_n1),
+                 (self.action_N2, self.set_n2),
+                 (self.action_N3, self.set_n3),
+                 (self.action_R, self.set_r),
+                 (self.action_Save_to_file, self.save_sleepstages))
+        for action, func in pairs:
+            action.triggered.connect(func)
 
     def init_h5man(self):
         cands = glob('*_ds.h5')
@@ -224,10 +242,13 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                     'Save Image', '~', 'Images (*.jpg, *.pdf, *.png)'))
         self.figure.fig.savefig(fname, dpi=150)
 
-    def convert_time(self, time):
+    def convert_time(self, time, internal=False):
         """
         this will be used to convert to real times etc
         """
+        if internal:
+            return time
+
         if self.use_date:
             time = (time - self.ts_start_nlx)/(1000*24*60*60)
             time += self.ts_start_mpl
@@ -422,6 +443,42 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
     def open_spike_dialog(self):
         dialog = SpikeView(self)
         dialog.show()
+
+    def samp_up(self):
+        self.lineEditRecords.setText(str(self.recs * 2))
+        self.update()
+
+    def samp_down(self):
+        self.lineEditRecords.setText(str(int(self.recs / 2)))
+        self.update()
+
+    def set_w(self):
+        self.set_sleepstage('W')
+
+    def set_n1(self):
+        self.set_sleepstage('1')
+
+    def set_n2(self):
+        self.set_sleepstage('2')
+
+    def set_n3(self):
+        self.set_sleepstage('3')
+
+    def set_r(self):
+        self.set_sleepstage('R')
+
+    def set_sleepstage(self, which):
+        start, stop = [self.convert_time(time, internal=True)
+                       for time in self.allstart, self.allstop]
+        self.sleepstages.append((start, stop, which))
+        self.advance()
+
+    def save_sleepstages(self):
+        """
+        save sleepstages to file
+        """
+        data = np.array(self.sleepstages, sleepdtype)
+        np.save('sleepstages.npy', data)
 
 
 def main():
