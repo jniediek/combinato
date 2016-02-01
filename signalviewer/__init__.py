@@ -8,3 +8,4 @@ from .manager.tools import debug
 from .manager.man_continuous import H5Manager
 from .helper.helper import make_blocks
 from .options import options
+from .viewer_files.viewer import sleepdtype

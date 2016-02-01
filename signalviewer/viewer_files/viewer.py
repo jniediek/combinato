@@ -64,12 +64,15 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.init_h5man()
         dt = time() - t1
         debug('Init h5 took {:.1f} s'.format(dt))
-        # self.sleepstg = SleepStg()
-        # self.use_date = self.sleepstg.use_date
         self.setopts()
         self.labelFolder.setText(os.path.split(os.getcwd())[1])
         self.init_montages()
         self.init_realtime()
+        self.display_sleep = None
+        if os.path.exists('sleepstages_clean.npy'):
+            self.display_sleep = np.load('sleepstages_clean.npy')
+        elif os.path.exists('sleepstages.npy'):
+            self.display_sleep = np.load('sleepstages.npy')
 
     def init_traces(self):
         """
@@ -357,33 +360,33 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                                 facecolor=COLORS[itr])
                 self.ax.add_artist(rec)
 
-    def plot_spikes(self, ch, offset):
-        self.h5man.spm.set_beg_end(ch,
-                                   self.current_start_time,
-                                   self.current_stop_time)
-        ptimes = []
-        if ch in self.h5man.spm.sortedfiles:
-            print('getting sorted data!')
-            clu = self.h5man.spm.get_sorted_data(ch, self.current_start_time,
-                                                 self.current_stop_time)
-
-            for c, cl in clu.items():
-                print(c, cl['times'].shape[0])
-                if len(cl['times']):
-                    ptimes.append(self.sleepstg.convert_time(cl['times']/1000))
-                    print (self.current_start_time,
-                           self.current_stop_time, cl['times'][0])
-
-        else:
-            sptimes = self.h5man.spm.get_sp_data(ch)
-            ptimes.append(self.sleepstg.convert_time(sptimes/1000))
-
-        color = 'brgymkkkkkkkkkkkkkk'
-        for i, cluster in enumerate(ptimes):
-            print(num2date(ptimes[0]))
-            y = offset * np.ones(len(cluster), 'int8')
-            self.ax.plot(cluster, y, color[i] + '|',
-                         ms=options['ms'], mew=options['mew'])
+#    def plot_spikes(self, ch, offset):
+#        self.h5man.spm.set_beg_end(ch,
+#                                   self.current_start_time,
+#                                   self.current_stop_time)
+#        ptimes = []
+#        if ch in self.h5man.spm.sortedfiles:
+#            print('getting sorted data!')
+#            clu = self.h5man.spm.get_sorted_data(ch, self.current_start_time,
+#                                                 self.current_stop_time)
+#
+#            for c, cl in clu.items():
+#                print(c, cl['times'].shape[0])
+#                if len(cl['times']):
+#                    ptimes.append(self.sleepstg.convert_time(cl['times']/1000))
+#                    print (self.current_start_time,
+#                           self.current_stop_time, cl['times'][0])
+#
+#        else:
+#            sptimes = self.h5man.spm.get_sp_data(ch)
+#            ptimes.append(self.sleepstg.convert_time(sptimes/1000))
+#
+#        color = 'brgymkkkkkkkkkkkkkk'
+#        for i, cluster in enumerate(ptimes):
+#            print(num2date(ptimes[0]))
+#            y = offset * np.ones(len(cluster), 'int8')
+#            self.ax.plot(cluster, y, color[i] + '|',
+#                         ms=options['ms'], mew=options['mew'])
 
     def update(self):
         if not self.readlineEdits():
@@ -401,8 +404,6 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
             self.use_date = False
 
         if self.use_date:
-            # sstgnow = self.sleepstg.get_sleepstage(ctime[0], ctime[-1])
-            # self.sstglabel.setText(sstgnow)
             self.ax.xaxis.set_major_locator(self.locator)
             self.ax.xaxis.set_major_formatter(self.formatter)
 
@@ -412,11 +413,28 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         if self.ylim is not None:
             if self.ylim == (0, 0):
                 ylim = (-200, self.n_disp_chs * self.offset)
-                self.ax.set_ylim(ylim)
             else:
-                self.ax.set_ylim(self.ylim)
+                ylim = self.ylim
+            self.ax.set_ylim(ylim)
             self.ax.set_yticks(range(0, ylim[1] + 100, 100))
             self.ax.set_yticklabels([0, 100])
+
+        if self.display_sleep is not None:
+            start, stop = [self.convert_time(time, internal=True)
+                           for time in self.allstart, self.allstop]
+            rel_idx = (self.display_sleep['stoptime'] >= start) &\
+                      (self.display_sleep['starttime'] <= stop)
+            for row in self.display_sleep[rel_idx]:
+                print(row)
+                rowstart = max(start, row[0])
+                rowstop = min(stop, row[1])
+                recstart, recstop = [self.convert_time(t)
+                                     for t in (rowstart, rowstop)]
+                rec = Rectangle((recstart, ylim[0]), recstop - recstart,
+                                self.offset/2, facecolor='r', alpha=.5)
+                self.ax.text(recstart, ylim[0]+self.offset/2, row[2],
+                             fontsize=14, va='top', ha='left')
+                self.ax.add_patch(rec)
 
         self.figure.draw()
 
