@@ -16,13 +16,14 @@ from glob import glob
 from collections import namedtuple
 
 import numpy as np
-import tables # this should be the only place all around that imports tables
+# pylint: disable=E1101
+import tables  # this should be the only place all around that imports tables
 
 from .. import TYPE_ART, SPIKE_MATCHED_2, TYPE_NAMES
 
 SIGNS = ('pos', 'neg')
 DEBUG = False
-NO_EXIST_CHECK = True # check whether image files exist on disk
+NO_EXIST_CHECK = True  # check whether image files exist on disk
 EMPTY = np.array([])
 
 H5Data = namedtuple('H5Data', ['spikes', 'times', 'artifacts'])
@@ -49,6 +50,9 @@ class DataManager(object):
         initializes h5data
         """
         def print_no_spikes(sign):
+            """
+            helper
+            """
             print('No {} spikes'.format(sign))
 
         if cache is None:
@@ -89,7 +93,6 @@ class DataManager(object):
 
             self._h5data[sign] = H5Data(spikes, times, artifacts)
 
-
     def get_h5data(self, sign='pos'):
         """
         returns pointers to h5data
@@ -100,8 +103,9 @@ class DataManager(object):
         """
         read out actual data
         """
-        if index == 'all':
-            index = slice(None, None)
+        if isinstance(index, str):
+            if index == 'all':
+                index = slice(None, None)
 
         if name == 'spikes':
             return self._h5data[sign].spikes[index, :]
@@ -129,7 +133,6 @@ class DataManager(object):
             num = idx.shape[0]
 
         return idx, num
-
 
     def __del__(self):
         self._h5file.close()
@@ -213,7 +216,6 @@ class SessionManager(object):
         self._update_node('classes', classes, np.uint16)
         self.classes = classes
 
-
     def _update_node(self, name, data, dtype):
         """
         updates a given node
@@ -225,7 +227,6 @@ class SessionManager(object):
             print('Creating ' + name)
 
         self.h5file.create_array('/', name, data.astype(dtype))
-
 
     def update_sorting_data(self, matches, artifact_scores):
         """
@@ -242,7 +243,6 @@ class SessionManager(object):
         self.artifact_scores = artifact_scores
 
         self.is_sorted = True
-
 
     def get_class_index_by_classes(self, class_ids):
         """
@@ -264,15 +264,14 @@ class SessionManager(object):
 
         # update our matches so that local template matches
         # don't appear anymore as non-matched
-        match_type_changed_idx = np.in1d(self.index, matches) 
+        match_type_changed_idx = np.in1d(self.index, matches)
         if self.matches is not None:
             self.matches[match_type_changed_idx] = SPIKE_MATCHED_2
             self._update_node('matches', self.matches, np.uint8)
 
-
     def get_global_matches_by_class(self, clid, start, stop):
         """
-        Returns index of globally matched spikes between 
+        Returns index of globally matched spikes between
         start and stop
         """
         if self.global_matches is None:
@@ -308,16 +307,17 @@ class SessionManager(object):
             return spk_idx, matches
 
         else:
-            global_idx = self.get_global_matches_by_class(class_id,\
-            start, stop)
+            global_idx = self.get_global_matches_by_class(class_id,
+                                                          start, stop)
 
             if not global_idx.shape[0]:
-                return spk_idx, matches 
+                return spk_idx, matches
 
             spk_idx = np.append(spk_idx, global_idx[:, 0])
             sort_idx = np.argsort(spk_idx)
 
-            all_matches = np.zeros(matches.shape[0] + global_idx.shape[0], np.uint8) 
+            all_matches = np.zeros(matches.shape[0] + global_idx.shape[0],
+                                   np.uint8)
             all_matches[:matches.shape[0]] = matches
             all_matches[matches.shape[0]:] = 2
             spk_idx = spk_idx[sort_idx]
@@ -408,12 +408,12 @@ class SortingManager(object):
 
         if DEBUG:
             for sign in SIGNS:
-                print('{} session folders: {}'.\
-                    format(sign, self.session_folders[sign]))
-                print('{} session groups: {}'.\
-                        format(sign, self.session_groups[sign]))
-                print('{} group types: {}'.\
-                        format(sign, self.group_types[sign]))
+                print('{} session folders: {}'.
+                      format(sign, self.session_folders[sign]))
+                print('{} session groups: {}'.
+                      format(sign, self.session_groups[sign]))
+                print('{} group types: {}'.
+                      format(sign, self.group_types[sign]))
 
     def get_group_ids(self, sign='pos'):
         """
@@ -431,7 +431,6 @@ class SortingManager(object):
         idx = self.group_types[sign][:, 0] == gid
         return self.group_types[sign][idx, 1][0]
 
-
     def get_groups_from_sessions(self, session_names, sign='pos'):
         """
         return a dictionary of all group ids with
@@ -443,7 +442,7 @@ class SortingManager(object):
                 ses = self.groups_h5f.get_node('/' + sign + '/' + ses_name)[:]
                 idx = ses[:, 1] == gid
                 if idx.any():
-                    if not gid in ret:
+                    if gid not in ret:
                         ret[gid] = []
 
                     ret[gid].append((ses_name, ses[idx, 0]))
@@ -462,7 +461,6 @@ class SortingManager(object):
 
 #        self.groups_h5f.flush()
 
-
     def set_types(self, types, sign='pos'):
         """
         set group types
@@ -472,7 +470,6 @@ class SortingManager(object):
         self.groups_h5f.create_array('/', name, types)
         self.group_types[sign] = types
         self.groups_h5f.flush()
-
 
     def create_groups(self):
         """
@@ -501,13 +498,11 @@ class SortingManager(object):
 
         return idx, fname
 
-
     def get_data_by_name_and_index(self, name, index, sign='pos'):
         """
         given an index, returns data
         """
         return self.datamanager.get_data_by_name_and_index(name, index, sign)
-
 
     def get_h5data(self, sign='pos'):
         """
@@ -515,13 +510,11 @@ class SortingManager(object):
         """
         return self.datamanager.get_h5data(sign)
 
-
     def get_samples_per_spike(self, sign):
         """
         return number of sampling points
         """
         return self.get_h5data(sign).spikes.shape[1]
-
 
     def clusters_from_sessions(self, sessions, sign='pos',
                                skip_artifacts=True, stack=True):
@@ -559,7 +552,6 @@ class SortingManager(object):
                 ret[gid]['index'] = np.hstack(index)
             else:
                 ret[gid]['index'] = index
-
 
         return ret, all_min, all_max
 
