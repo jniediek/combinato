@@ -4,6 +4,7 @@
 
 
 from __future__ import division, absolute_import, print_function
+import datetime
 import tables
 
 
@@ -42,6 +43,31 @@ def initfile(h5name, ncsf, q_down):
     h5f.create_earray('/', 'time', tables.UInt64Atom(), [0])
 
     return h5f
+
+
+def parse_datetime(fname):
+    """
+    read datetime file
+    returns ts_start_nlx: start time in milliseconds
+    ts_start_mpl: start time as datetime object
+    """
+    with open(fname, 'r') as fid:
+            lines = [line.strip() for line in fid.readlines()]
+
+    for line in lines:
+        if line[0] == '#':
+            continue
+        fields = line.split()
+        if fields[0] == 'start_recording':
+            dtime, micro = fields[2].split('.')
+            dstr = fields[1] + ' ' + dtime
+            dfmt = '%Y-%m-%d %H:%M:%S'
+            start_date = datetime.datetime.strptime(dstr, dfmt)
+            start_date += datetime.timedelta(microseconds=int(micro))
+            break
+
+    ts_start_nlx = float(fields[3])/1000
+    return ts_start_nlx, start_date
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ import os
 from glob import glob
 from time import time
 from collections import defaultdict
-import datetime
+# import datetime
 import numpy as np
 
 import PyQt4.QtGui as qtgui
@@ -20,7 +20,7 @@ from matplotlib.patches import Rectangle
 from .ui_viewer import Ui_MainWindow
 
 from .sWidgets import MplCanvas
-from .. import H5Manager, debug, options, DATE_FNAME
+from .. import H5Manager, debug, options, DATE_FNAME, parse_datetime
 from .spikes import SpikeView
 
 stylesheet = 'QListView:focus { background-color: rgb(240, 255, 255)}'
@@ -145,23 +145,13 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         if not os.path.exists(DATE_FNAME):
             return
 
-        with open(DATE_FNAME, 'r') as fid:
-            lines = [line.strip() for line in fid.readlines()]
+        else:
+            ts_start_nlx, ts_start_obj = parse_datetime(DATE_FNAME)
 
-        for line in lines:
-            if line[0] == '#':
-                continue
-            fields = line.split()
-            if fields[0] == 'start_recording':
-                dtime, micro = fields[2].split('.')
-                dstr = fields[1] + ' ' + dtime
-                dfmt = '%Y-%m-%d %H:%M:%S'
-                start_date = datetime.datetime.strptime(dstr, dfmt)
-                start_date += datetime.timedelta(microseconds=int(micro))
-                break
+        ts_start_mpl = date2num(ts_start_obj)
 
-        self.ts_start_nlx = float(fields[3])/1000
-        self.ts_start_mpl = date2num(start_date)
+        self.ts_start_nlx = ts_start_nlx
+        self.ts_start_mpl = ts_start_mpl
         if DEBUG:
             print(self.ts_start_nlx, self.ts_start_mpl)
 

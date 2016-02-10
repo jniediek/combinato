@@ -134,6 +134,10 @@ class H5Manager(object):
         return int(sample/factor)
 
     def get_time(self, ch, start, stop):
+        """
+        return times, by upscaling according to each channel's
+        individual q factor
+        """
         q = self.qs[ch]
         ts = self.timesteps[ch]
         tstart, tstop, shift = self._mod_times(q, start, stop)
