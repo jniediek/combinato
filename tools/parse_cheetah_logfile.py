@@ -3,7 +3,7 @@
 
 """
 Log file parser for Cheetah
-At the moment, this script reads out the reference settings
+This script reads out the reference settings
 by sequentially following all crs, rbs, and gbd commands
 """
 
@@ -64,7 +64,7 @@ class Setting(object):
         self.stop_timestamp = None
         self.folder = None
 
-DEBUG = False
+DEBUG = False 
 # The following are the interesting commands
 # You can still trick the parser, e.g. by sending -SetChannelNumber commands
 # via NetCom.
@@ -73,7 +73,7 @@ DEBUG = False
 set_drs_strings = ('Processing line: -SetDRS',  # old systems
                    'Processing line: -SetAcqEntReference')  # new systems
 
-set_channel_string = 'Processing line: -SetChannelNumber'
+set_channel_pattern = re.compile(r'Processing line:\s*-SetChannelNumber')
 
 channel_number_pattern = re.compile(r'.*\"(.*)\" (\d.*)')
 channel_number_pattern_var = re.compile(r'.* (.*) (.*)')
@@ -156,6 +156,7 @@ def all_defined_check(chnum2name, crefs):
     """
     check if a reference has been defined for all existing channels
     """
+    print(chnum2name)
     for chnum in chnum2name:
         board, lnum = chan_to_board_num(chnum)
         try:
@@ -293,10 +294,19 @@ def analyze_drs(protocol):
             # assigning a variable
             var, val = variable_pattern.match(msg2).groups()
             variables[var] = val
-        if msg2.startswith(set_channel_string):
+
+        elif '%currentADChannel += 1' in msg2:
+            # this is a hack, but it seems to work well
+            print('Applying hack for += 1 syntax, check results!')
+            var, val = msg2.split('+=')
+            variables['%currentADChannel'] = str(int(variables['%currentADChannel']) + 1)
+
+        if set_channel_pattern.match(msg2):
             # log channel numbers
             if '%' in msg2:
                 var, ch_num = channel_number_pattern_var.match(msg2).groups()
+                var = var.strip()
+                ch_num = ch_num.strip()
                 try:
                     ch_name = variables[var]
                 except KeyError:
@@ -408,7 +418,11 @@ def create_rep(num2name, name2num, crefs, lrefs, grefs):
                                format(ref_board, ref_num - 32)
         else:
             global_num = board_num_to_chan(ref_board, ref_num)
-            ref_name = num2name[global_num][0]
+            chlist = num2name[global_num]
+            if len(chlist):
+                ref_name = chlist[0]
+            else:
+                ref_name = 'UNDEF'
 
         if name == ref_name:
             board_str += ' ZERO'
@@ -431,7 +445,6 @@ def check_logfile(fname, write_csv=False, nback=0, write_datetime=False):
         else:
             msg = setting.folder
 
-        print(msg)
         print('Start: {} ({})'.format(setting.start_rec[1],
                                       setting.start_timestamp))
         print('Stop: {} ({})'.format(setting.stop_rec[1],
