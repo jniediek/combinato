@@ -83,7 +83,6 @@ def overview_plot(channel):
         plots.append(fig.add_subplot(GRID[0]))
         figs.append(fig)
 
-
     for sescount in range(n_sessions):
 
         start = sessionstarts[sescount]
@@ -91,7 +90,7 @@ def overview_plot(channel):
         if stop >= fid.num_recs:
             start = fid.num_recs - n_recs_load - 1
             stop = fid.num_recs - 1
-        data = fid.read(start, stop, 'data')
+        data = fid.read(start, stop, 'data').astype(np.float32)
         data *= voltfactor
 
         for i in range(3):
