@@ -176,12 +176,8 @@ class SortingManagerGrouped(object):
         name = None
 
         for folder in cand_folders:
-            cand_name = os.path.join(folder, ext + '.ncs')
-            if os.path.exists(cand_name):
-                name = cand_name
-                break
-            else:
-                cand_name = os.path.join(folder, ext + '.Ncs')
+            for suffix in ('.ncs', '.Ncs'):
+                cand_name = os.path.join(folder, ext + suffix)
                 if os.path.exists(cand_name):
                     name = cand_name
                     break
@@ -190,10 +186,20 @@ class SortingManagerGrouped(object):
             fid = NcsFile(name)
             self.header = fid.header
             del fid
+            return
 
-        else:
-            print('Ncs file not found, no header!')
-            self.header = None
+        for folder in cand_folders:
+            cand_name = os.path.join(folder, 'channel_names.csv')
+            if os.path.exists(cand_name):
+                import csv
+                with open(cand_name) as fid:
+                    reader = csv.reader(fid, delimiter=';')
+                    names = {l[0]: l[1] for l in reader}
+                self.header = {'AcqEntName': names[ext]}
+                return
+
+        print('Ncs file not found, no header!')
+        self.header = None
 
     def init_sorting(self, sorting_folder):
         """
