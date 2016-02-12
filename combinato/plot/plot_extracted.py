@@ -86,7 +86,11 @@ def spikes_overview(dirname, save_fname):
 
     # loop over pos and neg
     for sign in SIGNS:
-        spikes = fid.get_node('/' + sign + '/spikes')[:, :]
+        try:
+            spikes = fid.get_node('/' + sign + '/spikes')[:, :]
+        except tables.NoSuchNodeError as error:
+            print(error)
+            continue
         times = fid.get_node('/' + sign + '/times')[:]
         try:
             artifacts = fid.get_node('/' + sign + '/artifacts')[:]
