@@ -65,7 +65,10 @@ def helper(job):
     """
     fname = job[0]
     Q = job[1]
+    outfolder = job[2]
     h5fname = fname[:-4] + '_ds.h5'
+    if outfolder is not None:
+        h5fname = os.path.join(outfolder, h5fname)
     downsampling(fname, h5fname, Q)
 
 
@@ -80,6 +83,7 @@ def main():
     parser.add_argument('fname', nargs='+')
     parser.add_argument('--ncores', type=int, default=4)
     parser.add_argument('--q', type=int, default=16)
+    parser.add_argument('--outfolder', nargs=1)
     args = parser.parse_args()
 
     fnames = args.fname
@@ -91,7 +95,12 @@ def main():
 
     if DEBUG:
         print('Working on: {}'.format(cands))
-    jobs = zip(cands, [args.q] * len(cands))
+
+    if args.outfolder:
+        outfolder = args.outfolder[0]
+    else:
+        outfolder = None
+    jobs = zip(cands, [args.q] * len(cands), [outfolder] * len(cands))
     t1 = time()
     if args.ncores > 1:
         p = Pool(args.ncores)
