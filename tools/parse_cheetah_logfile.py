@@ -2,12 +2,38 @@
 # JN 2015-07-29
 
 """
-Log file parser for Cheetah
+Log file parser for Cheetah by Johannes Niediek
+
 This script reads out the reference settings
-by sequentially following all crs, rbs, and gbd commands
+by sequentially following all crs, rbs, and gbd commands.
+
+Please keep in mind that the following scenario is possible with Cheetah:
+Start the recording
+Stop the recording
+Change the reference settings
+Start the recording
+
+If you do this there will be .ncs with their reference changing
+at some point during the recording.
+
+In most cases, this is probably not what you want,
+so this script displays a warning message if you did it.
+
+Cheetah ATLAS:
+There is an undocumented channel nummber 32000038.
+I reverse-engineered its use, but that might depend on the exact version
+of ATLAS etc.
+
+This script partially mirrors the system of variable definitions
+in Cheeatah. For complex arithmethic with variables, the script might fail.
+
+Please check the GitHub repository (github.com/wasserverein/combinato.git)
+for updates and manual.
+
+Contact me (jonied@posteo.de) for access to the repository.
 """
 
-from __future__ import print_function, absolute_import, division
+from __future__ import print_function, division
 import os
 import re
 from collections import defaultdict
@@ -64,7 +90,7 @@ class Setting(object):
         self.stop_timestamp = None
         self.folder = None
 
-DEBUG = False 
+DEBUG = False
 # The following are the interesting commands
 # You can still trick the parser, e.g. by sending -SetChannelNumber commands
 # via NetCom.
