@@ -182,7 +182,7 @@ def all_defined_check(chnum2name, crefs):
     """
     check if a reference has been defined for all existing channels
     """
-    print(chnum2name)
+    # print(chnum2name)
     for chnum in chnum2name:
         board, lnum = chan_to_board_num(chnum)
         try:
@@ -343,7 +343,12 @@ def analyze_drs(protocol):
                 if '%' in ch_num:
                     ch_num = variables[ch_num]
             else:
-                ch_name, ch_num = channel_number_pattern.match(msg2).groups()
+                result = channel_number_pattern.match(msg2)
+                if result is not None:
+                    ch_name, ch_num = result.groups()
+                else:
+                    print('Parser skipped the following line: ' + msg2)
+                    continue
 
             ch_num = int(ch_num)
 
