@@ -6,6 +6,10 @@ Downsample ncs files and save as h5
 """
 from __future__ import print_function, division, absolute_import
 import os
+
+from argparse import ArgumentParser
+from multiprocessing import Pool
+from time import time
 import scipy.signal
 from .helper.helper import initfile, make_blocks
 from combinato import NcsFile
@@ -72,21 +76,10 @@ def helper(job):
     downsampling(fname, h5fname, Q)
 
 
-def main():
+def downsample_main(fnames, q, outfolder=None, ncores=4):
     """
-    argument parsing as usual
+    Get the arguments and work with them
     """
-    from argparse import ArgumentParser
-    from multiprocessing import Pool
-    from time import time
-    parser = ArgumentParser()
-    parser.add_argument('fname', nargs='+')
-    parser.add_argument('--ncores', type=int, default=4)
-    parser.add_argument('--q', type=int, default=16)
-    parser.add_argument('--outfolder', nargs=1)
-    args = parser.parse_args()
-
-    fnames = args.fname
     cands = []
     for cand in fnames:
         if os.path.exists(cand):
@@ -96,14 +89,10 @@ def main():
     if DEBUG:
         print('Working on: {}'.format(cands))
 
-    if args.outfolder:
-        outfolder = args.outfolder[0]
-    else:
-        outfolder = None
-    jobs = zip(cands, [args.q] * len(cands), [outfolder] * len(cands))
+        jobs = zip(cands, [q] * len(cands), [outfolder] * len(cands))
     t1 = time()
-    if args.ncores > 1:
-        p = Pool(args.ncores)
+    if ncores > 1:
+        p = Pool(ncores)
         p.map(helper, jobs)
     else:
         for job in jobs:
@@ -112,3 +101,24 @@ def main():
     if DEBUG:
         td = time() - t1
         print('Took {:.1f} seconds'.format(td))
+
+
+def main():
+    """
+    Argument parsing as usual
+    """
+    parser = ArgumentParser('css-ncs-downsample',
+                            epilog='Johannes Niediek (jonied@posteo.de)')
+    parser.add_argument('fname', nargs='+')
+    parser.add_argument('--ncores', type=int, default=4)
+    parser.add_argument('--q', type=int, default=16)
+    parser.add_argument('--outfolder', nargs=1)
+    args = parser.parse_args()
+    fnames = args.fname
+
+    if args.outfolder:
+        outfolder = args.outfolder[0]
+    else:
+        outfolder = None
+
+    downsample_main(fnames, args.q, outfolder, args.ncores)

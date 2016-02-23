@@ -11,3 +11,4 @@ from .manager.tools import expandts
 from .helper.helper import make_blocks
 from .options import options
 from .viewer_files.viewer import sleepdtype
+from .ncs2h5 import downsample_main
