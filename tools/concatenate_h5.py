@@ -47,9 +47,16 @@ def count_spikes(in_fnames):
         num_pos += fid.root.pos.times.shape[0]
         num_neg += fid.root.neg.times.shape[0]
         # might be a problem if no spikes:
-        if (nsamp is None) and num_pos:
-            nsamp = fid.root.pos.spikes.shape[1]
+        if nsamp is None:
+            if num_pos:
+                nsamp = fid.root.pos.spikes.shape[1]
+            elif num_neg:
+                nsamp = fid.root.neg.spikes.shape[1]
+            else:
+                raise Warning('Cannot define number of samples in ' + h5file)
+
         fid.close()
+
     return num_pos, num_neg, nsamp
 
 
@@ -64,8 +71,17 @@ def unify_channel(out_fname, in_fnames):
     print('opening ' + out_fname)
 
     outfile = tables.open_file(out_fname, 'w')
+    print(num_pos, num_neg, nsamp)
+
+    operate_signs = []
 
     for sign, nspk in zip(SIGNS, (num_pos, num_neg)):
+        if nspk:
+            operate_signs.append(sign)
+        else:
+            print(out_fname + ' has no ' + sign + ' spikes')
+            continue
+        
         outfile.create_group('/', sign)
         outfile.create_array('/' + sign, 'times',
                              atom=tables.Float64Atom(), shape=(nspk, ))
@@ -82,11 +98,13 @@ def unify_channel(out_fname, in_fnames):
     for h5file in in_fnames:
         fid = tables.open_file(h5file, 'r')
 
-        for sign in SIGNS:
+        for sign in operate_signs:
             # times
             data = fid.get_node('/' + sign + '/times')
             stop[sign] = start[sign] + data.shape[0]
             out = outfile.get_node('/' + sign + '/times')
+            print("Copying {} spikes to {}-{}".
+                  format(data.shape[0], start[sign], stop[sign]))
             out[start[sign]:stop[sign]] = data[:]
 
             data = fid.get_node('/' + sign + '/spikes')
