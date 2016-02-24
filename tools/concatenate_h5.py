@@ -1,20 +1,18 @@
 # encoding: utf-8
 # JN 2014-12-27
-# script to concatenate spikes from various h5 files
-# useful for interrupted recording sessions
-# JN 2014-12-29: script needs to be tested, programmed in train...
 """
-at the moment, this script needs to be adjusted for every single use case
+script to concatenate spikes from various h5 files
+useful for interrupted recording sessions
 """
 
 from __future__ import print_function, division, absolute_import
 import os
-import tables
 import glob
+from argparse import ArgumentParser
+import tables
 
 SIGNS = ('pos', 'neg')
-PATTERN = ''
-OUT = ''
+
 
 def get_h5_fnames(folders):
     """
@@ -27,7 +25,7 @@ def get_h5_fnames(folders):
             candname = os.path.join(folder, csccand,
                                     'data_' + csccand + '.h5')
             if os.path.exists(candname):
-                if not csccand in ret:
+                if csccand not in ret:
                     ret[csccand] = [candname]
                 else:
                     ret[csccand].append(candname)
@@ -53,7 +51,6 @@ def count_spikes(in_fnames):
             nsamp = fid.root.pos.spikes.shape[1]
         fid.close()
     return num_pos, num_neg, nsamp
-
 
 
 def unify_channel(out_fname, in_fnames):
@@ -123,7 +120,22 @@ def unify_h5(folders, outfolder):
         unify_channel(out_fname, jobs[key])
 
 
+def parse_arguments():
+    """
+    standard
+    """
+    parser = ArgumentParser()
+    parser.add_argument('--pattern', nargs=1, required=True)
+    parser.add_argument('--outdir', nargs=1, required=True)
+    args = parser.parse_args()
+    dirs = glob.glob(args.pattern[0])
+    if len(dirs) < 2:
+        print('Cannot concatenate {} folders.'.format(len(dirs)))
+        return
+    print('Concatenating {}, writing to {}'.format(dirs, args.outdir[0]))
+    raw_input('Run?')
+    unify_h5(dirs, args.outdir[0])
+
+
 if __name__ == "__main__":
-    DIRS = glob.glob(PATTERN)
-    print('Working in {}'.format(DIRS))
-    unify_h5(DIRS, OUT)
+    parse_arguments()
