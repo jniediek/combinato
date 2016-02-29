@@ -68,6 +68,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.groupComboBox.addAction(self.actionNextGroup)
         self.actionNewGroup.triggered.connect(self.actionNewGroup_triggered)
         self.pushButtonSave.clicked.connect(self.save_one_group)
+        self.pushButtonMerge.clicked.connect(self.actionMerge_triggered)
 
         self.groupComboBox.currentIndexChanged.\
             connect(self.updateListView)
@@ -88,6 +89,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.actionNextJob.triggered.connect(self.actionNextJob_triggered)
         self.actionMergeAll.triggered.connect(self.actionMergeAll_triggered)
         self.actionGotoJob.triggered.connect(self.actionGotoJob_triggered)
+        self.actionMerge.triggered.connect(self.actionMerge_triggered)
 
         if len(arg) > 1:
             self.basedir = os.path.dirname(arg)
@@ -405,6 +407,36 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             except ValueError:
                 print('not moving {}'.format(name))
 
+    def actionMerge_triggered(self):
+        """
+        move all clusters from second group to first group
+        """
+
+        current = str(self.tabWidget.currentWidget().objectName())
+        if current == 'compareTab':
+            tgt = str(self.groupOnecomboBox.currentText())
+            src = str(self.groupTwoComboBox.currentText())
+            msg = "Would you like to merge "\
+                  "group {} into group {}?".format(src, tgt)
+        else:
+            return
+
+        try:
+            int(tgt)
+            int(src)
+        except ValueError:
+            print('Not merging {} and {}!'.format(src, tgt))
+            return
+
+        if not len(tgt) * len(src):
+            return
+
+        box = QMessageBox(QMessageBox.Question, 'Merging groups', msg,
+                          buttons=(QMessageBox.Ok | QMessageBox.Cancel))
+
+        if box.exec_():
+            self.merge_groups(src, tgt)
+
     def merge_groups(self, src, tgt):
         """
         merge two groups
@@ -582,6 +614,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             self.updateCompareTab()
 
     def updateCompareTab(self):
+        if self.backend is None:
+            return
         groupsById = self.backend.sessions.groupsById
         box1 = self.groupOnecomboBox
         box2 = self.groupTwoComboBox

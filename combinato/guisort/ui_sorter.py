@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'sorter.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -53,7 +53,6 @@ class Ui_MainWindow(object):
         self.layoutWidget = QtGui.QWidget(self.mainSplitter)
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.verticalLayout = QtGui.QVBoxLayout(self.layoutWidget)
-        self.verticalLayout.setMargin(0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -143,6 +142,9 @@ class Ui_MainWindow(object):
         self.comparePlotpushButton = QtGui.QPushButton(self.compareTab)
         self.comparePlotpushButton.setObjectName(_fromUtf8("comparePlotpushButton"))
         self.horizontalLayout_4.addWidget(self.comparePlotpushButton)
+        self.pushButtonMerge = QtGui.QPushButton(self.compareTab)
+        self.pushButtonMerge.setObjectName(_fromUtf8("pushButtonMerge"))
+        self.horizontalLayout_4.addWidget(self.pushButtonMerge)
         spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem3)
         self.verticalLayout_3.addLayout(self.horizontalLayout_4)
@@ -151,9 +153,11 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addLayout(self.compareFigureLayout)
         self.tabWidget.addTab(self.compareTab, _fromUtf8(""))
         self.verticalLayout_2.addWidget(self.mainSplitter)
+        self.mainSplitter.raise_()
+        self.folderLabel.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1096, 19))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1096, 26))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName(_fromUtf8("menuFile"))
@@ -193,6 +197,8 @@ class Ui_MainWindow(object):
         self.actionMergeAll.setObjectName(_fromUtf8("actionMergeAll"))
         self.actionGotoJob = QtGui.QAction(MainWindow)
         self.actionGotoJob.setObjectName(_fromUtf8("actionGotoJob"))
+        self.actionMerge = QtGui.QAction(MainWindow)
+        self.actionMerge.setObjectName(_fromUtf8("actionMerge"))
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.actionOpenJobs)
@@ -221,6 +227,7 @@ class Ui_MainWindow(object):
         self.compareOneLabel.setText(_translate("MainWindow", "Group 1", None))
         self.compareTwoLabel.setText(_translate("MainWindow", "Group 2", None))
         self.comparePlotpushButton.setText(_translate("MainWindow", "Plot", None))
+        self.pushButtonMerge.setText(_translate("MainWindow", "Merge", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.compareTab), _translate("MainWindow", "Correlations", None))
         self.menuFile.setTitle(_translate("MainWindow", "&File", None))
         self.menuGroup.setTitle(_translate("MainWindow", "&Actions", None))
@@ -252,4 +259,5 @@ class Ui_MainWindow(object):
         self.actionMergeAll.setText(_translate("MainWindow", "&Merge all", None))
         self.actionMergeAll.setShortcut(_translate("MainWindow", "Ctrl+M", None))
         self.actionGotoJob.setText(_translate("MainWindow", "&Goto Job", None))
+        self.actionMerge.setText(_translate("MainWindow", "Merge", None))
 

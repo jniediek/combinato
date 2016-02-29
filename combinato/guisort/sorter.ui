@@ -237,6 +237,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QPushButton" name="pushButtonMerge">
+             <property name="text">
+              <string>Merge</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <spacer name="horizontalSpacer_3">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -269,7 +276,7 @@
      <x>0</x>
      <y>0</y>
      <width>1096</width>
-     <height>19</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -409,6 +416,11 @@
   <action name="actionGotoJob">
    <property name="text">
     <string>&amp;Goto Job</string>
+   </property>
+  </action>
+  <action name="actionMerge">
+   <property name="text">
+    <string>Merge</string>
    </property>
   </action>
  </widget>
