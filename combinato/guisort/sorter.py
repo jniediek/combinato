@@ -123,6 +123,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         # now initialize the data
         self.rasterFigure = RasterFigure(self.centralwidget)
+        self.rasterLayout.addWidget(self.rasterFigure)
         self.rasterFigure.set_paradigm_data(frame, image_path)
         self.pushButtonUpdateRasters.setEnabled(True)
         self.lineEditStimSelect.setEnabled(True)
@@ -136,7 +137,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         group = self.backend.sessions.groupsByName[gid]
         times = np.hstack([c.times for c in group.clusters])
         current_paradigm = str(self.lineEditStimSelect.text())
-        self.rasterFigure.update(times, current_paradigm)
+        self.rasterFigure.update_figure(times, current_paradigm)
 
     def save_one_group(self):
         """

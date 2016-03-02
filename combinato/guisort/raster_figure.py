@@ -8,9 +8,9 @@ from __future__ import print_function, division, absolute_import
 import os
 import numpy as np
 import scipy.signal as signal
+from .sort_widgets import MplCanvas
 from matplotlib.pyplot import imread
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-from .sort_widgets import MplCanvas
 
 HGAP = VGAP = BOTTOM = .02
 
@@ -157,11 +157,12 @@ class RasterFigure(MplCanvas):
             fname_image = os.path.join(image_path, fname_image)
             self.images[stimulus] = imread(fname_image)
 
-    def update(self, spiketimes, daytime, scale=5, do_numbers=False):
+    def update_figure(self, spiketimes, daytime, scale=5, do_numbers=False):
         """
         update the plot
         """
         figure = self.fig
+        figure.clf()
         stimuli = self.stimuli
         n_stim = len(stimuli)
 

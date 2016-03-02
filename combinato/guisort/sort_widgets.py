@@ -324,7 +324,6 @@ class GroupOverviewFigure(MplCanvas):
 class ComparisonFigure(MplCanvas):
     def __init__(self, parent, width=5, height=5):
         super(ComparisonFigure, self).__init__(parent, width, height)
-        self.parent = parent
 
     # def cumulative(self, group1, group2, startTime):
     #     self.fig.clf()
