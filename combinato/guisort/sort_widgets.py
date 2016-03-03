@@ -145,8 +145,15 @@ class GroupOverviewFigure(MplCanvas):
         self.sign = sign
 
         # set the default limits
-        self.startTime = times[0]
-        self.stopTime = times[1]
+
+        # use threshold times if wanted
+        if (thresholds is not None) and options['GuiUseThresholdTimeAxis']:
+            self.startTime = thresholds[0, 0]
+            self.stopTime = thresholds[-1, 0]
+            print('Using times from thresholds')
+        else:
+            self.startTime = times[0]
+            self.stopTime = times[1]
 
         self.meanAx.set_xlim(xax)
         self.meanAx.set_ylim(options['overview_ax_ylim'])
