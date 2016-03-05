@@ -132,6 +132,3 @@ def testit():
                      [-1, 3, 12, 3, 4, 7, 7, 20, 30, 0, 11, 1]], float)
 
     print(artifact_score(data))
-
-if __name__ == "__main__":
-    testit()
