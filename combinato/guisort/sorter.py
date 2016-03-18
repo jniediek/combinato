@@ -434,7 +434,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         box = QMessageBox(QMessageBox.Question, 'Merging groups', msg,
                           buttons=(QMessageBox.Ok | QMessageBox.Cancel))
 
-        if box.exec_():
+        box.exec_()
+        if box.result() == QMessageBox.Ok:
             self.merge_groups(src, tgt)
 
     def merge_groups(self, src, tgt):
