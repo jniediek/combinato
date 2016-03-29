@@ -74,6 +74,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         self.groupComboBox.currentIndexChanged.\
             connect(self.updateListView)
+        self.tabWidget.setTabEnabled(3, False)
+        
         self.tabWidget.currentChanged.\
             connect(self.updateActiveTab)
 
@@ -103,6 +105,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         if 'RunGuiWithRaster' in options:
             if options['RunGuiWithRaster']:
+                self.tabWidget.setTabEnabled(3, True)
                 self.init_raster()
 
     def init_raster(self):
