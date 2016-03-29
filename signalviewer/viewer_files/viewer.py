@@ -407,7 +407,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                 ylim = self.ylim
             self.ax.set_ylim(ylim)
             self.ax.set_yticks(range(0, ylim[1] + 100, 100))
-            self.ax.set_yticklabels([0, 100])
+            self.ax.set_yticklabels([0, round(100/self.lfpfactor)])
 
         if self.display_sleep is not None:
             start, stop = [self.convert_time(time, internal=True)

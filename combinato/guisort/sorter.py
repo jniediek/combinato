@@ -14,7 +14,9 @@ from PyQt4.QtGui import *
 
 from .ui_sorter import Ui_MainWindow
 
-from .sort_widgets import  AllGroupsFigure, ComparisonFigure, GroupOverviewFigure
+from .sort_widgets import AllGroupsFigure, ComparisonFigure,\
+    GroupOverviewFigure
+from .raster_figure import RasterFigure
 from .backend import Backend
 from .load_joblist import PickJobList, GotoJob
 from .picksession import PickSessionDialog
@@ -63,8 +65,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         for action in (self.actionMakeArtifact,
                        self.actionMarkCluster):
-
             action.setShortcutContext(Qt.WidgetShortcut)
+
         self.groupComboBox.addAction(self.actionNextGroup)
         self.actionNewGroup.triggered.connect(self.actionNewGroup_triggered)
         self.pushButtonSave.clicked.connect(self.save_one_group)
@@ -98,6 +100,44 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         self.logfid = open(LOGFILENAME, 'a')
         self.user = getuser()
+
+        if 'RunGuiWithRaster' in options:
+            if options['RunGuiWithRaster']:
+                self.init_raster()
+
+    def init_raster(self):
+        import pandas as pd
+
+        # the following is just an example for one specific experiment
+        base = os.path.basename(self.basedir)
+        try:
+            pat = int(base[:3])
+            fn = int(base[8:9])
+        except ValueError:
+            return
+        infix = '{:03d}fn{}'.format(pat, fn)
+        fname_frame = 'frame_{}.h5'.format(infix)
+        frame = pd.read_hdf(fname_frame, 'fn_frame')
+        meta_prefix = '/home/johannes/struc/metadata/fotonovela-meta/'
+        image_path = os.path.join(meta_prefix, infix, infix)
+
+        # now initialize the data
+        self.rasterFigure = RasterFigure(self.centralwidget)
+        self.rasterLayout.addWidget(self.rasterFigure)
+        self.rasterFigure.set_paradigm_data(frame, image_path)
+        self.pushButtonUpdateRasters.setEnabled(True)
+        self.lineEditStimSelect.setEnabled(True)
+        self.pushButtonUpdateRasters.clicked.connect(self.actionUpdateRasters.trigger)
+        self.actionUpdateRasters.triggered.connect(self.update_rasters)
+
+    def update_rasters(self):
+        if self.backend is None:
+            return
+        gid = str(self.groupComboBox.currentText())
+        group = self.backend.sessions.groupsByName[gid]
+        times = np.hstack([c.times for c in group.clusters])
+        current_paradigm = str(self.lineEditStimSelect.text())
+        self.rasterFigure.update_figure(times, current_paradigm)
 
     def save_one_group(self):
         """

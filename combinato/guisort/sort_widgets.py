@@ -167,6 +167,7 @@ class GroupOverviewFigure(MplCanvas):
         self.overTimeAx.set_xlim((0, (self.stopTime - self.startTime)/6e4))
 
         self.thresholds = thresholds
+        # print(self.thresholds[-1, 1] - self.thresholds[0, 0])
 
         self.draw()
 
@@ -261,16 +262,17 @@ class GroupOverviewFigure(MplCanvas):
         self.cumSpikeAx.set_title(tstr)
 
         # thresholds
-        # print((self.thresholds[-1, 1] - self.thresholds[0, 0])/6e4)
         if self.thresholds is not None:
-            thr_times = self.thresholds[:, :2].ravel() - self.startTime
+            # print((self.thresholds[-1, 1] - self.thresholds[0, 0])/1000/60)
+            # thr_times = self.thresholds[:, :2].ravel() - self.startTime
+            thr_times = self.thresholds[:, :2].ravel() - self.thresholds[0, 0] 
             thr_times /= 6e4  # now in minutes
             tthr = (self.thresholds[:, 2], self.thresholds[:, 2])
             thrs = np.vstack(tthr).T.ravel()
             if self.sign == 'neg':
                 thrs *= -1
             self.overTimeAx.plot(thr_times, thrs, 'm', lw=2)
-            # print(thr_times)
+            self.overTimeAx.set_xlim((thr_times[0], thr_times[-1]))
 
             if len(thrs) > 1:
                 self.maxDistrAx.axvline(np.median(thrs), color='m', lw=2)
@@ -331,7 +333,6 @@ class GroupOverviewFigure(MplCanvas):
 class ComparisonFigure(MplCanvas):
     def __init__(self, parent, width=5, height=5):
         super(ComparisonFigure, self).__init__(parent, width, height)
-        self.parent = parent
 
     # def cumulative(self, group1, group2, startTime):
     #     self.fig.clf()
