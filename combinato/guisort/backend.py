@@ -46,6 +46,8 @@ class Backend(object):
             if (thresholds[-1, 1] - thresholds[0, 0]) > 24*60*60*1000:
                 thresholds[:, :2] /= 1e3  # this is necessary for some old files
         self.thresholds = thresholds
+        self.original_start = start_time
+        self.original_stop = stop_time
 
     def get_thresholds(self):
         """
@@ -53,8 +55,10 @@ class Backend(object):
         """
         if self.thresholds is None:
             return None
-        start = self.sessions.start_time
-        stop = self.sessions.stop_time
+        # start = self.sessions.start_time
+        # stop = self.sessions.stop_time
+        start = self.original_start
+        stop = self.original_stop
         start_idx = self.thresholds[:, 0] >= start - 300e3
         stop_idx = self.thresholds[:, 1] <= stop + 300e3
         idx = start_idx & stop_idx
