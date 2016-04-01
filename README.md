@@ -1,11 +1,3 @@
-Jump to
-[Signalviewer](/doc/README_viewer.md)
-[Introduction](#introduction)
-[Installation](#installation)
-[Main executables](#main-executables)
-[Workflow](#workflow)
-[Sample](#sample-workflow-with-new-files-after-each-step)
-[Post-sorting artifact rejection](/doc/README_post_sorting_artifacts.md)
 # Combinato Spike Sorting
 
 ![Screenshot of css-gui](doc/screenshot_css-gui.png "Screenshot")
@@ -80,11 +72,6 @@ in your `.bash_profile`.
 Also copy `default_options.py` to `combinato/options.py` and modify the path to the cluster binary (`cluster_maci.exe`).
 
 Then you should be ready to use `css-extract`, `css-cluster`, `css-gui` etc.
-
-## Caveat
-I am not a trained software engineer, and when I started this project, I had little experience with Python and Qt. This means that the code is redundant at some points and that the style of the code could be improved. I am aware of several issues and I am constantly reducing redundancies.
-
-Most commands have command line options. I'm working on a more unified syntax for these.
 
 ## Testing
 After the installation, you can run the small script `test_installation.py` in the `tools` directory of this respository. It checks whether your paths are set correctly.
