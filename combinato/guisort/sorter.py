@@ -531,8 +531,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         if name == 'oneGroupTab':
             group = self.backend.sessions.groupsByName[groupName]
             clusterdata = np.diff(group.clusters[index].times)
-            clusterdata = clusterdata[clusterdata <
-                                      options['compute_isi_upto_ms']]
+            idx = (clusterdata < options['compute_isi_upto_ms']) & (clusterdata > 0)
+            clusterdata = clusterdata[idx]
             self.groupOverviewFigure.mark(index, clusterdata)
 
         elif name == 'allGroupsTab':
