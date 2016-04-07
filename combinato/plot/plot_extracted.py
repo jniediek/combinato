@@ -80,6 +80,7 @@ def spikes_overview(dirname, save_fname):
     """
     h5fname = os.path.join(dirname, 'data_' + dirname + '.h5')
     if not os.path.exists(h5fname):
+        print("{} not found".format(h5fname))
         return
 
     fid = tables.open_file(h5fname, 'r')
@@ -185,7 +186,10 @@ def process_file(fname):
     # this is dirty code, come up with a better solution
     # e.g. storing the header info in the h5 file attrs
     man = SortingManagerGrouped(fname)
-    entity = man.header['AcqEntName']
+    try:
+        entity = man.header['AcqEntName']
+    except TypeError:
+        entity = 'unknown'
     ncs_fname = os.path.basename(fname)[5:-3]
     print(ncs_fname)
     plot_fname = 'spikes_{}_{}'.format(entity, ncs_fname)
