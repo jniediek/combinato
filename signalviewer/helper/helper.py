@@ -22,7 +22,7 @@ def make_blocks(N, bs=100000):
     return zip(starts, stops)
 
 
-def initfile(h5name, ncsf, q_down):
+def initfile(h5name, ncsf, q_down, include_times=True):
     """
     initializes a h5 file to store converted data
     """
@@ -40,7 +40,8 @@ def initfile(h5name, ncsf, q_down):
     h5f.root.data.rawdata.set_attr('Q', q_down)
     h5f.root.data.rawdata.set_attr('AcqEntName', chname)
 
-    h5f.create_earray('/', 'time', tables.UInt64Atom(), [0])
+    if include_times:
+        h5f.create_earray('/', 'time', tables.UInt64Atom(), [0])
 
     return h5f
 

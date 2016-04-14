@@ -17,13 +17,13 @@ from combinato import NcsFile
 DEBUG = True
 
 
-def downsampling(ncsfname, h5fname, Q=16):
+def downsampling(ncsfname, h5fname, Q=16, include_times=True):
     """
     Main routine for downsampling
     """
     ncsf = NcsFile(ncsfname)
     chname = ncsf.header['AcqEntName']
-    h5f = initfile(h5fname, ncsf, Q)
+    h5f = initfile(h5fname, ncsf, Q, include_times)
     nrec = ncsf.num_recs
     ds_order = 8
     ts = ncsf.timestep
@@ -41,7 +41,9 @@ def downsampling(ncsfname, h5fname, Q=16):
         if DEBUG:
             print('Filtering {} {}-{}'.format(chname, start, stop))
         data, ts = ncsf.read(start, stop, mode='both')
-        h5f.root.time.append(ts)
+
+        if include_times:
+            h5f.root.time.append(ts)
 
         if Q > 1:
             # Warning!
@@ -71,12 +73,13 @@ def helper(job):
     Q = job[1]
     outfolder = job[2]
     h5fname = fname[:-4] + '_ds.h5'
+    include_times = job[3]
     if outfolder is not None:
         h5fname = os.path.join(outfolder, h5fname)
-    downsampling(fname, h5fname, Q)
+    downsampling(fname, h5fname, Q, include_times)
 
 
-def downsample_main(fnames, q, outfolder=None, ncores=4):
+def downsample_main(fnames, q, outfolder=None, ncores=4, include_times=True):
     """
     Get the arguments and work with them
     """
@@ -89,7 +92,7 @@ def downsample_main(fnames, q, outfolder=None, ncores=4):
     if DEBUG:
         print('Working on: {}'.format(cands))
 
-        jobs = zip(cands, [q] * len(cands), [outfolder] * len(cands))
+        jobs = zip(cands, [q] * len(cands), [outfolder] * len(cands), [include_times] * len(cands))
     t1 = time()
     if ncores > 1:
         p = Pool(ncores)
@@ -113,6 +116,7 @@ def main():
     parser.add_argument('--ncores', type=int, default=4)
     parser.add_argument('--q', type=int, default=16)
     parser.add_argument('--outfolder', nargs=1)
+    parser.add_argument('--no-times', default=False, action='store_true')
     args = parser.parse_args()
     fnames = args.fname
 
@@ -121,4 +125,4 @@ def main():
     else:
         outfolder = None
 
-    downsample_main(fnames, args.q, outfolder, args.ncores)
+    downsample_main(fnames, args.q, outfolder, args.ncores, not args.no_times)
