@@ -57,7 +57,7 @@ def peak_to_peak(data):
     """
     peak to peak ratio in second half. data: mean spike
     """
-    cut = data.shape[0]/2
+    cut = int(data.shape[0]/2)
     return (data[cut:] - data[0]).ptp()/data.max()
 
 
