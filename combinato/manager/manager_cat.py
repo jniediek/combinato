@@ -313,6 +313,7 @@ class SortingManagerGrouped(object):
             return ret
 
         idx = self.sorting.get_cluster_index_joined(gid)
+        n_clusters = len(self.sorting.get_cluster_ids_by_gid(gid))
         # shorten it
         sel = (idx >= self.start_idx) & (idx <= self.stop_idx)
 
@@ -327,6 +328,7 @@ class SortingManagerGrouped(object):
             print('Shortened index!')
 
         ret['type'] = gtype
+        ret['n_clusters'] = n_clusters
         if times:
             ret['times'] = self.times[self.sign][idx]
         if spikes:
@@ -465,10 +467,8 @@ def test(name, label, ts):
     print('Retrieved Groups')
     test_gid = groups.keys()[0]
     man.get_group_joined(test_gid)
-    # print(test_group)
+
     all_groups = man.get_groups_joined()
-    # print('By index', (man.sorting.classes == 0).sum())
-    # print('By times', groups[0][0]['times'].shape[0])
 
     # iterate through clusters
     all_good = 0
@@ -500,5 +500,6 @@ def test(name, label, ts):
     print('Total has {} elements'.format(total['times'].shape[0]))
 
     for gid, group in all_groups.items():
-        print('Group {} has {} times and type {}'.
-              format(gid, group['times'].shape[0], TYPE_NAMES[group['type']]))
+        print('Group {} has {} times, type {} and {} members'.
+              format(gid, group['times'].shape[0],
+                     TYPE_NAMES[group['type']], group['n_clusters']))

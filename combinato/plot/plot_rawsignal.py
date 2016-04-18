@@ -97,7 +97,7 @@ def overview_plot(channel):
             plot = plots[i]
             plot.cla()
             ptime = PLOTTIMES[i]
-            n_samp = ptime/timestep
+            n_samp = int(ptime/timestep)
 
             if i == 0:
                 pdata = data[:n_samp]

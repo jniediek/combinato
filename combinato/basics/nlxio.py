@@ -94,7 +94,7 @@ class NcsFile(object):
         else:
             self.file.seek(NLX_OFFSET + start * NCS_RECSIZE)
             data = self.file.read(length * NCS_RECSIZE)
-            array_length = len(data) / NCS_RECSIZE
+            array_length = int(len(data) / NCS_RECSIZE)
             array_data = np.ndarray(array_length, ncs_type, data)
             if mode == 'both':
                 return (array_data['data'].flatten(),
