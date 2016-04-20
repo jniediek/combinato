@@ -271,7 +271,9 @@ def argument_parser():
     from multiprocessing import Pool, cpu_count
     parser = ArgumentParser('css-cluster',
                             description='Combinato Spike Sorter. This is the'
-                                        'main clustering executable.',
+                                        ' main clustering executable. Specify'
+                                        ' either a jobfile or datafile and '
+                                        'sessions.',
                             epilog='Johannes Niediek (jonied@posteo.de)')
     parser.add_argument('--jobs', type=FileType('r'))
     parser.add_argument('--datafile', nargs=1)
