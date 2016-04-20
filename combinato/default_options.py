@@ -65,8 +65,8 @@ options = {
     'folder_patterns': ('CSC*', 'test', 'L??',
                         'R??', 'L???', 'R???', 'L????', 'R????',
                         'simulation_*'),
-    'guistyle': 'gtk'
-    'RunGuiWithRaster': True,
+    'guistyle': 'gtk',
+    'RunGuiWithRaster': False,
     'GuiUseThresholdTimeAxis': True
 }
 
