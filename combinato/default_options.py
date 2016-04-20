@@ -24,7 +24,7 @@ options = {
     'ClusterPath': CLUS_BINARY,
     'Wavelet': 'haar',
 
-    'MaxDistMatchGrouping': 2.2,   # default is 1.8
+    'MaxDistMatchGrouping': 1.8,   # default is 1.8
     # depends on distance definition of course
 
     'RecursiveDepth': 1,  # default is 1, try 2 if separation needed
@@ -43,9 +43,9 @@ options = {
     'overwrite': True,
     'ExcludeVariableClustersMatch': True,  # default False
     'FirstMatchFactor': .75,  # try .75
-    'SecondMatchFactor': 3,  # default 3
-    'FirstMatchMaxDist': 4, # default 4
-    'SecondMatchMaxDist': 20, 
+    'SecondMatchFactor': 3,   # default 3
+    'FirstMatchMaxDist': 4,   # default 4
+    'SecondMatchMaxDist': 20,
     'OverwriteGroups': True,
     'smallmarker': 3,
     'bigmarker': 3,
@@ -59,14 +59,23 @@ options = {
                                      max_amplitude),
     'cmap': cm.hot,
     'overview_ax_ylim': (-150, 150),
-    'Debug': True,
+    'Debug': False,
     'histcolor': 'b',
     'histtype': 'stepfilled',
-    'folder_patterns': ('CSC?', 'CSC??', 'CSC???', 'test', 'L??',
+    'folder_patterns': ('CSC*', 'test', 'L??',
                         'R??', 'L???', 'R???', 'L????', 'R????',
                         'simulation_*'),
     'guistyle': 'gtk'
+    'RunGuiWithRaster': True,
+    'GuiUseThresholdTimeAxis': True
 }
+
+raster_options = {
+    'meta_prefix': '/home/johannes/struc/metadata/fotonovela-meta/',
+    'frame_name': 'fn_frame',
+    'infix': 'fn'
+}
+
 
 artifact_criteria = {
    'maxima': 5,

@@ -6,6 +6,10 @@ Imports that can than be used by the packages in this folder
 
 from __future__ import absolute_import
 from .options import options, artifact_criteria
+try:
+    from .options import raster_options
+except ImportError:
+    pass
 from .constants import SPIKE_CLUST, SPIKE_MATCHED, SPIKE_MATCHED_2, CLID_UNMATCHED,\
     SIGNS, TYPE_NAMES, TYPE_ART, TYPE_MU, TYPE_SU, TYPE_NO, GROUP_ART, GROUP_NOCLASS,\
     TYPE_NON_NOISE, TYPE_ALL

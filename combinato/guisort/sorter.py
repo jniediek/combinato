@@ -110,18 +110,19 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
     def init_raster(self):
         import pandas as pd
+        from .. import raster_options
 
         # the following is just an example for one specific experiment
         base = os.path.basename(self.basedir)
         try:
             pat = int(base[:3])
-            fn = int(base[8:9])
+            run = int(base[8:9])
         except ValueError:
             return
-        infix = '{:03d}fn{}'.format(pat, fn)
+        infix = '{:03d}{}{}'.format(pat, raster_options['infix'], run)
         fname_frame = 'frame_{}.h5'.format(infix)
-        frame = pd.read_hdf(fname_frame, 'fn_frame')
-        meta_prefix = '/home/johannes/struc/metadata/fotonovela-meta/'
+        frame = pd.read_hdf(fname_frame, raster_options['frame_name'])
+        meta_prefix = raster_options['meta_prefix']
         image_path = os.path.join(meta_prefix, infix, infix)
 
         # now initialize the data
