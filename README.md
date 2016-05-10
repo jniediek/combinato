@@ -23,11 +23,11 @@ If you do not have `git` installed, use your distribution's package manager to i
 
 Then clone combinato's repository:
 
-`git clone https://github.com/wasserverein/combinato.git`,
+`git clone https://github.com/jniediek/combinato.git`,
 
 or, if you have uploaded your public key,
 
-`git clone git@github.com:wasserverein/combinato.git`.
+`git clone git@github.com:jniediek/combinato.git`.
 
 
 #### Setting paths on Linux (this also applies to OS X)
