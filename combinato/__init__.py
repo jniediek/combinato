@@ -13,6 +13,7 @@ except ImportError:
 import os
 if os.path.isfile("options_local.py"):
     from options_local import options, artifact_criteria
+    print("options and artifact_criteria will be read from local options_local.py")
 from .constants import SPIKE_CLUST, SPIKE_MATCHED, SPIKE_MATCHED_2, CLID_UNMATCHED,\
     SIGNS, TYPE_NAMES, TYPE_ART, TYPE_MU, TYPE_SU, TYPE_NO, GROUP_ART, GROUP_NOCLASS,\
     TYPE_NON_NOISE, TYPE_ALL
