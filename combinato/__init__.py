@@ -10,10 +10,12 @@ try:
     from .options import raster_options
 except ImportError:
     pass
+import os
+if os.path.isfile("options_local.py"):
+    from options_local import options, artifact_criteria
 from .constants import SPIKE_CLUST, SPIKE_MATCHED, SPIKE_MATCHED_2, CLID_UNMATCHED,\
     SIGNS, TYPE_NAMES, TYPE_ART, TYPE_MU, TYPE_SU, TYPE_NO, GROUP_ART, GROUP_NOCLASS,\
     TYPE_NON_NOISE, TYPE_ALL
-
 from .basics.nlxio import NcsFile, ncs_info, nev_read
 from .basics.filters import DefaultFilter
 from .util.tools import h5files, get_channels, get_regions, check_status
