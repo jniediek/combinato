@@ -3,7 +3,7 @@
 ![Screenshot of css-gui](doc/screenshot_css-gui.png "Screenshot")
 
 ## Introduction
-_Combinato Spike Sorting_ is a collection of tools for spike extraction, automatic spike sorting, manual improvement of sorting, artifact rejection, and visualization of continuous recordings and spikes. It offers a toolchain that transforms raw data into clean single/multi-unit spike trains. The software is largely modular, thus useful also if you are interested in just extraction or just sorting of spikes.
+_Combinato Spike Sorting_ is a collection of tools for spike extraction, automatic spike sorting, manual improvement of sorting, artifact rejection, and visualization of continuous recordings and spikes. It offers a toolchain that transforms raw data into single/multi-unit spike trains. The software is largely modular, thus useful also if you are interested in just extraction or just sorting of spikes.
 
 Combinato Spike Sorting works very well with large raw data files (tested with 100-channel, 15-hour recordings, i.e. > 300 GB of raw data). Most parts make use of multiprocessing and scale well with tens of CPUs.
 
@@ -13,51 +13,9 @@ Combinato is a collection of a few command-line tools and two GUIs, written in P
 
 
 ## Installation
-
-Spike sorting depends on the binary `cluster_linux.exe` (on Windows: `Cluster.exe`, on OS X: `cluster_maci.exe`) described [in this article][1] and [available online][2] (click on _Codes_).
-
-
-### On Linux 
-
-If you do not have `git` installed, use your distribution's package manager to install it.
-
-Then clone combinato's repository:
-
-`git clone https://github.com/jniediek/combinato.git`,
-
-or, if you have uploaded your public key,
-
-`git clone git@github.com:jniediek/combinato.git`.
-
-
-#### Setting paths on Linux (this also applies to OS X)
-The relevant executables all reside in the root folder of the repository. You probably want to call them from the command line, so add the folder `combinato` to your `$PATH`.
-
-I also recommend making the `combinato` module (this is a folder _inside_ the repository) visible to Python. You can either create a symbolic link in `/usr/local/lib/python2.7/dist-packages` pointing to the `combinato` folder, or you can add the `combinato` folder to your `$PYTHONPATH`.
-
-##### Example
-I use the following setup:
-
-The repository is
-`/home/johannes/combinato`.
-
-My shell's configuration contains
-
-`PATH=$PATH:/home/johannes/combinato`
-
-`PYTHONPATH=$PYTHONPATH:/home/johannes/combinato`
-
-`export PATH PYTHONPATH`
-
-#### Dependencies
-Combinato Spike Sorting tools depend on
-`numpy`, `scipy`, `pywt`, `matplotlib`, `pytables`, and `pyqt`.
-
-However, not all parts depend on all of these packages, so it is perfectly reasonable to clone the repository, start working and then install dependencies on the fly as needed.
-
-Before running any Combinato commands, copy the file `default_options.py` to `options.py`. This ensures that your locally set options are not tracked by git.
-
-Set the local path to the `cluster_linux.exe` binary in `options.py`. Also check that `cluster_linux.exe` runs (`chmod +x cluster_linux.exe; ./cluster_linux.exe`). If that does not work, you probably have to activate [multi-architecture support][9].
+- [Installation on Linux](wiki/Installtion-on-Linux)
+- [Installation on Windows](wiki/Installation-on-Windows)
+- [Installation on OS X](wiki/Installation-on-OSX)
 
 ### On Windows
 Install a Python Distribution (e.g. [Anaconda][5] by [Continuum][6]) and place the Combinato repository in an appropriate folder (e.g. `C:\Users\YourUsername\Anaconda\Lib\site-packages` if using Anaconda). Then copy `default_options.py` to `options.py`. Change the path to the cluster binary (`Cluster.exe`) in `options.py`.
@@ -409,4 +367,3 @@ I'm always happy to see pull requests, feature suggestions and bug reports. Plea
 
 [8]: http://www.jneurosci.org/content/31/24/8699 "D. Hill, S. Mehta, D. Kleinfeld: “Quality Metrics to Accompany Spike Sorting of Extracellular Signals”. The Journal of Neuroscience”. The Journal of Neuroscience 31 (24): 8699–8705" 
 [9]: http://askubuntu.com/a/454254
-
