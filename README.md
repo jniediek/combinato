@@ -13,9 +13,9 @@ Combinato is a collection of a few command-line tools and two GUIs, written in P
 
 
 ## Installation
-- [Installation on Linux](wiki/Installtion-on-Linux)
-- [Installation on Windows](wiki/Installation-on-Windows)
-- [Installation on OS X](wiki/Installation-on-OSX)
+- [Installation on Linux](../../wiki/Installation-on-Linux)
+- [Installation on Windows](../../wiki/Installation-on-Windows)
+- [Installation on OS X](../../wiki/Installation-on-OSX)
 
 ### On Windows
 Install a Python Distribution (e.g. [Anaconda][5] by [Continuum][6]) and place the Combinato repository in an appropriate folder (e.g. `C:\Users\YourUsername\Anaconda\Lib\site-packages` if using Anaconda). Then copy `default_options.py` to `options.py`. Change the path to the cluster binary (`Cluster.exe`) in `options.py`.
