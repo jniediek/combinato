@@ -80,6 +80,7 @@ def plotting_test():
         print("Found 'montage', plotting continuous data possible.")
 
 if __name__ == '__main__':
+
     if initial_test():
         print('Combinato clustering setup: no problems detected.')
     else:
