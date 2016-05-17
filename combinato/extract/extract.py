@@ -50,7 +50,8 @@ def main():
         jobs = [{'name': jname,
                  'filename': args.matfile[0],
                  'is_matfile': True,
-                 'count': 0}]
+                 'count': 0,
+                 'destination': destination}]
         mp_extract(jobs, 1)
         return
 

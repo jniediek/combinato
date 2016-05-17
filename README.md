@@ -15,7 +15,7 @@ The documentation of Combinato is maintained as a [Wiki](../../wiki).
 - [Installation on OS X](../../wiki/Installation-on-OSX)
 
 ## Tutorial
-Please walk through our instructive [Tutorial](../../wiki/Tutorial)
+Please walk through our instructive [Tutorial](../../wiki/Tutorial).
 
 ## Contact
 Please feel free to use the GitHub infrastructure for questions, bug reports, feature requests, etc.
