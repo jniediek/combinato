@@ -3,22 +3,18 @@
 ![Screenshot of css-gui](doc/screenshot_css-gui.png "Screenshot")
 
 ## Introduction
-_Combinato Spike Sorting_ is a collection of tools for spike extraction, automatic spike sorting, manual improvement of sorting, artifact rejection, and visualization of continuous recordings and spikes. It offers a toolchain that transforms raw data into single/multi-unit spike trains. The software is largely modular, thus useful also if you are interested in just extraction or just sorting of spikes.
+_Combinato Spike Sorting_ is a software for spike extraction, automatic spike sorting, manual improvement of sorting, artifact rejection, and visualization of continuous recordings and spikes. It offers a toolchain that transforms raw data into single/multi-unit spike trains. The software is largely modular, thus useful also if you are interested in just extraction or just sorting of spikes.
 
 Combinato Spike Sorting works very well with large raw data files (tested with 100-channel, 15-hour recordings, i.e. > 300 GB of raw data). Most parts make use of multiprocessing and scale well with tens of CPUs.
 
 The spike sorting part of this repository borrows many ideas from WaveClus ([Journal Article][0], [Website][2]) by Rodrigo Quian Quiroga.
 
-Combinato is a collection of a few command-line tools and two GUIs, written in Python and depending on a few standard modules. It is being developed mostly for Linux, but on Windows, most parts should work equally well.
-
+Combinato is a collection of a few command-line tools and two GUIs, written in Python and depending on a few standard modules. It is being developed mostly for Linux, but it works on Linux and OS X, too.
 
 ## Installation
 - [Installation on Linux](../../wiki/Installation-on-Linux)
 - [Installation on Windows](../../wiki/Installation-on-Windows)
 - [Installation on OS X](../../wiki/Installation-on-OSX)
-
-### On Windows
-Install a Python Distribution (e.g. [Anaconda][5] by [Continuum][6]) and place the Combinato repository in an appropriate folder (e.g. `C:\Users\YourUsername\Anaconda\Lib\site-packages` if using Anaconda). Then copy `default_options.py` to `options.py`. Change the path to the cluster binary (`Cluster.exe`) in `options.py`.
 
 ### On OS X
 Install a Python Distribution (e.g. [Anaconda][5] by [Continuum][6]) and place the Combinato repository somewhere, (e.g. `/Applications/anaconda/lib/python2.7/site-packages`, but any other location is fine). To use the programs that are part of Combinato from a Terminal, add the path to the repository to your `PATH`, e.g. by inserting
@@ -31,8 +27,7 @@ Also copy `default_options.py` to `combinato/options.py` and modify the path to 
 
 Then you should be ready to use `css-extract`, `css-cluster`, `css-gui` etc.
 
-## Testing
-After the installation, you can run the small script `test_installation.py` in the `tools` directory of this respository. It checks whether your paths are set correctly.
+# Tutorial
 
 ## Main executables 
 Combinato Spike Sorting consists of the following main executables
