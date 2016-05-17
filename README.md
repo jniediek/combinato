@@ -10,8 +10,7 @@ Combinato is a collection of a few command-line tools and two GUIs, written in P
 The documentation of Combinato is maintained as a [Wiki](../../wiki). 
 
 ## Installing Combinato
-We recommend running Combinato on Linux.
-- [Installation on Linux](../../wiki/Installation-on-Linux)
+- [Installation on Linux](../../wiki/Installation-on-Linux) (recommended)
 - [Installation on Windows](../../wiki/Installation-on-Windows)
 - [Installation on OS X](../../wiki/Installation-on-OSX)
 
