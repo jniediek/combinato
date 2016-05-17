@@ -6,7 +6,7 @@ import os
 from glob import glob
 from collections import defaultdict
 import tables
-from .. import NcsFile
+from .. import NcsFile, options
 
 def check_sorted(channel_dirname):
     """
@@ -125,9 +125,13 @@ def get_regions(path):
 def h5files(path):
     """
     highly specific tool to find all relevant h5 files
+    if their names follow the CSC?, CSC?? naming convention
     """
     channel_dirs = glob(os.path.join(path, 'CSC?'))
     channel_dirs += glob(os.path.join(path, 'CSC??'))
+    # channel_dirs = []
+    # for pat in options['folder_patterns']:
+    #     channel_dirs += glob(os.path.join(path, pat))
 
     ret = []
     for chd in channel_dirs:

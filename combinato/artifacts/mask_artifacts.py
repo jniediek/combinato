@@ -301,21 +301,21 @@ def parse_args():
     CONC_FNAME = 'concurrent_times.h5'
     parser = ArgumentParser()
     parser.add_argument('--file', nargs=1)
-    parser.add_argument('--no-concurrent', action='store_true',
-                        default=False)
     parser.add_argument('--concurrent-file', nargs=1)
     parser.add_argument('--exclude-ranges', nargs=1,
                         help='supply a file with timestamp ranges to exclude')
     args = parser.parse_args()
 
-    if not args.no_concurrent:
-        if args.concurrent_file:
-            conc_fname = args.concurrent_file[0]
-        else:
-            conc_fname = CONC_FNAME
+    if args.concurrent_file:
+        conc_fname = args.concurrent_file[0]
+    else:
+        conc_fname = CONC_FNAME
+
+    if os.path.isfile(conc_fname):
         concurrent_edges, concurrent_bin =\
             bincount_to_edges(conc_fname)
     else:
+        print('Not using concurrent spike detection')
         concurrent_edges = concurrent_bin = None
 
     if args.file:
