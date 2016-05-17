@@ -82,7 +82,14 @@ def get_channels(path, from_h5files=False):
     ret = {}
 
     if from_h5files:
-        chs = [h5fname2channel(name) for name in h5files(path)]
+        chs = []
+        for name in h5files(path):
+            test = h5fname2channel(name)
+            if test is not None:
+                chs.append(test)
+            else:
+                key = 'unknown'
+                ret[key] = os.path.basename(os.path.dirname(name))
     else:
         chs = glob(os.path.join(path, '*.ncs'))
 
@@ -127,11 +134,19 @@ def h5files(path):
     highly specific tool to find all relevant h5 files
     if their names follow the CSC?, CSC?? naming convention
     """
-    channel_dirs = glob(os.path.join(path, 'CSC?'))
-    channel_dirs += glob(os.path.join(path, 'CSC??'))
-    # channel_dirs = []
-    # for pat in options['folder_patterns']:
-    #     channel_dirs += glob(os.path.join(path, pat))
+    def sort_function(fname):
+        try:
+            a = int(os.path.basename(fname)[8:-3])
+            return a
+        except ValueError:
+            return fname
+
+    # channel_dirs = glob(os.path.join(path, 'CSC?'))
+    # channel_dirs += glob(os.path.join(path, 'CSC??'))
+
+    channel_dirs = []
+    for pat in options['folder_patterns']:
+        channel_dirs += glob(os.path.join(path, pat))
 
     ret = []
     for chd in channel_dirs:
@@ -141,4 +156,4 @@ def h5files(path):
             if os.stat(h5cand).st_size > 0:
                 ret.append(h5cand)
 
-    return sorted(ret, key=lambda x: int(os.path.basename(x)[8:-3]))
+    return sorted(ret, key=sort_function)
