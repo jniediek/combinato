@@ -300,7 +300,7 @@ def main(fname, concurrent_edges=None, concurrent_bin=None,
 def parse_args():
     CONC_FNAME = 'concurrent_times.h5'
     parser = ArgumentParser()
-    parser.add_argument('--file', nargs=1)
+    parser.add_argument('--file', '--datafile', nargs=1)
     parser.add_argument('--concurrent-file', nargs=1)
     parser.add_argument('--exclude-ranges', nargs=1,
                         help='supply a file with timestamp ranges to exclude')

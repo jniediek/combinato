@@ -116,7 +116,7 @@ def run_file(fname, savefolder, sign, label):
     if manager.header is not None:
         entity = manager.header['AcqEntName']
     else:
-        entity = 'unnamed'
+        entity = 'unknown'
 
     if not manager.initialized:
         print('could not initialize ' + fname)
@@ -156,7 +156,7 @@ def parse_args():
     """
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('--files', nargs='+')
+    parser.add_argument('--files', '--datafiles', nargs='+')
     parser.add_argument('--label', required=True)
     parser.add_argument('--neg', action='store_true', default=False)
 
