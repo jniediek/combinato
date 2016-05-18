@@ -118,6 +118,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             pat = int(base[:3])
             run = int(base[8:9])
         except ValueError:
+            print('Unable to initialize raster meta data')
             return
         infix = '{:03d}{}{}'.format(pat, raster_options['infix'], run)
         fname_frame = 'frame_{}.h5'.format(infix)
