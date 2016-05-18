@@ -162,10 +162,9 @@ def parse_args():
 
     args = parser.parse_args()
 
-    if os.path.isdir('overview'):
-        savefolder = 'overview'
-    else:
-        savefolder = os.getcwd()
+    if not os.path.isdir('overview'):
+        os.mkdir('overview')
+    savefolder = 'overview'
 
     if args.files:
         fnames = args.files
