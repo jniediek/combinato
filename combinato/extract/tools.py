@@ -21,7 +21,7 @@ def read_matfile(fname):
     data = loadmat(fname)
 
     try:
-        sr = data['sr']
+        sr = data['sr'].ravel()[0]
         insert = 'stored'
     except KeyError:
         sr = DEFAULT_MAT_SR
