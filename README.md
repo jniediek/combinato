@@ -5,7 +5,7 @@ _Combinato Spike Sorting_ is a software for spike extraction, automatic spike so
 
 Combinato Spike Sorting works very well with large raw data files (tested with 100-channel, 15-hour recordings, i.e. > 300 GB of raw data). Most parts make use of multiprocessing and scale well with tens of CPUs.
 
-Combinato is a collection of a few command-line tools and two GUIs, written in Python and depending on a few standard modules. It is being developed mostly for Linux, but it works on Linux and OS X, too.
+Combinato is a collection of a few command-line tools and two GUIs, written in Python and depending on a few standard modules. It is being developed mostly for Linux, but it works on Windows and OS X, too.
 
 The documentation of Combinato is maintained as a [Wiki](../../wiki). 
 
