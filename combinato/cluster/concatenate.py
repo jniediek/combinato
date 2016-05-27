@@ -201,8 +201,8 @@ def plot_all_classes(classes, matches, all_spikes, plot_dirname):
     for clnum, clid in enumerate(clids):
         cl_idx = classes == clid
         outname = os.path.join(plot_dirname, 'class_{:03d}.png'.format(clid))
-        print('Plotting {}/{}, {} spikes'.format(clnum + 1, len(clids),
-                                                 cl_idx.sum()))
+        print('Plotting {}/{}, {}, {} spikes'.
+               format(clnum + 1, len(clids), plot_dirname, cl_idx.sum()))
         plot_class(fig, xax, xlim, ylim,
                    all_spikes[cl_idx], matches[cl_idx], outname)
 
