@@ -49,6 +49,7 @@ def features_to_index(features, folder, name, overwrite=True):
 
     if overwrite:
         feat_idx = select_features(features)
+        print('Clustering data in {}/{}'.format(folder, name))
         cluster_features(features[:, feat_idx], folder, name)
         now = strftime('%Y-%m-%d_%H-%M-%S')
 

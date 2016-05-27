@@ -7,7 +7,7 @@ between clusters, groups etc
 # pylint: disable=E1101
 from __future__ import division, print_function, absolute_import
 import numpy as np
-import sys
+# import sys
 from .. import options, CLID_UNMATCHED
 
 
@@ -18,14 +18,14 @@ def distances_euclidean(all_spikes, templates):
 
     ret = np.empty((all_spikes.shape[0], templates.shape[0]))
 
-    print('Calculating distances... ', end='')
+    print('Calculating distances')
 
     for i, template in enumerate(templates):
-        print(i, end=' ')
+        # print(i, end=' ')
         ret[:, i] = np.sqrt(((all_spikes - template)**2).sum(1))
 
-    print()
-    sys.stdout.flush()
+    # print()
+    # sys.stdout.flush()
     return ret
 
 
@@ -130,7 +130,8 @@ def get_means(classes, all_spikes):
             ids.append(clid)
             means.append(meandata.mean(0))
             stds.append(np.sqrt(meandata.var(0).sum()))
-            print('class {} has stdval: {:.3f}'.format(clid, stds[-1]))
+            if options['Debug']:
+                print('class {} has stdval: {:.3f}'.format(clid, stds[-1]))
 
     if not len(means):
         empty = np.array([])
