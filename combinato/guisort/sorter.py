@@ -94,6 +94,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.actionMergeAll.triggered.connect(self.actionMergeAll_triggered)
         self.actionGotoJob.triggered.connect(self.actionGotoJob_triggered)
         self.actionMerge.triggered.connect(self.actionMerge_triggered)
+        self.actionMerge_one_unit_groups.triggered.\
+            connect(self.action_MergeOnes_triggered)
 
         if len(arg) > 1:
             self.basedir = os.path.dirname(arg)
@@ -483,11 +485,35 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         if box.result() == QMessageBox.Ok:
             self.merge_groups(src, tgt)
 
-    def merge_groups(self, src, tgt):
+    def action_MergeOnes_triggered(self):
+        """
+        merge all groups with only one member
+        """
+        groups = self.backend.sessions.groupsById
+        shorties = []
+
+        for gid in groups.keys():
+            if (gid > 0) and (len(groups[gid].clusters) == 1):
+               shorties.append(gid) 
+
+        if len(shorties):
+            tgt = shorties[0] 
+
+        for src in shorties[1:]:
+            print('Merging {} to {}'.format(src, tgt))
+            self.merge_groups(src, tgt, mode='by-id')
+
+
+    def merge_groups(self, src, tgt, mode='by-name'):
         """
         merge two groups
         """
-        groups = self.backend.sessions.groupsByName
+        if mode == 'by-name':
+            groups = self.backend.sessions.groupsByName
+        elif mode == 'by-id':
+            groups = self.backend.sessions.groupsById
+        else:
+            return
         clusters = groups[src].removeClusters()
         groups[tgt].addClusters(clusters)
         self.backend.sessions.dirty = True

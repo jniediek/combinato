@@ -359,7 +359,10 @@ def parse_args():
                     create_groups_main(args.datafile[0], outfname)
 
     else:
-        label = args.jobs.name[:-4]
+        if args.label is None:
+            label = args.jobs.name[:-4]
+        else:
+            label = args.label[0]
         jobs = tuple((tuple(x.split()) for x in args.jobs.readlines()))
         args.jobs.close()
         test_joblist(jobs)

@@ -326,7 +326,6 @@
    </layout>
    <zorder>mainSplitter</zorder>
    <zorder>folderLabel</zorder>
-   <zorder>verticalLayoutWidget</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -353,6 +352,7 @@
     <addaction name="actionNextJob"/>
     <addaction name="actionGotoJob"/>
     <addaction name="actionMergeAll"/>
+    <addaction name="actionMerge_one_unit_groups"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuGroup"/>
@@ -487,6 +487,14 @@
    </property>
    <property name="text">
     <string>updateRasters</string>
+   </property>
+  </action>
+  <action name="actionMerge_one_unit_groups">
+   <property name="text">
+    <string>Merge if just &amp;1 cluster</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+1</string>
    </property>
   </action>
  </widget>

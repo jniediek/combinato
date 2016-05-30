@@ -230,6 +230,8 @@ class Ui_MainWindow(object):
         self.actionUpdateRasters = QtGui.QAction(MainWindow)
         self.actionUpdateRasters.setEnabled(False)
         self.actionUpdateRasters.setObjectName(_fromUtf8("actionUpdateRasters"))
+        self.actionMerge_one_unit_groups = QtGui.QAction(MainWindow)
+        self.actionMerge_one_unit_groups.setObjectName(_fromUtf8("actionMerge_one_unit_groups"))
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.actionOpenJobs)
@@ -237,6 +239,7 @@ class Ui_MainWindow(object):
         self.menuGroup.addAction(self.actionNextJob)
         self.menuGroup.addAction(self.actionGotoJob)
         self.menuGroup.addAction(self.actionMergeAll)
+        self.menuGroup.addAction(self.actionMerge_one_unit_groups)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuGroup.menuAction())
         self.compareOneLabel.setBuddy(self.groupOnecomboBox)
@@ -295,4 +298,6 @@ class Ui_MainWindow(object):
         self.actionGotoJob.setText(_translate("MainWindow", "&Goto Job", None))
         self.actionMerge.setText(_translate("MainWindow", "Merge", None))
         self.actionUpdateRasters.setText(_translate("MainWindow", "updateRasters", None))
+        self.actionMerge_one_unit_groups.setText(_translate("MainWindow", "Merge if just &1 cluster", None))
+        self.actionMerge_one_unit_groups.setShortcut(_translate("MainWindow", "Ctrl+1", None))
 
