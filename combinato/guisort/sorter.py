@@ -105,6 +105,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.logfid = open(LOGFILENAME, 'a')
         self.user = getuser()
 
+        self.rasterFigure = None
+
         if 'RunGuiWithRaster' in options:
             if options['RunGuiWithRaster']:
                 self.tabWidget.setTabEnabled(3, True)
@@ -142,8 +144,27 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             return
         gid = str(self.groupComboBox.currentText())
         group = self.backend.sessions.groupsByName[gid]
-        times = np.hstack([c.times for c in group.clusters])
         current_paradigm = str(self.lineEditStimSelect.text())
+
+        indexes = self.listView.selectedIndexes()
+        if indexes:
+            index = indexes[0].row()
+        else:
+            index = -4
+
+        tlist = []
+        clist = []
+        for i, cluster in enumerate(group.clusters):
+            if i == index:
+                clist.append(cluster.times)
+            else:
+                tlist.append(cluster.times)
+    
+        times = []
+        for mylist in (tlist, clist):
+            if mylist:
+                times.append(np.hstack(mylist))
+
         self.rasterFigure.update_figure(times, current_paradigm)
 
     def save_one_group(self):
@@ -566,6 +587,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         elif name == 'allGroupsTab':
             self.allGroupsFigure.mark(groupName, index)
 
+            
     @pyqtSignature("")
     def on_actionMakeArtifact_triggered(self):
         self.move(self.backend.sessions.groupsByName['Artifacts'])

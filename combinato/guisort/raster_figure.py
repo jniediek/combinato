@@ -19,6 +19,8 @@ T_POST = 2000  # relative to onset
 std = 100
 nsamp_window = 10 * std
 
+LW = 1.8   # linewidth of individual lines in raster
+
 fr_bins = np.arange(-T_PRE-500, T_POST+500, 1)
 fr_window = signal.get_window(('gaussian', std), nsamp_window)
 fr_w = nsamp_window/2 - 1
@@ -45,7 +47,7 @@ def plot_one_cluster_one_stim(plot, rows, ylim, color):
     """
     set_raster_properties(plot, ylim=ylim)
     colors = np.array([color] * len(rows))
-    plot.eventplot(rows, colors=colors)
+    plot.eventplot(rows, colors=colors, linewidths=LW)
 
 
 def plot_convolution(plot, rows, lw=1):
@@ -96,15 +98,15 @@ def plot_one_plot(plot, scale, spike_times, onset_times,
             plot_one_cluster_one_stim(plot, rows,
                                       ylim=len(rows) + 1,
                                       color=colors[i_sp])
-        else:
-            print('Not plotting raster!')
+        # else:
+        #    print('Not plotting raster!')
 
     rows, do_plot = create_raster_rows(merged_spike_times,
                                        onset_times.copy())
     if do_plot:
         plot_convolution(plot, rows, min(2.5, 3/(scale/1.5)))
-    else:
-        print('Not doing convolution!')
+    #else:
+        #print('Not doing convolution!')
 
     # plot.text(0, .96, str(len(onset_times)), ha='left', va='top',
     #          transform=plot.transAxes, size=SIZE_STIMNAME)
@@ -133,8 +135,9 @@ def get_stim_info(frame, stimulus):
 
 def get_onset_times(frame, stimulus, daytime, paradigm):
     idx = (frame['stim_num'] == stimulus)\
-           & (frame['daytime'] == daytime)\
            & (frame['paradigm'] == paradigm)
+    if len(daytime):
+        idx &= frame['daytime'] == daytime
     return frame.loc[idx, 'time'].get_values() * 1000
 
 
@@ -157,7 +160,8 @@ class RasterFigure(MplCanvas):
             fname_image = os.path.join(image_path, fname_image)
             self.images[stimulus] = imread(fname_image)
 
-    def update_figure(self, spiketimes, daytime, scale=5, do_numbers=False):
+    def update_figure(self, spiketimes, daytime, scale=5,
+                      do_numbers=False):
         """
         update the plot
         """
@@ -203,7 +207,7 @@ class RasterFigure(MplCanvas):
                     number = stimulus + 1
                 else:
                     number = None
-                plot_one_plot(plot, scale, [spiketimes], onset_times,
+                plot_one_plot(plot, scale, spiketimes, onset_times,
                               self.names[stimulus], self.images[stimulus],
                               paradigm, number)
 
