@@ -421,26 +421,29 @@ class Combinato(SortingManagerGrouped):
     """
 
     def __init__(self, fname, sign, label):
-        super(Combinato, self).__init__(fname)
-        self.set_sign_times_spikes(sign)
+        self.initialized = False
+        self.h5datafile = None  # in case of early return
+
         basedir = os.path.dirname(fname)
         labelbasename = os.path.basename(label)
         sorting_session = os.path.join(basedir, labelbasename)
 
-        self.initialized = False
-        if os.path.exists(sorting_session):
-            res = self.init_sorting(sorting_session)
-
-            if not res:
-                print('Sorting session {} '
-                      'not initialized'.format(sorting_session))
-            else:
-                self.initialized = True
-        else:
+        # quick check if we can do this
+        if not os.path.exists(sorting_session):
             print('Session folder {} '
                   'not found'.format(sorting_session))
+            return
 
+        super(Combinato, self).__init__(fname)
+        self.set_sign_times_spikes(sign)
+        res = self.init_sorting(sorting_session)
 
+        if not res:
+            print('Sorting session {} '
+                  'not initialized'.format(sorting_session))
+        else:
+            self.initialized = True
+        
 def test(name, label, ts):
     """
     simple test case, needs a folder as argument
