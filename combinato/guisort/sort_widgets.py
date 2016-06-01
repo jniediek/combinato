@@ -15,7 +15,7 @@ from matplotlib.gridspec import GridSpec
 import time
 
 from .. import options
-from .basics import spikeDist
+from .basics import spikeDist, correlation
 
 
 def delfunc(obj):
@@ -355,28 +355,14 @@ class ComparisonFigure(MplCanvas):
         times1 = np.hstack([c.times for c in group1.clusters])
         times2 = np.hstack([c.times for c in group2.clusters])
 
-        l1 = len(times1)
-        l2 = len(times2)
+        lags = correlation(times1, times2, lag, group1 is group2)
 
-        if l1 < l2:
-            outer = times1
-            inner = times2
-        else:
-            outer = times2
-            inner = times1
-
-        lags = []
-        for t in outer:
-            index = (inner >= t - lag) & (inner <= t + lag)
-            if group1 is group2:
-                index &= (inner != t)
-            lags.append(inner[index] - t)
-
-        lags = np.hstack(lags)
         if lags.any():
             ax = self.fig.add_subplot(1, 1, 1)
             ax.set_xlim([-lag, lag])
-            ax.hist(lags, min(2*lag, max(2*lag, np.sqrt(len(inner)))),
+            # calculate the bins
+            greater_len = max(len(times1), len(times2))
+            ax.hist(lags, min(2*lag, max(2*lag, np.sqrt(greater_len))),
                     linewidth=.4,
                     histtype=options['histtype'])
         self.draw()
