@@ -113,6 +113,9 @@ def run_file(fname, savefolder, sign, label):
     """
     manager = Combinato(fname, sign, label)
 
+    if not manager.initialized:
+        return
+
     if manager.header is not None:
         entity = manager.header['AcqEntName']
     else:
