@@ -11,16 +11,16 @@ import glob
 from argparse import ArgumentParser
 import tables
 
-SIGNS = ('pos', 'neg')
 
-
-def get_h5_fnames(folders):
+def get_h5_fnames(folders, cscrange=None):
     """
     make a list of files to unify from
     """
+    if cscrange is None:
+        cscrange = range(1, 97)
     ret = {}
     for folder in folders:
-        for csc in range(1, 97):
+        for csc in cscrange:
             csccand = 'CSC' + str(csc)
             candname = os.path.join(folder, csccand,
                                     'data_' + csccand + '.h5')
@@ -60,7 +60,7 @@ def count_spikes(in_fnames):
     return num_pos, num_neg, nsamp
 
 
-def unify_channel(out_fname, in_fnames):
+def unify_channel(out_fname, in_fnames, process_signs):
     """
     do unification for one channel
     """
@@ -73,13 +73,20 @@ def unify_channel(out_fname, in_fnames):
     outfile = tables.open_file(out_fname, 'w')
     print(num_pos, num_neg, nsamp)
 
+    start = {}
+    stop = {}
+
     operate_signs = []
 
-    for sign, nspk in zip(SIGNS, (num_pos, num_neg)):
+    for sign, nspk in zip(('pos', 'neg'), (num_pos, num_neg)):
+        if sign not in process_signs:
+            print('Skipping {} as requested'.format(sign))
+            continue
         if nspk:
             operate_signs.append(sign)
+            start[sign] = 0
         else:
-            print(out_fname + ' has no ' + sign + ' spikes')
+            print('{} has no {} spikes'.format(out_fname, sign))
             continue
         
         outfile.create_group('/', sign)
@@ -87,13 +94,6 @@ def unify_channel(out_fname, in_fnames):
                              atom=tables.Float64Atom(), shape=(nspk, ))
         outfile.create_array('/' + sign, 'spikes',
                              atom=tables.Float32Atom(), shape=(nspk, nsamp))
-
-    start = {}
-    stop = {}
-
-    # main loop
-    for sign in SIGNS:
-        start[sign] = 0
 
     for h5file in in_fnames:
         fid = tables.open_file(h5file, 'r')
@@ -118,15 +118,18 @@ def unify_channel(out_fname, in_fnames):
     outfile.close()
 
 
-def unify_h5(folders, outfolder):
+def unify_h5(folders, outfolder, signs, cscrange=None):
     """
     go through folders, read in h5 spikes and save to outfolder
     """
     if not os.path.exists(outfolder):
         os.mkdir(outfolder)
 
-    jobs = get_h5_fnames(folders)
+    jobs = get_h5_fnames(folders, cscrange)
     sorted_keys = sorted(jobs.keys())
+
+    if signs is None:
+        signs = ('pos', 'neg')
 
     for key in sorted_keys:
         print(key)
@@ -135,7 +138,7 @@ def unify_h5(folders, outfolder):
         if not os.path.exists(out_csc_folder):
             os.mkdir(out_csc_folder)
         out_fname = os.path.join(out_csc_folder, 'data_{}.h5'.format(key))
-        unify_channel(out_fname, jobs[key])
+        unify_channel(out_fname, jobs[key], signs)
 
 
 def parse_arguments():
@@ -145,14 +148,29 @@ def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument('--pattern', nargs=1, required=True)
     parser.add_argument('--outdir', nargs=1, required=True)
+    parser.add_argument('--pos-only', action="store_true", default=False)
+    parser.add_argument('--cscrange', nargs='*')
     args = parser.parse_args()
     dirs = glob.glob(args.pattern[0])
+    signs = ('pos', 'neg')
+
+    if args.pos_only:
+        signs = ['pos']
+    else:
+        signs = None
+
     if len(dirs) < 2:
         print('Cannot concatenate {} folders.'.format(len(dirs)))
         return
+
+    if args.cscrange:
+        cscrange = [int(x) for x in args.cscrange]
+        print('Using CSCs: {}'.format(cscrange))
+    else:
+        cscrange = None
     print('Concatenating {}, writing to {}'.format(dirs, args.outdir[0]))
-    raw_input('Run?')
-    unify_h5(dirs, args.outdir[0])
+    raw_input('Press Enter to run.')
+    unify_h5(dirs, args.outdir[0], signs, cscrange=cscrange)
 
 
 if __name__ == "__main__":
