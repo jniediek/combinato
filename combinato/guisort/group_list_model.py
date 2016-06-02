@@ -25,7 +25,6 @@ class GroupListModel(QAbstractListModel):
         self.assignAxis = None
         self.densitydata = None
         self.upto = options['compute_isi_upto_ms']
-        # self.bins = options['density_hist_bins']
         self.bins = None
         self.times = None
         self.meandata = None
@@ -62,13 +61,6 @@ class GroupListModel(QAbstractListModel):
 
         self.densitydata = np.array(density).T
         self.maximadata = np.concatenate(maxima)
-
-#        for obj in (self.densitydata,
-#                    #self.meandata,
-#                    self.isidata,
-#                    self.maximadata,
-#                    self.times):
-#            #print(obj.shape)
 
     def addCluster(self, cluster):
         """
