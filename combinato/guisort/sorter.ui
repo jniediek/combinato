@@ -183,6 +183,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QPushButton" name="pushButtonTidy">
+             <property name="text">
+              <string>Tidy</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <spacer name="horizontalSpacer_2">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -495,6 +502,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+1</string>
+   </property>
+  </action>
+  <action name="actionTidyGroups">
+   <property name="text">
+    <string>tidyGroups</string>
    </property>
   </action>
  </widget>

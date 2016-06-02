@@ -111,3 +111,31 @@ class Sessions(object):
         self.type_table = np.vstack((self.type_table, [newkey, TYPE_MU]))
 
         self.updateGroupsByName()
+
+    def reorganize_groups(self):
+        """
+        rename groups by group size, delete empty groups
+        """
+        # get group sizes
+        sizes = [] 
+        for gid, group in self.groupsById.iteritems():
+            if gid not in (GROUP_ART, GROUP_NOCLASS):
+                sz = len(group.times)
+                if sz:
+                    sizes.append((len(group.times), gid))
+
+        sizes.sort(reverse=True)
+        new_groups = {}
+        new_groups[GROUP_ART] = self.groupsById[GROUP_ART]
+        new_groups[GROUP_NOCLASS] = self.groupsById[GROUP_NOCLASS]
+
+        for pre_new_gid, (size, gid) in enumerate(sizes):
+            new_gid = pre_new_gid + 1
+            print("{} -> {} ({})".format(gid, new_gid, size))
+            group = self.groupsById[gid] 
+            group.name = str(new_gid)
+            group.groupId = new_gid
+            new_groups[new_gid] = group
+
+        self.groupsById = new_groups
+        self.updateGroupsByName()

@@ -7,10 +7,10 @@ import sys
 import os
 from getpass import getuser
 from time import strftime
+import time
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
 
 from .ui_sorter import Ui_MainWindow
 
@@ -71,6 +71,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.actionNewGroup.triggered.connect(self.actionNewGroup_triggered)
         self.pushButtonSave.clicked.connect(self.save_one_group)
         self.pushButtonMerge.clicked.connect(self.actionMerge_triggered)
+        self.pushButtonTidy.clicked.connect(self.actionTidyGroups_triggered)
 
         self.groupComboBox.currentIndexChanged.\
             connect(self.updateListView)
@@ -758,6 +759,18 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         else:
             self.allGroupsFigure.updateInfo(index)
 
+    def actionTidyGroups_triggered(self):
+        if self.backend is None:
+            return
+        if self.backend.sessions is None:
+            return
+
+        t1 = time.time()
+        self.backend.sessions.reorganize_groups()
+        print('Reorganization took {:.3f} seconds'.format(time.time() - t1))
+        self.allGroupsFigureDirty = True
+        self.updateGroupsList()
+        self.updateActiveTab()
 
 def main():
     """
