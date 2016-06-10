@@ -15,8 +15,15 @@ from matplotlib.gridspec import GridSpec
 import time
 
 from .. import options
-from .basics import spikeDist, correlation
+from .basics import spikeDist
 
+try:
+    from .cross_correlogram_cython import cross_correlogram
+except ImportError as err:
+    print('Unable to import cross-correlogram as Cython, falling'
+          ' back to Python')
+    from .cross_correlogram import cross_correlogram
+    
 
 def delfunc(obj):
     """
@@ -354,8 +361,10 @@ class ComparisonFigure(MplCanvas):
         self.fig.clf()
         times1 = np.hstack([c.times for c in group1.clusters])
         times2 = np.hstack([c.times for c in group2.clusters])
+        times1.sort()
+        times2.sort()
 
-        lags = correlation(times1, times2, lag, group1 is group2)
+        lags = cross_correlogram(times1, times2, lag, group1 is group2)
 
         if lags.any():
             ax = self.fig.add_subplot(1, 1, 1)
