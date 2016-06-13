@@ -1,7 +1,7 @@
 # JN 2016-06-10
 
 import numpy as np
-EMPTY = np.zeros(0, dtype=np.float64)
+EMPTY = np.array([], dtype=np.float64)
 
 def cross_correlogram(times1, times2, lag, is_same):
     """

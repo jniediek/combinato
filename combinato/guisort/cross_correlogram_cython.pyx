@@ -23,7 +23,8 @@ def cross_correlogram(np.ndarray[np.float64_t, ndim=1] arr1,
     cdef np.float64_t temp
     cdef int invert
     cdef np.ndarray[np.float64_t, ndim=1] result
-    cdef np.ndarray[np.float64_t, ndim=0] empty = np.zeros([], dtype=np.float64)
+    cdef np.ndarray[np.float64_t, ndim=1] empty = np.array([], dtype=np.float64)
+    print(empty)
 
     if len_arr1 < len_arr2:
         inner_size = len_arr2
