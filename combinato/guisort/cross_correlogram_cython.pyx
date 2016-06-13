@@ -23,6 +23,7 @@ def cross_correlogram(np.ndarray[np.float64_t, ndim=1] arr1,
     cdef np.float64_t temp
     cdef int invert
     cdef np.ndarray[np.float64_t, ndim=1] result
+    cdef np.ndarray[np.float64_t, ndim=0] empty = np.zeros([], dtype=np.float64)
 
     if len_arr1 < len_arr2:
         inner_size = len_arr2
@@ -63,8 +64,11 @@ def cross_correlogram(np.ndarray[np.float64_t, ndim=1] arr1,
             if start_idx < stop_idx:
                 lags.append(inner[start_idx:stop_idx] - temp)
     
+    if len(lags) == 0:
+        return empty
+
     result = np.hstack(lags)
     if invert:
         result *= -1
 
-    return result 
+    return result
