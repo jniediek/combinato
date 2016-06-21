@@ -17,11 +17,9 @@ import time
 from .. import options
 from .basics import spikeDist
 
-try:
+if options['UseCython']:
     from .cross_correlogram_cython import cross_correlogram
-except ImportError as err:
-    print('Unable to import cross-correlogram as Cython, falling'
-          ' back to Python')
+else:
     from .cross_correlogram import cross_correlogram
     
 

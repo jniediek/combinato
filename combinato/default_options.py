@@ -96,6 +96,7 @@ options = {
     'histcolor': 'b',
     'histtype': 'stepfilled',
     'guistyle': 'oxygen',
+    'UseCython': False
 }
 
 

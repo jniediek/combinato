@@ -392,14 +392,14 @@ class SortingManagerGrouped(object):
         """
         return self.sorting.types
 
-    def get_non_noise_spikes(self):
+    def get_non_noise_spikes(self, spikes=True, times=True):
         """
         return all non-noise spikes joined
         """
         idx = self.sorting.get_non_noise_cluster_index()
         sel = (idx >= self.start_idx) & (idx < self.stop_idx)
         idx = idx[sel]
-        ret = self.get_data_from_index(idx)
+        ret = self.get_data_from_index(idx, times=times, spikes=spikes)
         ret['type'] = TYPE_NON_NOISE
         return ret
 
