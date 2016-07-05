@@ -65,6 +65,7 @@ def read_all_info(managers):
         if overfull:
             print(ses, overfull, "ALARM")
         t_classes = man.classes
+        print("Working on {}".format(man.h5file.filename))
         idx = t_classes != 0
         t_classes[idx] += old_max_class
         t_arti = man.artifact_scores.astype(np.int16)
