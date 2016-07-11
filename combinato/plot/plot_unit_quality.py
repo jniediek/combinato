@@ -14,7 +14,9 @@ from matplotlib.gridspec import GridSpec
 from matplotlib import cm
 
 from .spike_heatmap import spike_heatmap
-from combinato import h5files, Combinato
+from .. import h5files, Combinato, TYPE_NAMES
+
+LOCAL_TYPE_NAMES = {0: 'NA', 1: 'MU', 2: 'SU', -1: 'Arti'}
 
 
 FIGSIZE = (13, 7.5)
@@ -132,9 +134,6 @@ def plot_maxima_over_time(plot, group, start_stop, sign, thresholds=None):
     # plot.xaxis.set_tick_params(labeltop='on', labelbottom='off')
     # plot.set_ylim(ylim)
     plot.set_ylabel(u'µV')
-    plot.text(.5, 1.05, 'Firing over time',
-              va='bottom', ha='center', transform=plot.transAxes,
-              backgroundcolor='w')
     plot.grid(True)
 
 
@@ -145,22 +144,28 @@ def plot_group(gid, group, group_joined, start_stop, sign,
     """
 
     print('Plotting group {} ({} clusters)'.format(gid, len(group)))
-    savename = '{}_{:03d}.png'.format(savefolder, gid)
-    print(savename)
 
     panels = PANELS
 
     # timelim = (start_time/60, stop_time/60)
 
-    if sign == 'neg':
-        ylim = (-200, 0)
-    elif sign == 'pos':
-        ylim = (0, 200)
-
+#    if sign == 'neg':
+#        ylim = (-200, 0)
+#    elif sign == 'pos':
+#        ylim = (0, 200)
+#
     # maxima over time
     plot = panels['maxima']
 
     plot_maxima_over_time(plot, group, start_stop, sign, thresholds)
+    plot.text(.5, 1.05,
+              'Group {} ({}) Firing over time'.format(gid,
+                  TYPE_NAMES[group_joined['type']]),
+              va='bottom', ha='center', transform=plot.transAxes,
+              backgroundcolor='w')
+
+    #plot.text(0, 1, '{} ({})'.format(gid, group['type']),
+    #          transform=plot.transAxes, va='bottom', ha='left') 
 
     # ISI
     times = group_joined['times']
@@ -243,7 +248,6 @@ def plot_group(gid, group, group_joined, start_stop, sign,
 #
 #
     #FIG.suptitle(title)
-    FIG.savefig(savename)
 
 
 def run_file(fname, sign, label, savefolder):
@@ -255,12 +259,16 @@ def run_file(fname, sign, label, savefolder):
     # get thresholds
 
     manager = Combinato(fname, sign, label)
+    if not manager.initialized:
+        print('Could not initialize {} {}'.format(fname, label))
+        return
     thresholds = manager.get_thresholds()
     start = manager.times[sign][0]
     stop = manager.times[sign][-1]
     nspk = manager.times[sign].shape[0]
     duration_min = (stop - start)/1000/60
     start_stop = (start, stop)
+    entname = manager.header['AcqEntName']
 
     if duration_min > 120:
         dur_str = '{:.1f} h'.format(duration_min/60)
@@ -276,17 +284,15 @@ def run_file(fname, sign, label, savefolder):
         print('could not initialize ' + fname)
         return
 
-    # basedir = os.path.dirname(fname)
 
     groups_joined = manager.get_groups_joined()
     groups = manager.get_groups()
+    
+    bname = os.path.splitext(os.path.basename(fname))[0]
 
     for gid in groups_joined:
-        # groups[gid]['images'] = []
         gtype = manager.get_group_type(gid)
         groups_joined[gid]['type'] = gtype
-        # for clid in image_dict[gid]:
-        #    groups[gid]['images'].append(image_dict[gid][clid]['image'])
         plot_group(gid,
                    groups[gid],
                    groups_joined[gid],
@@ -294,8 +300,10 @@ def run_file(fname, sign, label, savefolder):
                    sign,
                    savefolder,
                    thresholds)
-
-        # define the outname here
+        gtypename = LOCAL_TYPE_NAMES[gtype]
+        outfname = '{}_{}_{}_{:03d}_{}.png'.\
+                format(bname, entname, label, gid, gtypename)
+        FIG.savefig(outfname)
 
 
 def parse_args():
