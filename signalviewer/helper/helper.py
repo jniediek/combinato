@@ -46,12 +46,21 @@ def initfile(h5name, ncsf, q_down, include_times=True):
     return h5f
 
 
-def parse_datetime(fname):
+def parse_datetime(fname, mode='start'):
     """
     read datetime file
     returns ts_start_nlx: start time in milliseconds
-    ts_start_mpl: start time as datetime object
+    start_date: start time as datetime object
+
+    the same for mode='stop'
     """
+    if mode == 'start':
+        target = 'start_recording'
+    elif mode == 'stop':
+        target = 'stop_recording'
+    else:
+        raise Warning('Unknown parse_datetime mode: {}'.format(mode))
+
     with open(fname, 'r') as fid:
             lines = [line.strip() for line in fid.readlines()]
 
@@ -59,7 +68,7 @@ def parse_datetime(fname):
         if line[0] == '#':
             continue
         fields = line.split()
-        if fields[0] == 'start_recording':
+        if fields[0] == target:
             dtime, micro = fields[2].split('.')
             dstr = fields[1] + ' ' + dtime
             dfmt = '%Y-%m-%d %H:%M:%S'
