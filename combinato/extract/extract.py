@@ -1,6 +1,6 @@
 from __future__ import division, print_function, absolute_import
 import os
-from argparse import ArgumentParser
+from argparse import ArgumentParser, FileType
 from .mp_extract import mp_extract
 from .. import NcsFile
 
@@ -31,6 +31,8 @@ def main():
                         help='extract data from a matlab file')
     parser.add_argument('--destination', nargs=1,
                         help='folder where spikes should be saved')
+    parser.add_argument('--refscheme', nargs=1, type=FileType(mode='r'),
+                        help='scheme for re-referencing')
     args = parser.parse_args()
 
     if (args.files is None) and (args.matfile is None) and\
@@ -70,6 +72,12 @@ def main():
     # construct the jobs
     jobs = []
 
+    references = None
+    if args.refscheme:
+        import csv
+        reader = csv.reader(args.refscheme[0], delimiter=';')
+        references = {line[0]: line[1] for line in reader}
+
     for f in files:
         if args.start:
             start = args.start
@@ -90,15 +98,24 @@ def main():
         starts = range(start, laststart, blocksize)
         stops = starts[1:] + [stop]
         name = os.path.splitext(os.path.basename(f))[0]
-        print(name)
+        if references is not None:
+            reference = references[f]
+            print('{} (re-referenced to {})'.format(f, reference))
+
+        else:
+            reference = None
+            print(name)
+
         for i in range(len(starts)):
             jdict = {'name': name,
                      'filename': f,
                      'start': starts[i],
                      'stop': stops[i],
                      'count': i,
-                     'destination': destination}
+                     'destination': destination,
+                     'reference': reference}
 
             jobs.append(jdict)
+
 
     mp_extract(jobs, nWorkers)
