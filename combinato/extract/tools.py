@@ -66,6 +66,8 @@ class ExtractNcsFile(object):
         fdata *= (1e6 * self.ncs_file.header['ADBitVolts'])
 
         if self.ref_file is not None:
+            print('Reading reference data from {}'.
+                format(self.ref_file.filename))
             ref_data = self.ref_file.read(start, stop, 'data')
             fref_data = np.array(ref_data).astype(np.float32)
             fref_data *= 1e6 * self.ref_file.header['ADBitVolts']

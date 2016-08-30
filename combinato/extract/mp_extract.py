@@ -106,7 +106,7 @@ def read(jobs, q):
 
         else:
             if jname not in openfiles:
-                openfiles[jname] = ExtractNcsFile(job['filename'])
+                openfiles[jname] = ExtractNcsFile(job['filename'], job['reference'])
 
             print('Read {} {: 7d} {: 7d}'.format(jname, job['start'], job['stop']))
             data = openfiles[jname].read(job['start'], job['stop'])
