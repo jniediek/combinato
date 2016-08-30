@@ -23,6 +23,7 @@ def make_arguments(filename, sign, mode, start=0,
     start and stop indexes into the spike array, after artifact exclusion
     """
     h5manager = DataManager(filename, cache=['times', 'artifacts'])
+    print('Opened {}'.format(filename))
     non_artifact_idx, num_spikes = h5manager.get_non_artifact_index(sign)
     if num_spikes == 0:
         print('No spikes found!')

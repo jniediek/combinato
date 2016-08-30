@@ -129,6 +129,7 @@ def collect_sorting(fname, signs, sessions, outfname):
     for ses in sessions:
         ses_mans[ses] = SessionManager(os.path.join(basedir, ses))
 
+    print('Starting read from {}'.format(fname))
     sorted_index, sorted_info, artifacts = read_all_info(ses_mans)
 
     # write to file so that we can continue from that file
