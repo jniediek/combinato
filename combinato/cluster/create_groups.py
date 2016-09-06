@@ -1,19 +1,19 @@
-# JN 2015-04-20
-# refactoring
+# JN 2015-04-20 refactor
+# JN 2016-09-06 introduce faster create_groups
 
 """
 read a total sorting file and group the classes
 """
 from __future__ import absolute_import, print_function, division
+
 import tables
-import os
 import numpy as np
 from .. import SortingManager, options, CLID_UNMATCHED, GROUP_ART, GROUP_NOCLASS,\
     TYPE_ART, TYPE_NO, TYPE_MU
-from .dist import find_nearest, distance_groups
+from .dist import distance_groups
 
 
-def create_groups_new(spikes, classes, clids, sign):
+def create_groups(spikes, classes, clids, sign):
     """
     more efficient group merging
     """
@@ -75,60 +75,6 @@ def create_groups_new(spikes, classes, clids, sign):
                 dists[gr1, i] = distance_groups(means[i], means[gr1], sign)
     return groups 
 
-def make_means(spikes, classes, clids):
-    """
-    calculate means
-    """
-    groups = {}
-    means = {}
-    nspks = {}
-    count = 1
-
-    for clid in clids:
-        if clid == CLID_UNMATCHED:
-            continue
-        count += 1
-        groups[count] = [clid]
-        idx = classes == clid
-        nspks[count] = idx.sum()
-        # print('Adding cl {}'.format(clid))
-        means[count] = spikes[idx].mean(0)
-
-    return groups, means, nspks
-
-
-def create_groups(groups, means, nspks, sign='pos'):
-    """
-    join closest groups iteratively
-    """
-    minimum = 0
-    crit = options['MaxDistMatchGrouping']
-
-    while True:
-        key1, key2, minimum = find_nearest(means, sign)
-        if minimum > crit:
-            break
-        if None in (key1, key2):
-            continue
-
-        groups[key1] += groups[key2]
-        print('Joining {} and {} (d={:.3f})'.format(key1, key2, minimum))
-        mean1 = means[key1]
-        mean2 = means[key2]
-        nspk1 = nspks[key1]
-        nspk2 = nspks[key2]
-
-        new_mean = (mean1 * nspk1 + mean2 * nspk2)/(nspk1 + nspk2)
-
-        means[key1] = new_mean
-        nspks[key1] = nspk1 + nspk2
-
-        del groups[key2]
-        del means[key2]
-        del nspks[key2]
-
-    return groups
-
 
 def main(datafname, sorting_fname, read_only=False):
     """
@@ -157,13 +103,8 @@ def main(datafname, sorting_fname, read_only=False):
     group_arr[art_idx, 1] = GROUP_ART
     print('Classes: {}'.format(clids))
 
-    groups = create_groups_new(spikes, classes, clids, sign)
-    # print('Calcluating mean spikes')
-    # groups, means, nspks = make_means(spikes, classes, clids)
-    # this can be more efficient!
-    # print('Creating groups')
-    # groups = create_groups(groups, means, nspks, sign)
-
+    groups = create_groups(spikes, classes, clids, sign)
+    
     for grid, orig_grid in enumerate(sorted(groups.keys())):
         clids = groups[orig_grid]
         for clid in clids:
@@ -210,21 +151,3 @@ def main(datafname, sorting_fname, read_only=False):
         sort_fid.flush()
 
     sort_fid.close()
-
-
-if __name__ == "__main__":
-    """
-    a small test case
-    """
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
-    parser.add_argument('--read-only', default=False, action='store_true')
-    parser.add_argument('--datafile', nargs=1, required=True)
-    parser.add_argument('--sorting', nargs=1, required=True)
-
-    args = parser.parse_args()
-
-    datafile = args.datafile[0]
-    sortingfile = os.path.join(args.sorting[0], 'sort_cat.h5')
-
-    main(datafile, sortingfile, args.read_only)

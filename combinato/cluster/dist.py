@@ -90,30 +90,6 @@ def distance_groups(in1, in2, sign='pos'):
     return (l2_dist + 7 * linf)/2
 
 
-def find_nearest(means, sign='pos'):
-    """
-    finds nearest match of two groups
-    (might be useful to convert this to cython)
-    this is slow because it re-calculates things all the 
-    time. It should use a cache and update only updated groups
-    """
-    minimum = np.Inf
-    min1 = None
-    min2 = None
-
-    for gr1, mean1 in means.items():
-        for gr2, mean2 in means.items():
-            if gr2 > gr1:
-                print('Calc dist')
-                dist = distance_groups(mean1, mean2, sign)
-                print('Done')
-                if dist < minimum:
-                    minimum = dist
-                    min1 = gr1
-                    min2 = gr2
-
-    return min1, min2, minimum
-
 
 def get_means(classes, all_spikes):
     """
