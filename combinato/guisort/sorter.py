@@ -176,7 +176,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                                            'Save as Image',
                                            os.getcwd(),
                                            'Images (*.jpg *.pdf *.png)')
-        self.groupOverviewFigure.save_as_file(str(fout), dpi=200)
+        self.groupOverviewFigure.save_as_file(str(fout), dpi=300)
 
     def on_actionAutoassign_triggered(self):
 
