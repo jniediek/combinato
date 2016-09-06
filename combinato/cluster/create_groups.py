@@ -124,6 +124,13 @@ def main(datafname, sorting_fname, read_only=False):
             print('Creating grouping')
 
         sort_fid.create_array('/', 'groups', group_arr)
+
+        try:
+            sort_fid.remove_node('/', 'groups_orig')
+            print('Updating original grouping')
+        except tables.NoSuchNodeError:
+            print('Creating original grouping')
+
         sort_fid.create_array('/', 'groups_orig', group_arr)
 
     # assign types
@@ -146,6 +153,12 @@ def main(datafname, sorting_fname, read_only=False):
         sort_fid.create_array('/', 'types', types)
 
         # create backups of types
+        try:
+            sort_fid.remove_node('/', 'types_orig')
+            print('Updating original types')
+        except tables.NoSuchNodeError:
+            print('Storing original types')
+
         sort_fid.create_array('/', 'types_orig', types)
 
         sort_fid.flush()
