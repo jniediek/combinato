@@ -10,8 +10,70 @@ import os
 import numpy as np
 from .. import SortingManager, options, CLID_UNMATCHED, GROUP_ART, GROUP_NOCLASS,\
     TYPE_ART, TYPE_NO, TYPE_MU
-from .dist import find_nearest
+from .dist import find_nearest, distance_groups
 
+
+def create_groups_new(spikes, classes, clids, sign):
+    """
+    more efficient group merging
+    """
+    crit = options['MaxDistMatchGrouping']
+    groups = {}
+    n_groups_in = len(clids) + 1
+    means = np.empty((n_groups_in, spikes.shape[1]))
+    nspks = np.empty(n_groups_in, int)
+    dists = np.zeros((n_groups_in, n_groups_in))
+    # initialize to inf
+    dists[:, :] = np.inf
+    count = 1
+    
+    for clid in clids:
+        if clid == CLID_UNMATCHED:
+            continue
+        count += 1
+        groups[count] = [clid]
+        idx = classes == clid
+        nspks[count] = idx.sum()
+        means[count, :] = spikes[idx].mean(0)
+
+    # do an initial upper triangular matrix of dists
+
+    for i in range(n_groups_in):
+        if i not in groups:
+            continue
+        for j in range(i + 1, n_groups_in):
+            if j not in groups:
+                continue
+            dists[i, j] = distance_groups(means[i, :], means[j, :], sign) 
+
+    # iteratively merge groups and update dists
+    minimum = -1
+    while True:
+        this_argmin = dists.argmin()
+        gr1, gr2 = np.unravel_index(this_argmin, (n_groups_in, n_groups_in))
+        minimum = dists[gr1, gr2]
+        if minimum > crit:
+            break
+        print('Merging {} and {}, dist: {:.4f}'.format(gr1, gr2, minimum))
+        # merge groups 1 and 2 now
+        groups[gr1] += groups[gr2]
+        del groups[gr2] 
+        # update nspks
+        nspk1 = nspks[gr1]
+        nspk2 = nspks[gr2]
+        nspks[gr1] = nspk1 + nspk2
+        # update means
+        means[gr1, :] = (means[gr1, :] * nspk1 + means[gr2, :] * nspk2) / (nspk1 + nspk2)
+        # update dists: everything containing gr2 is inf now
+        # everything containing gr1 has to be redone
+        dists[gr2, :] = np.inf
+        dists[:, gr2] = np.inf
+        for i in groups.iterkeys():
+            if i < gr1:
+                dists[i, gr1] = distance_groups(means[i], means[gr1], sign)
+            elif i > gr2:
+                dists[gr1, i] = distance_groups(means[i], means[gr1], sign)
+    return groups 
 
 def make_means(spikes, classes, clids):
     """
@@ -95,8 +157,12 @@ def main(datafname, sorting_fname, read_only=False):
     group_arr[art_idx, 1] = GROUP_ART
     print('Classes: {}'.format(clids))
 
-    groups, means, nspks = make_means(spikes, classes, clids)
-    groups = create_groups(groups, means, nspks, sign)
+    groups = create_groups_new(spikes, classes, clids, sign)
+    # print('Calcluating mean spikes')
+    # groups, means, nspks = make_means(spikes, classes, clids)
+    # this can be more efficient!
+    # print('Creating groups')
+    # groups = create_groups(groups, means, nspks, sign)
 
     for grid, orig_grid in enumerate(sorted(groups.keys())):
         clids = groups[orig_grid]

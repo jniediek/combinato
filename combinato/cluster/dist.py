@@ -14,6 +14,7 @@ from .. import options, CLID_UNMATCHED
 def distances_euclidean(all_spikes, templates):
     """
     returns the distances for all spikes and all templates
+    might be useful to do this loop in Cython
     """
 
     ret = np.empty((all_spikes.shape[0], templates.shape[0]))
@@ -93,6 +94,8 @@ def find_nearest(means, sign='pos'):
     """
     finds nearest match of two groups
     (might be useful to convert this to cython)
+    this is slow because it re-calculates things all the 
+    time. It should use a cache and update only updated groups
     """
     minimum = np.Inf
     min1 = None
@@ -101,7 +104,9 @@ def find_nearest(means, sign='pos'):
     for gr1, mean1 in means.items():
         for gr2, mean2 in means.items():
             if gr2 > gr1:
+                print('Calc dist')
                 dist = distance_groups(mean1, mean2, sign)
+                print('Done')
                 if dist < minimum:
                     minimum = dist
                     min1 = gr1
