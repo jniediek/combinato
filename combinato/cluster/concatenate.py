@@ -154,22 +154,34 @@ def total_match(fid, all_spikes):
     ids, mean_array, stds = get_means(classes, all_spikes)
     if not len(ids):
         return fid.root.classes[:], fid.root.matches[:]
-    unmatched_idx = classes == CLID_UNMATCHED
-    unmatched_spikes = all_spikes[unmatched_idx]
-    print('Calculating match for {} spikes'.format(unmatched_spikes.shape[0]))
-    all_dists = distances_euclidean(unmatched_spikes, mean_array)
-    print('all_dists: {}'.format(all_dists.shape))
+    unmatched_idx = (classes == CLID_UNMATCHED).nonzero()[0]
+    # unmatched_spikes = all_spikes[unmatched_idx]
 
-    all_dists[all_dists > options['SecondMatchFactor'] * stds] = np.inf
-    minimizers_idx = all_dists.argmin(1)
-    minimizers = ids[minimizers_idx]
+    # JN 2016-09-08: For spike counts greater 10^6, this becomes a memory problem
+    # the procedure should be done in batches of 50,000 spikes
+    blocksize =  50*1000
+    n_unmatched = unmatched_idx.shape[0]
+    starts = np.arange(0, n_unmatched, blocksize)
+    stops = starts + blocksize
+    stops[-1] = n_unmatched
 
-    minima = all_dists.min(1)
-    minimizers[minima >= options['SecondMatchMaxDist'] * all_spikes.shape[1]] = 0
+    for start, stop in zip(starts, stops):
+        this_idx = unmatched_idx[start:stop] 
+        print('Calculating match for {} spikes'.
+            format(all_spikes[this_idx].shape[0]))
+        all_dists = distances_euclidean(all_spikes[this_idx], mean_array)
+        print('all_dists: {}'.format(all_dists.shape))
 
-    fid.root.classes[unmatched_idx] = minimizers
-    fid.root.matches[unmatched_idx] = SPIKE_MATCHED_2
-    fid.root.distance[unmatched_idx] = minima
+        all_dists[all_dists > options['SecondMatchFactor'] * stds] = np.inf
+        minimizers_idx = all_dists.argmin(1)
+        minimizers = ids[minimizers_idx]
+
+        minima = all_dists.min(1)
+        minimizers[minima >= options['SecondMatchMaxDist'] * all_spikes.shape[1]] = 0
+
+        fid.root.classes[this_idx] = minimizers
+        fid.root.matches[this_idx] = SPIKE_MATCHED_2
+        fid.root.distance[this_idx] = minima
 
     fid.flush()
     return fid.root.classes[:], fid.root.matches[:]
