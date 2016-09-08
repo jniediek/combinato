@@ -84,19 +84,19 @@ class GroupOverviewFigure(MplCanvas):
         self.maxDistrAx = self.fig.add_subplot(grid[5])
         self.overTimeAx = self.fig.add_subplot(grid[6:9])
 
-        titles = ((self.meanDensAx, 'density'),
-                  (self.meanDensLogAx, 'log density'),
-                  (self.meanAx, 'mean spikes'),
-                  (self.isiAx, 'inter-spike intervals'),
-                  (self.maxDistrAx, 'distr. of amplitudes'),
-                  (self.overTimeAx, 'amplitude over time'))
+        titles = ((self.meanDensAx, 'Density'),
+                  (self.meanDensLogAx, 'Log density'),
+                  (self.meanAx, 'Mean spikes'),
+                  (self.isiAx, 'Inter-spike intervals'),
+                  (self.maxDistrAx, 'Distr. of amplitudes'),
+                  (self.overTimeAx, 'Amplitude over time'))
 
         for t in titles:
             t[0].text(1, 1, t[1], transform=t[0].transAxes,
                       backgroundcolor='w',
                       horizontalalignment='right',
                       verticalalignment='top')
-        self.cumSpikeAx.text(0, 1, 'cumulative spike count',
+        self.cumSpikeAx.text(0, 1, 'Cumulative spike count',
                              transform=self.cumSpikeAx.transAxes,
                              backgroundcolor='w',
                              horizontalalignment='left',
@@ -260,7 +260,7 @@ class GroupOverviewFigure(MplCanvas):
                                             color=options['histcolor'],
                                             histtype=options['histtype'])
             self.maxDistrAx.set_xlim(min(0, mdata.min()), max(0, mdata.max()))
-            self.maxDistrAx.set_ylim((0, max(ns) * 1.05))
+            self.maxDistrAx.set_ylim((0, max(ns) * 1.15))
 
         else:
             tstr = ''

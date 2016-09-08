@@ -14,6 +14,7 @@ from .. import options, CLID_UNMATCHED
 def distances_euclidean(all_spikes, templates):
     """
     returns the distances for all spikes and all templates
+    might be useful to do this loop in Cython
     """
 
     ret = np.empty((all_spikes.shape[0], templates.shape[0]))
@@ -88,26 +89,6 @@ def distance_groups(in1, in2, sign='pos'):
     linf = np.abs(dist).max()
     return (l2_dist + 7 * linf)/2
 
-
-def find_nearest(means, sign='pos'):
-    """
-    finds nearest match of two groups
-    (might be useful to convert this to cython)
-    """
-    minimum = np.Inf
-    min1 = None
-    min2 = None
-
-    for gr1, mean1 in means.items():
-        for gr2, mean2 in means.items():
-            if gr2 > gr1:
-                dist = distance_groups(mean1, mean2, sign)
-                if dist < minimum:
-                    minimum = dist
-                    min1 = gr1
-                    min2 = gr2
-
-    return min1, min2, minimum
 
 
 def get_means(classes, all_spikes):

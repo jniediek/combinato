@@ -1,27 +1,32 @@
-# JN 2015-04-20
-# refactoring
+# JN 2015-04-20 refactor
+# JN 2016-09-06 introduce faster create_groups
 
 """
 read a total sorting file and group the classes
 """
 from __future__ import absolute_import, print_function, division
+
 import tables
-import os
 import numpy as np
 from .. import SortingManager, options, CLID_UNMATCHED, GROUP_ART, GROUP_NOCLASS,\
     TYPE_ART, TYPE_NO, TYPE_MU
-from .dist import find_nearest
+from .dist import distance_groups
 
 
-def make_means(spikes, classes, clids):
+def create_groups(spikes, classes, clids, sign):
     """
-    calculate means
+    more efficient group merging
     """
+    crit = options['MaxDistMatchGrouping']
     groups = {}
-    means = {}
-    nspks = {}
+    n_groups_in = len(clids) + 1
+    means = np.empty((n_groups_in, spikes.shape[1]))
+    nspks = np.empty(n_groups_in, int)
+    dists = np.zeros((n_groups_in, n_groups_in))
+    # initialize to inf
+    dists[:, :] = np.inf
     count = 1
-
+    
     for clid in clids:
         if clid == CLID_UNMATCHED:
             continue
@@ -29,43 +34,46 @@ def make_means(spikes, classes, clids):
         groups[count] = [clid]
         idx = classes == clid
         nspks[count] = idx.sum()
-        # print('Adding cl {}'.format(clid))
-        means[count] = spikes[idx].mean(0)
+        means[count, :] = spikes[idx].mean(0)
 
-    return groups, means, nspks
+    # do an initial upper triangular matrix of dists
 
+    for i in range(n_groups_in):
+        if i not in groups:
+            continue
+        for j in range(i + 1, n_groups_in):
+            if j not in groups:
+                continue
+            dists[i, j] = distance_groups(means[i, :], means[j, :], sign) 
 
-def create_groups(groups, means, nspks, sign='pos'):
-    """
-    join closest groups iteratively
-    """
-    minimum = 0
-    crit = options['MaxDistMatchGrouping']
-
+    # iteratively merge groups and update dists
+    minimum = -1
     while True:
-        key1, key2, minimum = find_nearest(means, sign)
+        this_argmin = dists.argmin()
+        gr1, gr2 = np.unravel_index(this_argmin, (n_groups_in, n_groups_in))
+        minimum = dists[gr1, gr2]
         if minimum > crit:
             break
-        if None in (key1, key2):
-            continue
-
-        groups[key1] += groups[key2]
-        print('Joining {} and {} (d={:.3f})'.format(key1, key2, minimum))
-        mean1 = means[key1]
-        mean2 = means[key2]
-        nspk1 = nspks[key1]
-        nspk2 = nspks[key2]
-
-        new_mean = (mean1 * nspk1 + mean2 * nspk2)/(nspk1 + nspk2)
-
-        means[key1] = new_mean
-        nspks[key1] = nspk1 + nspk2
-
-        del groups[key2]
-        del means[key2]
-        del nspks[key2]
-
-    return groups
+        print('Merging {} and {}, dist: {:.4f}'.format(gr1, gr2, minimum))
+        # merge groups 1 and 2 now
+        groups[gr1] += groups[gr2]
+        del groups[gr2] 
+        # update nspks
+        nspk1 = nspks[gr1]
+        nspk2 = nspks[gr2]
+        nspks[gr1] = nspk1 + nspk2
+        # update means
+        means[gr1, :] = (means[gr1, :] * nspk1 + means[gr2, :] * nspk2) / (nspk1 + nspk2)
+        # update dists: everything containing gr2 is inf now
+        # everything containing gr1 has to be redone
+        dists[gr2, :] = np.inf
+        dists[:, gr2] = np.inf
+        for i in groups.iterkeys():
+            if i < gr1:
+                dists[i, gr1] = distance_groups(means[i], means[gr1], sign)
+            elif i > gr2:
+                dists[gr1, i] = distance_groups(means[i], means[gr1], sign)
+    return groups 
 
 
 def main(datafname, sorting_fname, read_only=False):
@@ -95,9 +103,8 @@ def main(datafname, sorting_fname, read_only=False):
     group_arr[art_idx, 1] = GROUP_ART
     print('Classes: {}'.format(clids))
 
-    groups, means, nspks = make_means(spikes, classes, clids)
-    groups = create_groups(groups, means, nspks, sign)
-
+    groups = create_groups(spikes, classes, clids, sign)
+    
     for grid, orig_grid in enumerate(sorted(groups.keys())):
         clids = groups[orig_grid]
         for clid in clids:
@@ -117,6 +124,13 @@ def main(datafname, sorting_fname, read_only=False):
             print('Creating grouping')
 
         sort_fid.create_array('/', 'groups', group_arr)
+
+        try:
+            sort_fid.remove_node('/', 'groups_orig')
+            print('Updating original grouping')
+        except tables.NoSuchNodeError:
+            print('Creating original grouping')
+
         sort_fid.create_array('/', 'groups_orig', group_arr)
 
     # assign types
@@ -139,26 +153,14 @@ def main(datafname, sorting_fname, read_only=False):
         sort_fid.create_array('/', 'types', types)
 
         # create backups of types
+        try:
+            sort_fid.remove_node('/', 'types_orig')
+            print('Updating original types')
+        except tables.NoSuchNodeError:
+            print('Storing original types')
+
         sort_fid.create_array('/', 'types_orig', types)
 
         sort_fid.flush()
 
     sort_fid.close()
-
-
-if __name__ == "__main__":
-    """
-    a small test case
-    """
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
-    parser.add_argument('--read-only', default=False, action='store_true')
-    parser.add_argument('--datafile', nargs=1, required=True)
-    parser.add_argument('--sorting', nargs=1, required=True)
-
-    args = parser.parse_args()
-
-    datafile = args.datafile[0]
-    sortingfile = os.path.join(args.sorting[0], 'sort_cat.h5')
-
-    main(datafile, sortingfile, args.read_only)
