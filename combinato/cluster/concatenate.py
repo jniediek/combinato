@@ -162,8 +162,12 @@ def total_match(fid, all_spikes):
     blocksize =  50*1000
     n_unmatched = unmatched_idx.shape[0]
     starts = np.arange(0, n_unmatched, blocksize)
-    stops = starts + blocksize
-    stops[-1] = n_unmatched
+    if not len(starts):
+        starts = np.array([0])
+        stops = np.array([n_unmatched])
+    else: 
+        stops = starts + blocksize
+        stops[-1] = n_unmatched
 
     for start, stop in zip(starts, stops):
         this_idx = unmatched_idx[start:stop] 
