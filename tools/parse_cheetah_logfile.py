@@ -27,7 +27,7 @@ of ATLAS etc.
 This script partially mirrors the system of variable definitions
 in Cheeatah. For complex arithmethic with variables, the script might fail.
 
-Please check the GitHub repository (github.com/wasserverein/combinato.git)
+Please check the GitHub repository (github.com/jniediek/combinato.git)
 for updates and manual.
 
 Contact me (jonied@posteo.de) for access to the repository.

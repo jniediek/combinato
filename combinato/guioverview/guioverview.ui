@@ -48,6 +48,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="checkBoxSetStates">
+        <property name="text">
+         <string>Set states upon initialization</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -165,7 +175,7 @@
      <x>0</x>
      <y>0</y>
      <width>793</width>
-     <height>19</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuActions">

@@ -179,8 +179,14 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
 
         for chname in sorted_channels:
             channel_fname = channels[chname]
-            ch_ex, n_pos, n_neg, n_sorted, h5fname =\
-                check_status(channel_fname)
+            if self.checkBoxSetStates.isChecked():
+                ch_ex, n_pos, n_neg, n_sorted, h5fname =\
+                    check_status(channel_fname)
+            else:
+                ch_ex = True 
+                n_pos = n_neg = n_sorted = 0
+                h5fname = None
+
             if has_overview:
                 ch_overview_image = load_image(dirname_overview,
                                                chname,
@@ -215,10 +221,14 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
                 ex_str = DONE_STR
             else:
                 ex_str = DO_EXTRACT_STR
-            if n_sorted > 0:
-                sort_str = DONE_STR
+
+            if self.checkBoxSetStates.isChecked():
+                if n_sorted > 0:
+                    sort_str = DONE_STR
+                else:
+                    sort_str = DO_SORT_STR_POS
             else:
-                sort_str = DO_SORT_STR_POS
+                sort_str = DONE_STR
 
             sort_str_neg = DONE_STR  # by default, never sort negative
 
@@ -428,6 +438,7 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
             ret = msgbox.exec_()
             if ret == qg.QMessageBox.Yes:
                 print('Overwriting ' + out_fname)
+                os.rename(out_fname, out_fname + '.bak') 
             else:
                 write = False
 
