@@ -523,10 +523,13 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         for src in shorties[1:]:
             print('Merging {} to {}'.format(src, tgt))
-            self.merge_groups(src, tgt, mode='by-id')
+            self.merge_groups(src, tgt, mode='by-id', finalize=False)
+
+        self.listView.reset()
+        self.updateActiveTab()
 
 
-    def merge_groups(self, src, tgt, mode='by-name'):
+    def merge_groups(self, src, tgt, mode='by-name', finalize=True):
         """
         merge two groups
         """
@@ -539,8 +542,10 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         clusters = groups[src].removeClusters()
         groups[tgt].addClusters(clusters)
         self.backend.sessions.dirty = True
-        self.listView.reset()
-        self.updateActiveTab()
+
+        if finalize:
+            self.listView.reset()
+            self.updateActiveTab()
 
     def compare_groups(self):
         group1name = str(self.groupOnecomboBox.currentText())
