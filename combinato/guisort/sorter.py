@@ -756,7 +756,6 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                 index.append(name)
 
         index.sort()
-
         if self.allGroupsFigureDirty:
             self.allGroupsFigure.\
                 addAxes(self.backend.x, session, index)

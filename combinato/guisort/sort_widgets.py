@@ -14,7 +14,7 @@ from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 import time
 
-from .. import options
+from .. import options, TYPE_NAMES 
 from .basics import spikeDist
 
 if options['UseCython']:
@@ -338,21 +338,9 @@ class GroupOverviewFigure(MplCanvas):
 class ComparisonFigure(MplCanvas):
     def __init__(self, parent, width=5, height=5):
         super(ComparisonFigure, self).__init__(parent, width, height)
-
-    # def cumulative(self, group1, group2, startTime):
-    #     self.fig.clf()
-    #     times1 = np.hstack([c.times for c in group1.clusters])
-    #     times2 = np.hstack([c.times for c in group2.clusters])
-
-    #     for t in [times1, times2]:
-    #         t -= startTime
-    #         t.sort()
-    #         t/=4e7
-
-    #     ax = self.fig.add_subplot(1,1,1)
-    #     ax.plot(times1, range(len(times1)), 'b')
-    #     ax.plot(times2, range(len(times2)), 'r')
-    #     self.draw()
+        # positions for the group plots
+        self.positions = ((.1, .7, .2, .2),
+                          (.7, .7, .2, .20))
 
     def xcorr(self, group1, group2):
         lag = 50  # ms
@@ -365,13 +353,46 @@ class ComparisonFigure(MplCanvas):
         lags = cross_correlogram(times1, times2, lag, group1 is group2)
 
         if lags.any():
-            ax = self.fig.add_subplot(1, 1, 1)
-            ax.set_xlim([-lag, lag])
+            # ax = self.fig.add_subplot(1, 1, 1)
+            lags_plot = self.fig.add_axes((.05, .05, .9, .9))
+
             # calculate the bins
             greater_len = max(len(times1), len(times2))
-            ax.hist(lags, min(2*lag, max(2*lag, np.sqrt(greater_len))),
-                    linewidth=.4,
-                    histtype=options['histtype'])
+
+            # plot it
+            bins = np.linspace(-lag, lag, min(2*lag, max(2*lag, np.sqrt(greater_len))))
+            hist_data, _ = np.histogram(lags, bins)
+            lags_plot.bar(bins[:-1], hist_data, linewidth=.1,
+                width=(bins[1]-bins[0])) #, histtype=options['histtype'])
+            bigleg = bins[hist_data.argmax()]
+            lags_plot.text(bigleg,
+                hist_data.max(), '{:.0f} ms'.format(bigleg), va='bottom')
+            lags_plot.set_ylim((0, hist_data.max()*1.3))
+            x = None
+            this_max  = 0
+            this_min = 0
+            lags_plot.set_xlim([-lag, lag])
+            axes = [] 
+
+            for i, group in enumerate((group1, group2)):
+                group_plot = self.fig.add_axes(self.positions[i])
+                axes.append(group_plot)
+                group_plot.patch.set_alpha(.5)
+                group_plot.grid(True)
+                for spikes in group.meandata:
+                    this_max = np.max((this_max, spikes.max()))
+                    this_min = np.min((this_min, spikes.min()))
+                    if x is None:
+                        x = np.arange(0, spikes.shape[0])
+                    group_plot.plot(x, spikes, 'b')
+                group_plot.set_xticks(range(0, len(x), 16))
+                group_plot.set_xticklabels([])
+                group_plot.text(.01, 1.1, '{} ({})'.format(group.name,
+                    TYPE_NAMES[group.group_type]), transform=group_plot.transAxes,
+                    va='bottom')
+        
+            for group_plot in axes:
+                group_plot.set_ylim((1.1 * this_min, 1.1 * this_max))
         self.draw()
 
 
@@ -383,7 +404,6 @@ class AllGroupsFigure(MplCanvas):
         self.spikecounts = []
 
     def addAxes(self, x, session, index):
-
         self.x = x
         self.session = session
         fig = self.fig
@@ -403,11 +423,13 @@ class AllGroupsFigure(MplCanvas):
                         top=.98, right=.98)
 
         total_max = 0
+        total_min = 0
         axes = []
         for i, gId in enumerate(index):
             data = session.groupsById[gId].meandata
             if len(data):
-                total_max = max(total_max, np.abs(data).max())
+                total_max = np.max((total_max, np.max([d.max() for d in data])))
+                total_min = np.min((total_min, np.min([d.min() for d in data])))
             ax = fig.add_subplot(grid[i])
             session.groupsById[gId].assignAxis = ax
             name = session.groupsById[gId].name
@@ -423,7 +445,7 @@ class AllGroupsFigure(MplCanvas):
             ax.set_xlim((0, len(x)))
             axes.append(ax)
 
-        ylim = (-1.5 * total_max, 1.5 * total_max)
+        ylim = (1.2 * total_min, 1.2* total_max)
 
         for ax in axes:
             ax.set_ylim(ylim)
@@ -443,8 +465,9 @@ class AllGroupsFigure(MplCanvas):
                         del ax.lines[0]
                 data = group.meandata
                 counts = sum([c.spikes.shape[0] for c in group.clusters])
+                gtype = TYPE_NAMES[group.group_type]
                 self.spikecounts.append(ax.text(.05, .9,
-                                                '{} ({})'.format(gId, counts),
+                                                '{} (# {}, {})'.format(gId, counts, gtype),
                                                 transform=ax.transAxes))
                 for row in data:
                     ax.plot(self.x, row, 'b')
