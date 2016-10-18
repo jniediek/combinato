@@ -23,7 +23,7 @@ LW = 1.8   # linewidth of individual lines in raster
 
 fr_bins = np.arange(-T_PRE-500, T_POST+500, 1)
 fr_window = signal.get_window(('gaussian', std), nsamp_window)
-fr_w = nsamp_window/2 - 1
+fr_w = int(nsamp_window/2) - 1   # JN 2016-10-17 add int
 
 
 def set_raster_properties(p, ylim=8):

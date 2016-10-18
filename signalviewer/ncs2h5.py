@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # JN 2016-01-12
+# JN 2016-10-18 add support to read jobs from file
 
 """
 Downsample ncs files and save as h5
@@ -7,14 +8,14 @@ Downsample ncs files and save as h5
 from __future__ import print_function, division, absolute_import
 import os
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, FileType
 from multiprocessing import Pool
 from time import time
 import scipy.signal
 from .helper.helper import initfile, make_blocks
 from combinato import NcsFile
 
-DEBUG = True
+DEBUG = False
 
 
 def downsampling(ncsfname, h5fname, Q=16, include_times=True):
@@ -49,7 +50,7 @@ def downsampling(ncsfname, h5fname, Q=16, include_times=True):
             # Warning!
             # scipy.signal.decimate uses lfilt,
             # so the decimated signal has a phase shift
-            # for this reason, we use 
+            # for this reason, we use
             ds_data = scipy.signal.filtfilt(b_down, a_down, data)[::Q]
         else:
             ds_data = data
@@ -112,17 +113,28 @@ def main():
     """
     parser = ArgumentParser('css-ncs-downsample',
                             epilog='Johannes Niediek (jonied@posteo.de)')
-    parser.add_argument('fname', nargs='+')
-    parser.add_argument('--ncores', type=int, default=4)
+    parser.add_argument('--files', nargs='+')
+    parser.add_argument('--ncores', type=int, default=1)
     parser.add_argument('--q', type=int, default=16)
     parser.add_argument('--outfolder', nargs=1)
     parser.add_argument('--no-times', default=False, action='store_true')
+    parser.add_argument('--jobs', type=FileType('r'))
     args = parser.parse_args()
-    fnames = args.fname
 
     if args.outfolder:
         outfolder = args.outfolder[0]
     else:
         outfolder = None
+
+    if not (args.files or args.jobs):
+        raise Warning('Specify --files or --jobs!')
+
+    if args.jobs:
+        fnames = [l.strip() for l in args.jobs.readlines()]
+
+    elif args.files:
+        fnames = args.files
+
+    print('Working with {} cores on: {}'.format(args.ncores, fnames))
 
     downsample_main(fnames, args.q, outfolder, args.ncores, not args.no_times)
