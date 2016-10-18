@@ -39,8 +39,7 @@ def downsampling(ncsfname, h5fname, Q=16, include_times=True):
         b_down, a_down = scipy.signal.cheby1(ds_order, .05, 0.8/Q)
 
     for start, stop in blocks:
-        if DEBUG:
-            print('Filtering {} {}-{}'.format(chname, start, stop))
+        print('Filtering {} {}-{}'.format(chname, start, stop))
         data, ts = ncsf.read(start, stop, mode='both')
 
         if include_times:
@@ -93,7 +92,8 @@ def downsample_main(fnames, q, outfolder=None, ncores=4, include_times=True):
     if DEBUG:
         print('Working on: {}'.format(cands))
 
-        jobs = zip(cands, [q] * len(cands), [outfolder] * len(cands), [include_times] * len(cands))
+    jobs = zip(cands, [q] * len(cands), [outfolder] * len(cands), [include_times] * len(cands))
+
     t1 = time()
     if ncores > 1:
         p = Pool(ncores)
