@@ -2,7 +2,7 @@
 #added comment JN 2014-12-07
 """
 script generates overview figures *from ncs files* to give you a first
-impression of the data Quality, movement artifacts and so on
+impression of the data quality, movement artifacts and so on
 """
 from __future__ import print_function, division, absolute_import
 
@@ -106,7 +106,7 @@ def overview_plot(channel):
                 pdata = myfilter.filter_detect(data[:n_samp])
 
             elif i == 2:
-                pdata = sig.decimate(data, Q, 4)
+                pdata = sig.decimate(data, Q, 4, zero_phase=False)
 
             x = np.arange(pdata.shape[0])*timestep
 
