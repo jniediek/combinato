@@ -24,6 +24,12 @@ Please walk through our instructive Tutorial.
 - [FAQ](../../wiki/FAQ)
 - [Details](../../wiki/Details)
 
+## Citing Combinato 
+
+When using Combinato in your work, please cite [this paper](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0166598):
+
+Johannes Niediek, Jan Boström, Christian E. Elger, Florian Mormann. „Reliable Analysis of Single-Unit Recordings from the Human Brain under Noisy Conditions: Tracking Neurons over Hours“. PLOS ONE 11 (12): e0166598. 2016. [doi:10.1371/journal.pone.0166598](doi:10.1371/journal.pone.0166598).
+
 ## Contact
 Please feel free to use the GitHub infrastructure for questions, bug reports, feature requests, etc.
 
