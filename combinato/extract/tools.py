@@ -102,11 +102,11 @@ class OutFile(object):
         f.create_group('/', 'neg', 'negative spikes')
 
         for sign in ('pos', 'neg'):
-            f.createEArray('/' + sign, 'spikes',
+            f.create_earray('/' + sign, 'spikes',
                            tables.Float32Atom(), (0, spoints))
-            f.createEArray('/' + sign, 'times', tables.FloatAtom(), (0,))
+            f.create_earray('/' + sign, 'times', tables.FloatAtom(), (0,))
 
-        f.createEArray('/', 'thr', tables.FloatAtom(), (0, 3))
+        f.create_earray('/', 'thr', tables.FloatAtom(), (0, 3))
 
         self.f = f
         print('Initialized ' + fname)
