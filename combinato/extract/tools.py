@@ -12,7 +12,7 @@ from scipy.io import loadmat
 
 SAMPLES_PER_REC = 512
 DEFAULT_MAT_SR = 24000
-DEFAULT_MAT_VOLT_FACTOR = 100
+DEFAULT_MAT_VOLT_FACTOR = 1
 
 def read_matfile(fname):
     """
