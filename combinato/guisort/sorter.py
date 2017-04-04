@@ -76,7 +76,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.groupComboBox.currentIndexChanged.\
             connect(self.updateListView)
         self.tabWidget.setTabEnabled(3, False)
-        
+
         self.tabWidget.currentChanged.\
             connect(self.updateActiveTab)
 
@@ -117,19 +117,28 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         import pandas as pd
         from .. import raster_options
 
-        # the following is just an example for one specific experiment
+        # the following should read all standard experiment codes
+        # e.g. 'fn2' or 'ospr3' (string plus one digit)
         base = os.path.basename(self.basedir)
         try:
-            pat = int(base[:3])
-            run = int(base[8:9])
+            pat = base[:3]
+            paradigm = ''
+            for char in base[6:]:
+                paradigm += char
+                if char.isdigit():
+                    break
+
         except ValueError:
             print('Unable to initialize raster meta data')
             return
-        infix = '{:03d}{}{}'.format(pat, raster_options['infix'], run)
+        #infix = '{:03d}{}{}'.format(pat, raster_options['infix'], run)
+        infix = pat+paradigm
         fname_frame = 'frame_{}.h5'.format(infix)
         frame = pd.read_hdf(fname_frame, raster_options['frame_name'])
         meta_prefix = raster_options['meta_prefix']
-        image_path = os.path.join(meta_prefix, infix, infix)
+        image_path = os.path.join(meta_prefix, infix)
+        if paradigm.startswith('fn'):
+            image_path = os.path.join(meta_prefix, infix, infix)
 
         # now initialize the data
         self.rasterFigure = RasterFigure(self.centralwidget)
@@ -160,7 +169,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                 clist.append(cluster.times)
             else:
                 tlist.append(cluster.times)
-    
+
         times = []
         for mylist in (tlist, clist):
             if mylist:
@@ -516,10 +525,10 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         for gid in groups.keys():
             if (gid > 0) and (len(groups[gid].clusters) == 1):
-               shorties.append(gid) 
+               shorties.append(gid)
 
         if len(shorties):
-            tgt = shorties[0] 
+            tgt = shorties[0]
 
         for src in shorties[1:]:
             print('Merging {} to {}'.format(src, tgt))
@@ -593,7 +602,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         elif name == 'allGroupsTab':
             self.allGroupsFigure.mark(groupName, index)
 
-            
+
     @pyqtSignature("")
     def on_actionMakeArtifact_triggered(self):
         self.move(self.backend.sessions.groupsByName['Artifacts'])

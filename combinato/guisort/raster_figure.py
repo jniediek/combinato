@@ -104,7 +104,7 @@ def plot_one_plot(plot, scale, spike_times, onset_times,
     rows, do_plot = create_raster_rows(merged_spike_times,
                                        onset_times.copy())
     if do_plot:
-        plot_convolution(plot, rows, min(2.5, 3/(scale/1.5)))
+        plot_convolution(plot, rows, min(2.5, 10/scale))
     #else:
         #print('Not doing convolution!')
 
@@ -177,6 +177,8 @@ class RasterFigure(MplCanvas):
         if n_stim > 3:
             n_cols = 2
             plot_width = (1 - 8*hgap)/4
+            if len(set(self.frame.paradigm))<2:
+                plot_width *= 2
             n_rows = int((n_stim + 1)/2)
         else:
             n_cols = 1
@@ -197,22 +199,23 @@ class RasterFigure(MplCanvas):
                 row_height + BOTTOM/2 + .01
 
             for shift, paradigm in iterator:
-                pos = (col_shift + hgap + shift, row_bottom,
+                if paradigm in set(self.frame.paradigm):
+                    pos = (col_shift + hgap + shift, row_bottom,
                        plot_width, plot_height)
 
-                plot = figure.add_axes(pos)
-                onset_times = get_onset_times(self.frame, stimulus,
+                    plot = figure.add_axes(pos)
+                    onset_times = get_onset_times(self.frame, stimulus,
                                               daytime, paradigm)
-                if do_numbers:
-                    number = stimulus + 1
-                else:
-                    number = None
-                plot_one_plot(plot, scale, spiketimes, onset_times,
+                    if do_numbers:
+                        number = stimulus + 1
+                    else:
+                        number = None
+                        plot_one_plot(plot, scale, spiketimes, onset_times,
                               self.names[stimulus], self.images[stimulus],
                               paradigm, number)
 
-                if (istim + 1 == n_rows) or (istim + 1 == n_stim):
-                    plot.set_xticks([0, 1000])
-                    plot.set_xticklabels([0, 1000])
+                    if (istim + 1 == n_rows) or (istim + 1 == n_stim):
+                        plot.set_xticks([0, 1000])
+                        plot.set_xticklabels([0, 1000])
 
         self.draw()

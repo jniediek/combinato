@@ -413,7 +413,7 @@ class AllGroupsFigure(MplCanvas):
 
         ngroup = len(index)
         ncol = 4
-        nrow = int(np.ceil(ngroup/ncol))
+        nrow = max(int(np.ceil(ngroup/ncol)), 2)
         if ncol * nrow < ngroup:
             nrow += 1
 
@@ -444,7 +444,6 @@ class AllGroupsFigure(MplCanvas):
                 ax.set_yticklabels([])
             ax.set_xlim((0, len(x)))
             axes.append(ax)
-
         ylim = (1.2 * total_min, 1.2* total_max)
 
         for ax in axes:
