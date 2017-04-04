@@ -76,7 +76,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.groupComboBox.currentIndexChanged.\
             connect(self.updateListView)
         self.tabWidget.setTabEnabled(3, False)
-        
+
         self.tabWidget.currentChanged.\
             connect(self.updateActiveTab)
 
@@ -137,6 +137,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         frame = pd.read_hdf(fname_frame, raster_options['frame_name'])
         meta_prefix = raster_options['meta_prefix']
         image_path = os.path.join(meta_prefix, infix)
+        if paradigm.startswith('fn'):
+            image_path = os.path.join(meta_prefix, infix, infix)
 
         # now initialize the data
         self.rasterFigure = RasterFigure(self.centralwidget)
@@ -167,7 +169,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                 clist.append(cluster.times)
             else:
                 tlist.append(cluster.times)
-    
+
         times = []
         for mylist in (tlist, clist):
             if mylist:
@@ -523,10 +525,10 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         for gid in groups.keys():
             if (gid > 0) and (len(groups[gid].clusters) == 1):
-               shorties.append(gid) 
+               shorties.append(gid)
 
         if len(shorties):
-            tgt = shorties[0] 
+            tgt = shorties[0]
 
         for src in shorties[1:]:
             print('Merging {} to {}'.format(src, tgt))
@@ -600,7 +602,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         elif name == 'allGroupsTab':
             self.allGroupsFigure.mark(groupName, index)
 
-            
+
     @pyqtSignature("")
     def on_actionMakeArtifact_triggered(self):
         self.move(self.backend.sessions.groupsByName['Artifacts'])
