@@ -12,7 +12,6 @@ from scipy.io import loadmat
 
 SAMPLES_PER_REC = 512
 DEFAULT_MAT_SR = 24000
-DEFAULT_MAT_VOLT_FACTOR = 1
 
 def read_matfile(fname):
     """
@@ -29,10 +28,10 @@ def read_matfile(fname):
 
     print('Using ' + insert + ' sampling rate ({} kHz)'.format(sr/1000.))
     ts = 1/sr
-    fdata = data['data'].ravel() * DEFAULT_MAT_VOLT_FACTOR
+    fdata = data['data'].ravel()
     atimes = np.linspace(0, fdata.shape[0]/(sr/1000), fdata.shape[0])
-    print(atimes.shape, fdata.shape)
-    print(ts)
+    # print(atimes.shape, fdata.shape)
+    # print(ts)
 
     return fdata, atimes, ts
 

@@ -5,6 +5,7 @@ Imports that can than be used by the packages in this folder
 
 from __future__ import absolute_import, print_function
 from .options import options, artifact_criteria
+
 try:
     from .options import raster_options
 except ImportError:

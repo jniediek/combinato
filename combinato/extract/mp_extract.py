@@ -28,20 +28,20 @@ def save(q, ctarget):
 
         jname = job['name']
         this_name_pending_jobs = pending_jobs[jname]
-        
+
         jcount = job['count']
         this_name_pending_jobs[jcount] = job
-        
-        
+
+
         print('Job name: {} pending jobs: {} jnow: {}'.format(jname,
                                                               this_name_pending_jobs.keys(),
                                                               jcount))
-        
+
         while last_saved_count[jname] + 1 in this_name_pending_jobs:
             sjob = this_name_pending_jobs[last_saved_count[jname] + 1]
             data = all_data[sjob['all_data_ind']]
             if not sjob['name'] in openfiles:
-                
+
                  spoints = data[0][0].shape[1]
                  openfiles[sjob['name']] = OutFile(sjob['name'], sjob['filename'],
                                                    spoints, sjob['destination'])
@@ -59,21 +59,21 @@ def save(q, ctarget):
 
     print('Save exited')
 
-            
+
 def work(q_in, q_out, count, target):
 
     filters = {}
-    
+
     while count.value < target:
         with count.get_lock():
             count.value += 1
-        
+
         inp = q_in.get()
         job = inp[0]
         datatuple = inp[1]
-        
+
         ts = datatuple[2]
-        
+
         if not ts in filters:
             filters[ts] = DefaultFilter(ts)
 
@@ -102,6 +102,12 @@ def read(jobs, q):
                 fname = job['filename']
                 print('Reading from matfile ' + fname)
                 data = read_matfile(fname)
+                if job['scale_factor'] != 1:
+                    print('Rescaling matfile data by {:.4f}'.
+                        format(job['scale_factor']))
+                    data = (data[0] * job['scale_factor'],
+                            data[1],
+                            data[2])
                 job.update(filename='data_' + jname + '.h5')
 
         else:

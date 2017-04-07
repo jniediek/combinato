@@ -1,3 +1,6 @@
+# JN 2017-04-07 adding scaling factor for matfiles
+
+
 from __future__ import division, print_function, absolute_import
 import os
 from argparse import ArgumentParser, FileType
@@ -29,6 +32,9 @@ def main():
                         help='job file contains one filename per row')
     parser.add_argument('--matfile', nargs=1,
                         help='extract data from a matlab file')
+    parser.add_argument('--matfile-scale-factor', nargs='?', type=float,
+                        help='rescale matfile data by this factor'
+                             ' (to obtain microvolts)', default=1)
     parser.add_argument('--destination', nargs=1,
                         help='folder where spikes should be saved')
     parser.add_argument('--refscheme', nargs=1, type=FileType(mode='r'),
@@ -53,7 +59,8 @@ def main():
                  'filename': args.matfile[0],
                  'is_matfile': True,
                  'count': 0,
-                 'destination': destination}]
+                 'destination': destination,
+                 'scale_factor': args.matfile_scale_factor}]
         mp_extract(jobs, 1)
         return
 
