@@ -11,6 +11,7 @@ from collections import defaultdict
 import numpy as np
 
 import PyQt4.QtGui as qtgui
+import PyQt4.QtCore as qtcore
 
 from matplotlib.gridspec import GridSpec
 from matplotlib.dates import AutoDateLocator, num2date, date2num
@@ -99,6 +100,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                 action.setChecked(True)
 
     def setup_gui(self):
+        self.setFocusPolicy(qtcore.Qt.StrongFocus)
         self.verticalLayout.addWidget(self.figure)
         self.addAction(self.actionBack)
         self.addAction(self.actionAdvance)
