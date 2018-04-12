@@ -42,7 +42,7 @@ def template_match(spikes, sort_idx, match_idx, factor):
 
     unmatched_idx = sort_idx == CLID_UNMATCHED
 
-    class_ids = np.unique(sort_idx[-unmatched_idx])
+    class_ids = np.unique(sort_idx[~unmatched_idx])
     if not len(class_ids):
         return
 
@@ -51,9 +51,9 @@ def template_match(spikes, sort_idx, match_idx, factor):
     if options['ExcludeVariableClustersMatch']:
         median_std = np.median(stds)
         std_too_high_idx = stds > 3 * median_std
-        mean_array = mean_array[-std_too_high_idx]
-        ids = ids[-std_too_high_idx]
-        stds = stds[-std_too_high_idx]
+        mean_array = mean_array[~std_too_high_idx]
+        ids = ids[~std_too_high_idx]
+        stds = stds[~std_too_high_idx]
 
     all_distances = distances_euclidean(spikes[unmatched_idx], mean_array)
 

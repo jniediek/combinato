@@ -98,7 +98,7 @@ def main(datafname, sorting_fname, read_only=False):
     group_arr = artifacts.copy().astype(np.int16)
     # mark artifacts
     art_idx = (artifacts[:, 1]) != 0 & (artifacts[:, 0] != 0)
-    clids = artifacts[-art_idx, 0]
+    clids = artifacts[~art_idx, 0]
 
     group_arr[art_idx, 1] = GROUP_ART
     print('Classes: {}'.format(clids))
