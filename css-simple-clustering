@@ -32,15 +32,21 @@ def main():
     sessions = prepare_main(args.datafile, sign, 'index', 0,
                             None, 20000, args.label[0], False, False)
 
-    for name, sign, ses in sessions:
-        cluster_main(name, ses, sign)
+    if (sessions) :
 
-    label = 'sort_{}_{}'.format(sign, args.label[0])
-    outfname = combine_main(args.datafile[0],
-                            [os.path.basename(ses[2]) for ses in sessions],
-                            label)
+        for name, sign, ses in sessions:
+            cluster_main(name, ses, sign)
 
-    groups_main(args.datafile[0], outfname)
+        label = 'sort_{}_{}'.format(sign, args.label[0])
+        outfname = combine_main(args.datafile[0],
+                                [os.path.basename(ses[2]) for ses in sessions],
+                                label)
+
+        groups_main(args.datafile[0], outfname)
+
+    else :
+        print("No spike sessions to sort.")
+
 
 
 if __name__ == "__main__":

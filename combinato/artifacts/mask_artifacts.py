@@ -226,12 +226,15 @@ def main(fname, concurrent_edges=None, concurrent_bin=None,
             node = h5fid.get_node('/' + sign + '/times')
         except tables.NoSuchNodeError:
             print('{} has no {} spikes'.format(fname, sign))
+            h5fid.close()
             continue
 
         if len(node.shape) == 0:
+            h5fid.close()
             continue
 
         elif node.shape[0] == 0:
+            h5fid.close()
             continue
 
         times = node[:]
