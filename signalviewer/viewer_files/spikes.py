@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 #! JN 2014-10-23 Add spike viewer to SWR viewer
 
+from PyQt5.QtWidgets import QDialog
+#from PyQt5.QtCore import *
+#from PyQt5.QtGui import *
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
-
-from sWidgets import *
+from .sWidgets import *
 from ui_spikes import Ui_Dialog
 
 import numpy as np

@@ -4,10 +4,10 @@ file collects widgets that call matplotlib
 """
 
 from __future__ import print_function, division, absolute_import
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 import numpy as np
-from matplotlib.backends.backend_qt4agg import\
+from matplotlib.backends.backend_qt5agg import\
     FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as mpl
 from matplotlib.figure import Figure

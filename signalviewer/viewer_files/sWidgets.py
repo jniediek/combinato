@@ -1,10 +1,10 @@
 import os
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-# would like to migrate to QT5, but matplotlib in Debian isn't ready
-# it doesn't have the backend
+#from PyQt4.QtCore import *
+from PyQt5.QtGui import QPalette
+from PyQt5.QtWidgets import QSizePolicy
+
 import numpy  as np
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as mpl
 from matplotlib.figure import Figure
 

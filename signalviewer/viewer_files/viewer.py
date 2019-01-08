@@ -10,8 +10,8 @@ from collections import defaultdict
 # import datetime
 import numpy as np
 
-import PyQt4.QtGui as qtgui
-import PyQt4.QtCore as qtcore
+from PyQt5.QtCore import Qt 
+from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QFileDialog
 
 from matplotlib.gridspec import GridSpec
 from matplotlib.dates import AutoDateLocator, num2date, date2num
@@ -42,7 +42,7 @@ def fmtfunc(x, pos=None):
     return out
 
 
-class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
+class SimpleViewer(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(SimpleViewer, self).__init__(parent)
         self.setupUi(self)
@@ -100,7 +100,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
                 action.setChecked(True)
 
     def setup_gui(self):
-        self.setFocusPolicy(qtcore.Qt.StrongFocus)
+        self.setFocusPolicy(Qt.StrongFocus)
         self.verticalLayout.addWidget(self.figure)
         self.addAction(self.actionBack)
         self.addAction(self.actionAdvance)
@@ -118,7 +118,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         self.actionAdvance.triggered.connect(self.advance)
         self.actionSampUp.triggered.connect(self.samp_up)
         self.actionSampDown.triggered.connect(self.samp_down)
-        self.sstglabel = qtgui.QLabel(self)
+        self.sstglabel = QLabel(self)
         self.statusBar().addWidget(self.sstglabel)
         pairs = ((self.action_W, self.set_w),
                  (self.action_N1, self.set_n1),
@@ -233,7 +233,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
         return True
 
     def save_image(self):
-        fname = str(qtgui.QFileDialog.getSaveFileName(self,
+        fname = str(QFileDialog.getSaveFileName(self,
                     'Save Image', '~', 'Images (*.jpg, *.pdf, *.png)'))
         self.figure.fig.savefig(fname, dpi=150)
 
@@ -413,7 +413,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
 
         if self.display_sleep is not None:
             start, stop = [self.convert_time(time, internal=True)
-                           for time in self.allstart, self.allstop]
+                           for time in (self.allstart, self.allstop)]
             rel_idx = (self.display_sleep['stoptime'] >= start) &\
                       (self.display_sleep['starttime'] <= stop)
             for row in self.display_sleep[rel_idx]:
@@ -479,7 +479,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
 
     def set_sleepstage(self, which):
         start, stop = [self.convert_time(time, internal=True)
-                       for time in self.allstart, self.allstop]
+                       for time in (self.allstart, self.allstop)]
         self.sleepstages.append((start, stop, which))
         self.advance()
 
@@ -492,7 +492,7 @@ class SimpleViewer(qtgui.QMainWindow, Ui_MainWindow):
 
 
 def main():
-    app = qtgui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     w = SimpleViewer()
     w.show()
     app.exec_()

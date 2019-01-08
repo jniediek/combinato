@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 this file contains the code for the spike sorting GUI
 """
@@ -9,8 +9,9 @@ from getpass import getuser
 from time import strftime
 import time
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QApplication, QListView
+#from PyQt5.QtGui import *
 
 from .ui_sorter import Ui_MainWindow
 
@@ -565,7 +566,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         self.groupsComparisonFigure.xcorr(group1, group2)
 
-    @pyqtSignature("")
+    #@pyqtSignature("")
     def on_actionSave_triggered(self):
         msgBox = QMessageBox()
         msgBox.setText("Save changes to current session?")
@@ -579,7 +580,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                                                         self.status_string))
             self.backend.sessions.dirty = False
 
-    @pyqtSignature("")
+    #@pyqtSignature("")
     def on_actionMarkCluster_triggered(self):
 
         name = self.tabWidget.currentWidget().objectName()
@@ -603,13 +604,13 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             self.allGroupsFigure.mark(groupName, index)
 
 
-    @pyqtSignature("")
+    # @pyqtSignature("")
     def on_actionMakeArtifact_triggered(self):
         self.move(self.backend.sessions.groupsByName['Artifacts'])
         self.updateGroupInfo()
         self.updateActiveTab()
 
-    @pyqtSignature("")
+    #@pyqtSignature("")
     def on_actionNextGroup_triggered(self):
         """
         rotate through groups

@@ -2,7 +2,7 @@
 from __future__ import print_function, division, absolute_import
 
 import os
-from PyQt4.QtGui import *
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 
 from .. import get_relevant_folders, get_time_files
 

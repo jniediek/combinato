@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # JN 2015-05-05
 
 # put out clustering data in old spikes/times format for response plots
