@@ -781,10 +781,13 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.updateGroupsList()
         self.updateActiveTab()
 
+
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
 def main():
-    """
-    start the qt app
-    """
+    sys.excepthook = except_hook
     app = QApplication(sys.argv)
     app.setStyle(options['guistyle'])
     win = SpikeSorter(parent=None, arg=sys.argv)
