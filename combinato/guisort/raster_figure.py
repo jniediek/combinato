@@ -128,7 +128,7 @@ def plot_one_plot(plot, scale, spike_times, onset_times,
 
 def get_stim_info(frame, stimulus):
     idx = frame['stim_num'] == stimulus
-    stim_name = unicode(frame.loc[idx, 'stim_name'].get_values()[0], 'utf-8')
+    stim_name = frame.loc[idx, 'stim_name'].get_values()[0]
     fname_image = frame.loc[idx, 'filename'].get_values()[0]
     return stim_name, fname_image
 
@@ -158,6 +158,7 @@ class RasterFigure(MplCanvas):
             stim_name, fname_image = get_stim_info(self.frame, stimulus)
             self.names[stimulus] = stim_name
             fname_image = os.path.join(image_path, fname_image)
+            print(fname_image)
             self.images[stimulus] = imread(fname_image)
 
     def update_figure(self, spiketimes, daytime, scale=5,
@@ -187,9 +188,10 @@ class RasterFigure(MplCanvas):
 
         row_height = (1 - 2*vgap)/n_rows
         plot_height = row_height * .6
-        iterator = zip((0, plot_width + hgap), ('scr', 'nscr'))
+        iterator = list(zip((0, plot_width + hgap), ('scr', 'nscr')))
 
         col_shift = 0
+
         for istim, stimulus in enumerate(stimuli):
 
             if (n_cols > 1) and (istim >= n_stim/2):
