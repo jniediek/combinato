@@ -10,8 +10,8 @@ from time import strftime
 import time
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QApplication, QListView
-#from PyQt5.QtGui import *
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QListView,
+        QMessageBox, QFileDialog)
 
 from .ui_sorter import Ui_MainWindow
 
@@ -183,10 +183,9 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         save a plot of one group
         """
         fout = QFileDialog.getSaveFileName(self,
-                                           'Save as Image',
-                                           os.getcwd(),
-                                           'Images (*.jpg *.pdf *.png)')
-        self.groupOverviewFigure.save_as_file(str(fout), dpi=300)
+               "Save as Image", os.getcwd(),
+               "Image files (*.jpg *.pdf *.png)")
+        self.groupOverviewFigure.save_as_file(str(fout[0]), dpi=300)
 
     def on_actionAutoassign_triggered(self):
 
@@ -566,7 +565,6 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         self.groupsComparisonFigure.xcorr(group1, group2)
 
-    #@pyqtSignature("")
     def on_actionSave_triggered(self):
         msgBox = QMessageBox()
         msgBox.setText("Save changes to current session?")
@@ -580,7 +578,6 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                                                         self.status_string))
             self.backend.sessions.dirty = False
 
-    #@pyqtSignature("")
     def on_actionMarkCluster_triggered(self):
 
         name = self.tabWidget.currentWidget().objectName()
@@ -604,13 +601,11 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             self.allGroupsFigure.mark(groupName, index)
 
 
-    # @pyqtSignature("")
     def on_actionMakeArtifact_triggered(self):
         self.move(self.backend.sessions.groupsByName['Artifacts'])
         self.updateGroupInfo()
         self.updateActiveTab()
 
-    #@pyqtSignature("")
     def on_actionNextGroup_triggered(self):
         """
         rotate through groups

@@ -77,7 +77,7 @@ class Sessions(object):
 
     def updateGroupsByName(self):
         self.groupsByName = {}
-        for group in self.groupsById.itervalues():
+        for group in self.groupsById.values():
             self.groupsByName[group.name] = group
 
     def save(self):
@@ -86,7 +86,7 @@ class Sessions(object):
         """
         # update our group table
 
-        for group_id, group in self.groupsById.iteritems():
+        for group_id, group in self.groupsById.items():
             idx_type = self.type_table[:, 0] == group_id
             self.type_table[idx_type, 1] = group.group_type
 
@@ -118,7 +118,7 @@ class Sessions(object):
         """
         # get group sizes
         sizes = [] 
-        for gid, group in self.groupsById.iteritems():
+        for gid, group in self.groupsById.items():
             if gid not in (GROUP_ART, GROUP_NOCLASS):
                 sz = len(group.times)
                 if sz:
