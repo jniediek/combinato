@@ -31,7 +31,7 @@ def align(data, center, low, high):
     index_max = data[:,center-width*low:center+width*high].argmax(1) + center - width*low
     num_e, num_vpe = data.shape
     aligned_data = zeros((num_e, num_vpe-width*low-width*high))
-    for i in xrange(num_e):
+    for i in range(num_e):
         aligned_data[i] = data[i, index_max[i] - center + width*low :
                                index_max[i] - center + num_vpe - width*high]
 
