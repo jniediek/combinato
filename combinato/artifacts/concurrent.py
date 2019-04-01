@@ -90,12 +90,21 @@ def write_bincount(folder):
         raise ValueError('No spike data found in ' + folder)
         
     ncsfiles = get_regions(folder)
-    ncsf = ncsfiles.values()[0][0]
-    ncsfid = NcsFile(ncsf)
-    ts_beg = float(ncsfid.read(0, 1, mode='timestamp'))/1000
-    ts_end = float(ncsfid.read(ncsfid.num_recs-1, 
-                               ncsfid.num_recs, 
-                               mode='timestamp'))/1000
+    if len(ncsfiles) == 0:
+        print('No ncs files found, reading from h5 files')
+        fid = tables.open_file(files[0], 'r')
+        ts_beg = fid.root.thr[0, 0]
+        ts_end = fid.root.thr[-1, 1]
+        print(ts_beg, ts_end, (ts_end - ts_beg)/1000/60)
+
+    #ncsf = ncsfiles.values()[0][0]
+    #ncsfid = NcsFile(ncsf)
+    #ts_beg = float(ncsfid.read(0, 1, mode='timestamp'))/1000
+    #ts_end = float(ncsfid.read(ncsfid.num_recs-1, 
+    #                           ncsfid.num_recs, 
+    #                           mode='timestamp'))/1000
+    #ts_beg = 0
+    #ts_end = 819200
 
     count, bins, nch = bincount(ts_beg, ts_end, files)
     outfile = tables.open_file(outfname, 'w')

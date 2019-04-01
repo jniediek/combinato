@@ -103,7 +103,7 @@ def clust_overview_plot(groups, outname):
     # suptitle = '{} {} ... {}'.format(fname, sessions[0], sessions[-1])
     # fig.suptitle(suptitle)
     print('saving to ' + outname)
-    fig.savefig(outname)
+    fig.savefig(outname, dpi=300)
     mpl.close(fig)
 
 
