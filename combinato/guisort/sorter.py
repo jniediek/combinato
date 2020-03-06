@@ -91,6 +91,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.actionOpen.triggered.connect(self.actionOpen_triggered)
         self.comparePlotpushButton.clicked.connect(self.compare_groups)
 
+        self.actionSave.triggered.connect(self.actionSave_triggered)
         self.actionOpenJobs.triggered.connect(self.actionOpenJobs_triggered)
         self.actionNextJob.triggered.connect(self.actionNextJob_triggered)
         self.actionMergeAll.triggered.connect(self.actionMergeAll_triggered)
@@ -188,6 +189,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.groupOverviewFigure.save_as_file(str(fout[0]), dpi=300)
 
     def on_actionAutoassign_triggered(self):
+        print(self.sender().text())
 
         if self.backend is None:
             return
@@ -209,14 +211,14 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         selectedMean = group.clusters[index].meanspike
         means = dict()
 
-        for name, group in self.backend.sessions.groupsByName.iteritems():
+        for name, group in self.backend.sessions.groupsByName.items():
             if name not in ['Unassigned', 'Artifacts']:
                 means[name] = np.array(group.meandata).mean(0)
 
         dist = np.inf
         minimizer = None
 
-        for name, mean in means.iteritems():
+        for name, mean in means.items():
             if name != groupName:
                 d = spikeDist(mean, selectedMean)
                 if d < dist:
@@ -565,7 +567,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         self.groupsComparisonFigure.xcorr(group1, group2)
 
-    def on_actionSave_triggered(self):
+    def actionSave_triggered(self):
         msgBox = QMessageBox()
         msgBox.setText("Save changes to current session?")
         msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
@@ -678,12 +680,17 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             src = self.listView
         indexes = src.selectedIndexes()
 
+        for obj in (src.model(), dst):
+            obj.beginResetModel()
+       
         for index in indexes:
             cl = src.model().popCluster(index.row())
             dst.addCluster(cl)
 
-        for obj in (src, dst):
-            obj.reset()
+        for obj in (src.model(), dst):
+            obj.endResetModel()
+
+        src.reset()
 
         self.updateGroupInfo()
 

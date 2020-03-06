@@ -244,7 +244,9 @@ class GroupOverviewFigure(MplCanvas):
                                      markersize=options['smallmarker'])
             tdata = np.hstack(times)
             tdata.sort()
-            self.cumSpikeAx.plot(tdata, range(len(tdata)), 'b')
+            # remove the existing lines
+            self.cumSpikeAx.lines = []
+            self.cumSpikeAx.plot(tdata, np.arange(len(tdata)), 'b')
             self.cumSpikeAx.set_xlim(0, tdata.max())
             self.cumSpikeAx.set_ylim(0, len(tdata))
             tstr = '{} spikes'.format(len(tdata))  # show in GUI

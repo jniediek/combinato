@@ -6,8 +6,8 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 
-from PyQt5.QtCore import QAbstractListModel, Qt,\
-    QModelIndex, QSize, QPoint, QVariant
+from PyQt5.QtCore import (QAbstractListModel, Qt, QModelIndex,
+        QSize, QPoint, QVariant)
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle
 from PyQt5.QtGui import QPen
 from .. import options
