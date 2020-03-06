@@ -1,5 +1,6 @@
 from numpy import zeros, arange
-from scipy.interpolate import splmake, spleval
+from scipy.interpolate import make_interp_spline
+
 
 def upsample(data, factor):
     """
@@ -14,11 +15,8 @@ def upsample(data, factor):
     up_num_vpe = (num_vpe - 1) * factor + 1
     axis = arange(0, up_num_vpe, factor) 
     up_axis = arange(up_num_vpe)
-#   up_data = zeros((num_m, up_num_vpe))
-#   for i in xrange(num_m):
-#       up_data[i] = spline(axis, data[i], up_axis)
-    splines = splmake(axis, data.T)
-    up_data = spleval(splines, up_axis)
+    splines = make_interp_spline(axis, data.T)
+    up_data = slines(up_axis)
 
     return up_data.T
 
