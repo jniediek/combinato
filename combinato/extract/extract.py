@@ -1,4 +1,5 @@
 # JN 2017-04-07 adding scaling factor for matfiles
+# JN 2020-03-06 Python3 compatibility
 
 
 from __future__ import division, print_function, absolute_import
@@ -138,7 +139,7 @@ def main():
         else:
             laststart = stop
 
-        starts = range(start, laststart, blocksize)
+        starts = list(range(start, laststart, blocksize))
         stops = starts[1:] + [stop]
         name = os.path.splitext(os.path.basename(f))[0]
         if references is not None:

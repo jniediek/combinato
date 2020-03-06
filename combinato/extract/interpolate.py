@@ -16,7 +16,7 @@ def upsample(data, factor):
     axis = arange(0, up_num_vpe, factor) 
     up_axis = arange(up_num_vpe)
     splines = make_interp_spline(axis, data.T)
-    up_data = slines(up_axis)
+    up_data = splines(up_axis)
 
     return up_data.T
 
