@@ -88,9 +88,10 @@ class ChannelTableModel(QAbstractTableModel):
         """
         simply add a channel to table
         """
+        self.beginResetModel()
         self.channels.append(row)
         print('Added ' + row[0])
-        self.reset()
+        self.endResetModel()
 
     def get_image(self, row, which):
         """
@@ -127,6 +128,7 @@ class ChannelTableModel(QAbstractTableModel):
         """
         toggle sort/extract attributes
         """
+        self.beginResetModel()
         if what == DO_EXTRACT_STR:
             col = EXTR
         elif what == DO_SORT_STR_POS:
@@ -165,7 +167,8 @@ class ChannelTableModel(QAbstractTableModel):
             elif ch_row[col] == DONE_STR:
                 ch_row[col] = SORT_MANUAL_STR_NEG
 
-        self.reset()
+        self.endResetModel()
+
 
     def get_channels(self, what):
         """

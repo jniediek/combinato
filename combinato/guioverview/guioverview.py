@@ -10,9 +10,10 @@ from __future__ import print_function, division, absolute_import
 import sys
 import os
 
-from PyQt5.QtCore import QModelIndex, QSize
-from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QSizePolicy
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QModelIndex, QSize, QItemSelectionModel
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QSizePolicy,
+        QMessageBox)
+from PyQt5.QtGui import QPixmap, QImage
 
 from .ui_guioverview import Ui_MainWindow
 from .model import (ChannelTableModel, DO_SORT_STR_POS,
@@ -59,12 +60,7 @@ def load_image(path, entity, fname, img_type, sign=None, label=None):
         image = QPixmap(QImage(path_pattern))
     else:
         print(path_pattern + ' does not exist')
-        # fix for some old folders, not really relevant
-        #  pattern = 'overview_' + entity + '.png'
-        #  path_pattern = os.path.join(path, pattern)
-        # if os.path.exists(path_pattern):
-        # image = qg.QImage(path_pattern)
-
+        
     if DEBUG:
         if image is not None:
             print('Loaded ' + path_pattern)
