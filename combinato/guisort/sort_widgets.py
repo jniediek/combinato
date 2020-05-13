@@ -200,9 +200,11 @@ class GroupOverviewFigure(MplCanvas):
         # group means plot
         data = group.meandata
 
+        delfunc(self.meanAx.lines)
+
         if len(data):
             x = range(data[0].shape[0])
-            ylim_mean = 1.5 * np.max(data)
+            ylim_mean = 1.5 * np.max(np.abs(data))
             self.meanAx.set_ylim(-ylim_mean, ylim_mean)
             for row in data:
                 line = mpl.Line2D(x, row)
@@ -213,11 +215,11 @@ class GroupOverviewFigure(MplCanvas):
 
         if len(data) > 1:
             nBins = options['isi_n_bins']
+            self.isiAx.cla()
             n, _, _ = self.isiAx.hist(data, nBins,
                                       color=options['histcolor'],
                                       histtype=options['histtype'])
-
-            self.isiAx.set_ylim((0, max(n) + 5))
+            self.isiAx.set_ylim((0, np.max(n) + 5))
             # mark percentage
             too_short =\
                 (data <= options['isi_too_short_ms']).sum()/group.times.shape[0]
@@ -258,6 +260,7 @@ class GroupOverviewFigure(MplCanvas):
             else:
                 self.overTimeAx.set_ylim((mdata.min() * 1.1, 0))
 
+            self.maxDistrAx.cla()
             ns, _, _ = self.maxDistrAx.hist(mdata, 100,
                                             color=options['histcolor'],
                                             histtype=options['histtype'])

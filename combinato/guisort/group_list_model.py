@@ -47,7 +47,7 @@ class GroupListModel(QAbstractListModel):
         self.meandata = [c.meanspike for c in self.clusters]
 
         max_of_means = np.max(np.abs(self.meandata))
-        bins_density = np.linspace(-2*max_of_means,
+        bins_density = np.arange(-2*max_of_means,
                                    2*max_of_means,
                                    2*max_of_means)
 
