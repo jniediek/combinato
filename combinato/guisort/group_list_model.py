@@ -47,12 +47,13 @@ class GroupListModel(QAbstractListModel):
         self.meandata = [c.meanspike for c in self.clusters]
 
         max_of_means = np.max(np.abs(self.meandata))
-        bins_density = np.arange(-2*max_of_means,
+        bins_density = np.linspace(-2*max_of_means,
                                    2*max_of_means,
-                                   2*max_of_means)
+                                   int(2*max_of_means))
 
         density = [np.histogram(row, bins=bins_density)[0]
                    for row in allspikes]
+
         timelist = [c.times for c in self.clusters]
         self.times = np.concatenate(timelist)
         self.times.sort()
@@ -60,7 +61,7 @@ class GroupListModel(QAbstractListModel):
         self.isidata = data[data <= self.upto]
         maxima = [c.spikes.max(1) for c in self.clusters]
 
-        self.densitydata = np.array(density).T
+        self.densitydata = np.vstack(density).T
         self.maximadata = np.concatenate(maxima)
 
     def addCluster(self, cluster):
