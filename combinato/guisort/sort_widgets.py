@@ -241,6 +241,7 @@ class GroupOverviewFigure(MplCanvas):
         times = [(c.times - self.startTime)/6e4 for c in group.clusters]
 
         if len(times):
+            self.overTimeAx.cla()
             for x, y in zip(times, data):
                 self.overTimeAx.plot(x, y, 'b.',
                                      markersize=options['smallmarker'])
@@ -269,6 +270,7 @@ class GroupOverviewFigure(MplCanvas):
 
         else:
             tstr = ''
+            self.overTimeAx.cla()
         self.cumSpikeAx.set_title(tstr)
 
         # thresholds
