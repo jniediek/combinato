@@ -35,7 +35,7 @@ def make_attrs(h5files):
         attrs = fid.root.data.rawdata.attrs
         shortname = os.path.basename(fname)[:-6]
         msg = [shortname,
-               attrs.AcqEntName.decode('utf-8'),
+               attrs.AcqEntName, #.decode('utf-8'),
                attrs.ADBitVolts * 1e6,
                attrs.Q,
                attrs.timestep * 1e6]

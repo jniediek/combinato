@@ -3,6 +3,11 @@ from __future__ import absolute_import, print_function, division
 
 from collections import defaultdict
 from multiprocessing import Process, Queue, Value
+import numpy as np
+
+np.seterr(all='raise')
+
+import tables
 from .. import DefaultFilter
 from .tools import ExtractNcsFile, OutFile, read_matfile
 from .extract_spikes import extract_spikes
@@ -71,7 +76,6 @@ def work(q_in, q_out, count, target):
         inp = q_in.get()
         job = inp[0]
         datatuple = inp[1]
-
         ts = datatuple[2]
 
         if not ts in filters:
@@ -97,7 +101,26 @@ def read(jobs, q):
     for job in jobs:
         jname = job['name']
 
-        if 'is_matfile' in job.keys():
+        if ('is_h5file' in job.keys()) and job['is_h5file']:
+            if jname not in openfiles:
+                openfiles[jname] = tables.open_file(job['filename'], 'r')
+
+            if openfiles[jname].root.data.ndim == 1:
+                fdata = openfiles[jname].root.data[job['start']:job['stop']]
+            else:
+                raise Warning('Data has wrong number of dimensions')
+            fdata = fdata.ravel()
+            sr = 32000.
+            ts = 1/sr
+            # here we need to shift the data according to job['start']
+            atimes = np.linspace(0, fdata.shape[0]/(sr/1000), fdata.shape[0])
+            atimes += job['start']/(sr/1000)
+            data = (fdata, atimes, ts)
+ 
+            job.update(filename='data_' + jname + '.h5')
+
+
+        elif 'is_matfile' in job.keys():
             if job['is_matfile']:
                 fname = job['filename']
                 print('Reading from matfile ' + fname)

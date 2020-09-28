@@ -136,6 +136,7 @@ def collect_sorting(fname, signs, sessions, outfname):
     # write to file so that we can continue from that file
     write_sorting_file(outfname, sorted_index, sorted_info, artifacts)
     for ses, man in ses_mans.items():
+        print('Closed {}'.format(ses))
         del man
 
     return sort_man

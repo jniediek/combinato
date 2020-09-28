@@ -50,7 +50,7 @@ def make_arguments(filename, sign, mode, start=0,
             stop_idx = non_artifact_idx[-1]
 
     # partition into blocks of length 'max_nspk_session'
-    starts = range(start_idx, stop_idx, max_nspk_session)
+    starts = list(range(start_idx, stop_idx, max_nspk_session))
     stops = starts[1:]
     min_stop = min(stop_idx, non_artifact_idx[-1])
     stops.append(min_stop)

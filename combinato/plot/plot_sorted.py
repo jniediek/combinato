@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # JN 2015-02-18
 
 #   pylint: disable=E1101,star-args
@@ -103,7 +103,7 @@ def clust_overview_plot(groups, outname):
     # suptitle = '{} {} ... {}'.format(fname, sessions[0], sessions[-1])
     # fig.suptitle(suptitle)
     print('saving to ' + outname)
-    fig.savefig(outname)
+    fig.savefig(outname, dpi=300)
     mpl.close(fig)
 
 

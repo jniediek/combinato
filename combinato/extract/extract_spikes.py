@@ -1,5 +1,5 @@
 import numpy as np
-from interpolate import clean, upsample, downsample, align
+from .interpolate import clean, upsample, downsample, align
 
 options = dict([('threshold_factor', 5),        # 5
                 ('max_spike_duration', 0.0015), # 0.0015 (seconds)
@@ -73,7 +73,7 @@ def extract_spikes(data, times, timestep, filt):
         maxima = [detect_func(data_detect[range(borders[sign][i,0],
                                 borders[sign][i,1])])
                         + borders[sign][i,0]
-                        for i in xrange(borders[sign].shape[0])]
+                        for i in range(borders[sign].shape[0])]
 
         if len(maxima) <= 3:
             result.append((np.zeros((0, indices_per_spike)), np.zeros(0)))
@@ -93,7 +93,7 @@ def extract_spikes(data, times, timestep, filt):
 
         extract_indices = [
             range(maxima[i] - pre_indices - 5, maxima[i] + post_indices + 5)
-            for i in xrange(len(maxima))]
+            for i in range(len(maxima))]
 
         spikes = np.zeros((len(extract_indices), indices_per_spike + 10))
 

@@ -1,9 +1,11 @@
 # JN 2017-04-07 adding scaling factor for matfiles
+# JN 2020-03-06 Python3 compatibility
 
 
 from __future__ import division, print_function, absolute_import
 import os
 from argparse import ArgumentParser, FileType
+import tables
 from .mp_extract import mp_extract
 from .. import NcsFile
 
@@ -12,11 +14,17 @@ def get_nrecs(filename):
     fid = NcsFile(filename)
     return fid.num_recs
 
+def get_h5size(filename):
+    fid = tables.open_file(filename, 'r')
+    n = fid.root.data.shape[0]
+    fid.close()
+    return n
+
 
 def main():
     """standard main function"""
     # standard options
-    nWorkers = 8
+    nWorkers = 5
     blocksize = 10000
 
     parser = ArgumentParser(prog='css-extract',
@@ -32,6 +40,8 @@ def main():
                         help='job file contains one filename per row')
     parser.add_argument('--matfile', nargs=1,
                         help='extract data from a matlab file')
+    parser.add_argument('--h5', action='store_true', default=False,
+                        help='assume that files are h5 files')
     parser.add_argument('--matfile-scale-factor', nargs='?', type=float,
                         help='rescale matfile data by this factor'
                              ' (to obtain microvolts)', default=1)
@@ -41,8 +51,10 @@ def main():
                         help='scheme for re-referencing')
     args = parser.parse_args()
 
-    if (args.files is None) and (args.matfile is None) and\
-            (args.jobs is None):
+    if ((args.files is None) and 
+        (args.matfile is None) and 
+        (args.jobs is None)):
+
         parser.print_help()
         print('Supply either files or jobs or matfile.')
         return
@@ -63,6 +75,31 @@ def main():
                  'scale_factor': args.matfile_scale_factor}]
         mp_extract(jobs, 1)
         return
+
+    if args.h5:
+        jobs = []
+        for f in args.files:
+            size = get_h5size(f)
+            starts = list(range(0, size, 32000*5*60))
+            stops = starts[1:] + [size]
+            name = os.path.splitext(os.path.basename(f))[0]
+
+            for i in range(len(starts)):
+
+                jdict = {'name': name,
+                     'filename': f,
+                     'start': starts[i],
+                     'stop': stops[i],
+                     'is_h5file': True,
+                     'count': i,
+                     'destination': destination}
+
+                jobs.append(jdict)
+
+        mp_extract(jobs, nWorkers)
+        return
+
+
 
     if args.jobs:
         with open(args.jobs[0], 'r') as f:
@@ -102,7 +139,7 @@ def main():
         else:
             laststart = stop
 
-        starts = range(start, laststart, blocksize)
+        starts = list(range(start, laststart, blocksize))
         stops = starts[1:] + [stop]
         name = os.path.splitext(os.path.basename(f))[0]
         if references is not None:

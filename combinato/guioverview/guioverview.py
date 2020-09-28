@@ -1,15 +1,19 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 """
 Displays overview of ncs files with their extract/sort status
 """
 # JN 2014-12-15
+# JN 2019-01-08 converting to Qt5
+
 from __future__ import print_function, division, absolute_import
 import sys
 import os
 
-from PyQt4 import QtCore as qc
-from PyQt4 import QtGui as qg
+from PyQt5.QtCore import QModelIndex, QSize, QItemSelectionModel
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QSizePolicy,
+        QMessageBox)
+from PyQt5.QtGui import QPixmap, QImage
 
 from .ui_guioverview import Ui_MainWindow
 from .model import (ChannelTableModel, DO_SORT_STR_POS,
@@ -53,15 +57,10 @@ def load_image(path, entity, fname, img_type, sign=None, label=None):
     image = None
 
     if os.path.exists(path_pattern):
-        image = qg.QPixmap(qg.QImage(path_pattern))
+        image = QPixmap(QImage(path_pattern))
     else:
         print(path_pattern + ' does not exist')
-        # fix for some old folders, not really relevant
-        #  pattern = 'overview_' + entity + '.png'
-        #  path_pattern = os.path.join(path, pattern)
-        # if os.path.exists(path_pattern):
-        # image = qg.QImage(path_pattern)
-
+        
     if DEBUG:
         if image is not None:
             print('Loaded ' + path_pattern)
@@ -69,7 +68,7 @@ def load_image(path, entity, fname, img_type, sign=None, label=None):
     return image
 
 
-class GuiOverview(qg.QMainWindow, Ui_MainWindow):
+class GuiOverview(QMainWindow, Ui_MainWindow):
     """
     main window of channel overview program
     """
@@ -85,18 +84,18 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
         self.channelmodel = ChannelTableModel()
         self.tableViewChannels.setModel(self.channelmodel)
 
-        self.labelCurrentCh = qg.QLabel(self)
+        self.labelCurrentCh = QLabel(self)
         self.labelCurrentCh.setMinimumWidth(200)
         self.statusBar().addWidget(self.labelCurrentCh)
 
-        self.labelDirName = qg.QLabel(self)
+        self.labelDirName = QLabel(self)
         self.statusBar().addWidget(self.labelDirName)
 
-        self.labelImage = qg.QLabel(self)
-        self.labelImageRight = qg.QLabel(self)
+        self.labelImage = QLabel(self)
+        self.labelImageRight = QLabel(self)
 
         for label in (self.labelImage, self.labelImageRight):
-            label.setSizePolicy(qg.QSizePolicy.Ignored, qg.QSizePolicy.Ignored)
+            label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
             label.setScaledContents(True)
 
         self.scrollAreaImage.setWidget(self.labelImage)
@@ -261,7 +260,7 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
 #        if None not in  (self.image_to_show_left, self.image_to_show_right):
 #            self.set_sizes()
 
-    def item_action(self, index=qc.QModelIndex(), prev=qc.QModelIndex()):
+    def item_action(self, index=QModelIndex(), prev=QModelIndex()):
         """
         typical action is to show image
         """
@@ -337,7 +336,7 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
                 height = image.height()
                 width = image.width()
 
-                label.resize(qc.QSize(width, height))
+                label.resize(QSize(width, height))
 
     def toggle_sorted_pos(self):
         self.toggle('sorted pos')
@@ -363,8 +362,8 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
             self.channelmodel.toggle(index[0], what)
             self.tableViewChannels.selectionModel().\
                 setCurrentIndex(index[0],
-                                qg.QItemSelectionModel.Select |
-                                qg.QItemSelectionModel.Current)
+                                QItemSelectionModel.Select |
+                                QItemSelectionModel.Current)
 
     def goto_next(self):
         self.goto(1)
@@ -390,8 +389,8 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
             new_index = self.channelmodel.createIndex(row + shift, col)
             self.tableViewChannels.selectionModel().\
                 setCurrentIndex(new_index,
-                                qg.QItemSelectionModel.Select |
-                                qg.QItemSelectionModel.Current)
+                                QItemSelectionModel.Select |
+                                QItemSelectionModel.Current)
 
     def print_all(self):
         """
@@ -432,11 +431,11 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
         write = True
 
         if os.path.exists(out_fname):
-            msgbox = qg.QMessageBox()
+            msgbox = QMessageBox()
             msgbox.setText('Overwrite {} ?'.format(out_fname))
-            msgbox.setStandardButtons(qg.QMessageBox.Yes | qg.QMessageBox.No)
+            msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             ret = msgbox.exec_()
-            if ret == qg.QMessageBox.Yes:
+            if ret == QMessageBox.Yes:
                 print('Overwriting ' + out_fname)
                 os.rename(out_fname, out_fname + '.bak') 
             else:
@@ -482,7 +481,7 @@ class GuiOverview(qg.QMainWindow, Ui_MainWindow):
 
 
 def main():
-    APP = qg.QApplication(sys.argv)
+    APP = QApplication(sys.argv)
     APP.setStyle(options['guistyle'])
     WIN = GuiOverview()
     WIN.setWindowTitle('Combinato channel overview')

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- encoding: utf-8
 # JN 2014-08-30
 # convert ncs files to edf files

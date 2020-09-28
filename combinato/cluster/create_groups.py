@@ -68,7 +68,7 @@ def create_groups(spikes, classes, clids, sign):
         # everything containing gr1 has to be redone
         dists[gr2, :] = np.inf
         dists[:, gr2] = np.inf
-        for i in groups.iterkeys():
+        for i in groups.keys():
             if i < gr1:
                 dists[i, gr1] = distance_groups(means[i], means[gr1], sign)
             elif i > gr2:
