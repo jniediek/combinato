@@ -110,7 +110,7 @@ def read(jobs, q):
             else:
                 raise Warning('Data has wrong number of dimensions')
             fdata = fdata.ravel()
-            sr = openfiles[jname].root.sr[0]
+			sr = openfiles[jname].root.sr[0]
             ts = 1/sr
             # here we need to shift the data according to job['start']
             atimes = np.linspace(0, fdata.shape[0]/(sr/1000), fdata.shape[0])
