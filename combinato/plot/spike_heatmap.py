@@ -25,7 +25,7 @@ def spike_heatmap(ax, spikes, x=None, log=False):
     """
     spMin = spikes.min()
     spMax = spikes.max()
-    spBins = np.linspace(spMin, spMax, 2*spMax)
+    spBins = np.linspace(spMin, spMax, int(round(2*spMax)))
     if spBins.shape[0] < 3:
         spBins = np.linspace(spMin, spMax, 3)
 
@@ -50,7 +50,7 @@ def spike_heatmap(ax, spikes, x=None, log=False):
               cmap=cmap,
               interpolation='hanning',
               aspect='auto',
-              origin=0,
+              origin='lower',
               extent=extent)
 
     spMean = spikes.mean(0)
