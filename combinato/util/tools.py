@@ -88,7 +88,11 @@ def get_channels(path, from_h5files=False):
             if test is not None:
                 chs.append(test)
             else:
-                key = 'unknown'
+                # key = 'unknown'
+                # JN 2020-10-23
+                # This is a bug pointed out by Y. Lakretz
+                # The key is always the same, so we overwrite ret[key]
+                key = os.path.splitext(os.path.basename(name))[0]
                 ret[key] = os.path.basename(os.path.dirname(name))
     else:
         chs = glob(os.path.join(path, '*.ncs'))
