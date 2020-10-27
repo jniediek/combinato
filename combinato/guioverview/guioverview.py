@@ -166,6 +166,7 @@ class GuiOverview(QMainWindow, Ui_MainWindow):
         from_h5files = self.checkBoxInitH5.isChecked()
         channels = get_channels(path, from_h5files)
 
+
         dirname_overview = os.path.join(path, 'overview')
         has_overview = os.path.isdir(dirname_overview)
 
@@ -178,6 +179,12 @@ class GuiOverview(QMainWindow, Ui_MainWindow):
 
         for chname in sorted_channels:
             channel_fname = channels[chname]
+
+            if from_h5files:
+                load_chname = 'unknown'
+            else:
+                load_chname = chname
+
             if self.checkBoxSetStates.isChecked():
                 ch_ex, n_pos, n_neg, n_sorted, h5fname =\
                     check_status(channel_fname)
@@ -186,25 +193,26 @@ class GuiOverview(QMainWindow, Ui_MainWindow):
                 n_pos = n_neg = n_sorted = 0
                 h5fname = None
 
+
             if has_overview:
                 ch_overview_image = load_image(dirname_overview,
-                                               chname,
+                                               load_chname,
                                                channel_fname, 'overview')
                 ch_spikes_image_pos = load_image(dirname_overview,
-                                                 chname,
+                                                 load_chname,
                                                  channel_fname,
                                                  'spikes', 'pos')
                 ch_spikes_image_neg = load_image(dirname_overview,
-                                                 chname,
+                                                 load_chname,
                                                  channel_fname,
                                                  'spikes', 'neg')
                 ch_sorted_image_pos = load_image(dirname_overview,
-                                                 chname,
+                                                 load_chname,
                                                  channel_fname,
                                                  'sorted',
                                                  'pos', label)
                 ch_sorted_image_neg = load_image(dirname_overview,
-                                                 chname,
+                                                 load_chname,
                                                  channel_fname,
                                                  'sorted',
                                                  'neg', label)
