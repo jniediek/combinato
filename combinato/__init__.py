@@ -5,7 +5,8 @@ Imports that can than be used by the packages in this folder
 
 from __future__ import absolute_import, print_function
 from .options import options, artifact_criteria
-
+import os,sys
+sys.path.insert(0, os.getcwd())
 try:
     from .options import raster_options
 except ImportError:

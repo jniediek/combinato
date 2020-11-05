@@ -10,6 +10,12 @@ options = dict([('threshold_factor', 5),        # 5
                 ('do_filter', True)
             ])
 
+try:
+    from local_options import options as local_options
+    options.update(local_options)
+    print('Updated {} options by local_options'.format(len(local_options)))
+except ImportError:
+    pass
 
 def extract_spikes(data, times, timestep, filt):
 
