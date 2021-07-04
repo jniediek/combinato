@@ -76,9 +76,18 @@ def main():
         mp_extract(jobs, 1)
         return
 
+
+    if args.jobs:
+        with open(args.jobs[0], 'r') as f:
+            files = [a.strip() for a in f.readlines()]
+        f.close()
+        print('Read jobs from ' + args.jobs[0])
+    else:
+        files = args.files
+
     if args.h5:
         jobs = []
-        for f in args.files:
+        for f in files:
             size = get_h5size(f)
             starts = list(range(0, size, 32000*5*60))
             stops = starts[1:] + [size]
@@ -99,15 +108,6 @@ def main():
         mp_extract(jobs, nWorkers)
         return
 
-
-
-    if args.jobs:
-        with open(args.jobs[0], 'r') as f:
-            files = [a.strip() for a in f.readlines()]
-        f.close()
-        print('Read jobs from ' + args.jobs[0])
-    else:
-        files = args.files
 
     if files[0] is None:
         print('Specify files!')
