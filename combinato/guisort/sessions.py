@@ -4,6 +4,7 @@ Sessions class for sorting sessions for guisort
 
 from __future__ import print_function, division, absolute_import
 import numpy as np
+from scipy.io import savemat
 from .cluster import Cluster
 from .group_list_model import GroupListModel
 from .. import GROUP_ART, GROUP_NOCLASS, TYPE_MU, TYPE_ART, TYPE_NO
@@ -139,3 +140,15 @@ class Sessions(object):
 
         self.groupsById = new_groups
         self.updateGroupsByName()
+
+    def export_to_matfile(self, fname):
+        all_output = []
+        for gid, group in self.groupsById.items():
+            if gid not in (GROUP_ART, GROUP_NOCLASS):
+                temp = np.zeros((len(group.times), 2))
+                temp[:, 1] = gid
+                temp[:, 0] = group.times
+                all_output.append(temp)
+
+        out = {'group_times': np.vstack(all_output)}
+        savemat(fname, out) 

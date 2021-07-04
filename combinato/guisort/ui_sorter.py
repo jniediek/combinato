@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'sorter.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -175,7 +177,7 @@ class Ui_MainWindow(object):
         self.folderLabel.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1096, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1096, 29))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -224,6 +226,8 @@ class Ui_MainWindow(object):
         self.actionMerge_one_unit_groups.setObjectName("actionMerge_one_unit_groups")
         self.actionTidyGroups = QtWidgets.QAction(MainWindow)
         self.actionTidyGroups.setObjectName("actionTidyGroups")
+        self.actionSave_to_Matfile = QtWidgets.QAction(MainWindow)
+        self.actionSave_to_Matfile.setObjectName("actionSave_to_Matfile")
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.actionOpenJobs)
@@ -232,6 +236,7 @@ class Ui_MainWindow(object):
         self.menuGroup.addAction(self.actionGotoJob)
         self.menuGroup.addAction(self.actionMergeAll)
         self.menuGroup.addAction(self.actionMerge_one_unit_groups)
+        self.menuGroup.addAction(self.actionSave_to_Matfile)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuGroup.menuAction())
         self.compareOneLabel.setBuddy(self.groupOnecomboBox)
@@ -295,4 +300,5 @@ class Ui_MainWindow(object):
         self.actionMerge_one_unit_groups.setText(_translate("MainWindow", "Merge if just &1 cluster"))
         self.actionMerge_one_unit_groups.setShortcut(_translate("MainWindow", "Ctrl+1"))
         self.actionTidyGroups.setText(_translate("MainWindow", "tidyGroups"))
-
+        self.actionSave_to_Matfile.setText(_translate("MainWindow", "Export times to matfile"))
+        self.actionSave_to_Matfile.setShortcut(_translate("MainWindow", "Ctrl+E"))

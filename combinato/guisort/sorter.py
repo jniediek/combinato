@@ -99,6 +99,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.actionMerge.triggered.connect(self.actionMerge_triggered)
         self.actionMerge_one_unit_groups.triggered.\
             connect(self.action_MergeOnes_triggered)
+        self.actionSave_to_Matfile.triggered.connect(self.action_export_triggered)
 
         if len(arg) > 1:
             self.basedir = os.path.dirname(arg)
@@ -787,6 +788,16 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.allGroupsFigureDirty = True
         self.updateGroupsList()
         self.updateActiveTab()
+
+    def action_export_triggered(self):
+        if self.backend is None:
+            return
+        if self.backend.sessions is None:
+            return
+        datafilename, extn = os.path.splitext(self.backend.datafile)
+        outfname = os.path.join(self.backend.folder, datafilename + '.mat')
+        print('Saving to {}'.format(outfname))
+        self.backend.sessions.export_to_matfile(outfname)
 
 
 def except_hook(cls, exception, traceback):

@@ -340,7 +340,7 @@
      <x>0</x>
      <y>0</y>
      <width>1096</width>
-     <height>26</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -360,6 +360,7 @@
     <addaction name="actionGotoJob"/>
     <addaction name="actionMergeAll"/>
     <addaction name="actionMerge_one_unit_groups"/>
+    <addaction name="actionSave_to_Matfile"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuGroup"/>
@@ -507,6 +508,14 @@
   <action name="actionTidyGroups">
    <property name="text">
     <string>tidyGroups</string>
+   </property>
+  </action>
+  <action name="actionSave_to_Matfile">
+   <property name="text">
+    <string>Export times to matfile</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
    </property>
   </action>
  </widget>
