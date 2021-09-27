@@ -130,6 +130,15 @@ def ncs_info(filename):
                     pass
             d[field[0][1:]] = field[1]
 
+        #Dealing with Pegasus Opened/Closed date&time strings
+        elif len(field) == 3:
+            if field[0] in ('-TimeCreated', '-TimeClosed'):
+                pddate = datetime.strptime(field[1] + ' ' + field[2], '%Y/%m/%d %H:%M:%S')
+                dt = datetime(pddate.year, pddate.month, pddate.day, pddate.hour, \
+                                   pddate.minute, pddate.second)
+                d[field[0][1:]] = dt
+        
+        #Dealing with Cheetah Opened/Closed date&time strings
         elif len(field) == 7:
             if field[0] == '##':
                 if field[2] in ('Opened', 'Closed'):
