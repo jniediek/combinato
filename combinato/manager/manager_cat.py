@@ -26,7 +26,7 @@ class SortingFile(object):
         self.classes = self.h5fid.root.classes[:]
         self.groups = self.h5fid.root.groups[:]
         self.types = self.h5fid.root.types[:]
-        self.sign = self.h5fid.get_node_attr('/', 'sign')  # .decode()
+        self.sign = str(self.h5fid.get_node_attr('/', 'sign'), 'utf-8')
         self.basedir = os.path.dirname(h5fname)
         self.matches = self.h5fid.root.matches[:]
 
@@ -244,7 +244,7 @@ class SortingManagerGrouped(object):
 
         self.stop_idx = stop_idx
 
-        self.sign = sign
+        self.sign = str(sign)
 
         self.spikes[sign] =\
             self.h5datafile.\
