@@ -26,7 +26,8 @@ class SortingFile(object):
         self.classes = self.h5fid.root.classes[:]
         self.groups = self.h5fid.root.groups[:]
         self.types = self.h5fid.root.types[:]
-        self.sign = self.h5fid.get_node_attr('/', 'sign')  # .decode()
+        temp = self.h5fid.get_node_attr('/', 'sign')
+        self.sign = str(temp, 'utf-8')
         self.basedir = os.path.dirname(h5fname)
         self.matches = self.h5fid.root.matches[:]
 
