@@ -245,7 +245,7 @@ class SortingManagerGrouped(object):
 
         self.stop_idx = stop_idx
 
-        self.sign = sign
+        self.sign = str(sign)
 
         self.spikes[sign] =\
             self.h5datafile.\
