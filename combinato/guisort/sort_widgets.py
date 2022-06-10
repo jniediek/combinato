@@ -248,7 +248,8 @@ class GroupOverviewFigure(MplCanvas):
             tdata = np.hstack(times)
             tdata.sort()
             # remove the existing lines
-            self.cumSpikeAx.lines = []
+            for il in self.cumSpikeAx.lines:
+                il.remove()
             self.cumSpikeAx.plot(tdata, np.arange(len(tdata)), 'b')
             self.cumSpikeAx.set_xlim(0, tdata.max())
             self.cumSpikeAx.set_ylim(0, len(tdata))
