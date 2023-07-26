@@ -4,6 +4,7 @@ Sessions class for sorting sessions for guisort
 
 from __future__ import print_function, division, absolute_import
 import numpy as np
+from scipy.io import savemat
 from .cluster import Cluster
 from .group_list_model import GroupListModel
 from .. import GROUP_ART, GROUP_NOCLASS, TYPE_MU, TYPE_ART, TYPE_NO
@@ -77,7 +78,7 @@ class Sessions(object):
 
     def updateGroupsByName(self):
         self.groupsByName = {}
-        for group in self.groupsById.itervalues():
+        for group in self.groupsById.values():
             self.groupsByName[group.name] = group
 
     def save(self):
@@ -86,7 +87,7 @@ class Sessions(object):
         """
         # update our group table
 
-        for group_id, group in self.groupsById.iteritems():
+        for group_id, group in self.groupsById.items():
             idx_type = self.type_table[:, 0] == group_id
             self.type_table[idx_type, 1] = group.group_type
 
@@ -118,7 +119,7 @@ class Sessions(object):
         """
         # get group sizes
         sizes = [] 
-        for gid, group in self.groupsById.iteritems():
+        for gid, group in self.groupsById.items():
             if gid not in (GROUP_ART, GROUP_NOCLASS):
                 sz = len(group.times)
                 if sz:
@@ -139,3 +140,15 @@ class Sessions(object):
 
         self.groupsById = new_groups
         self.updateGroupsByName()
+
+    def export_to_matfile(self, fname):
+        all_output = []
+        for gid, group in self.groupsById.items():
+            if gid not in (GROUP_ART, GROUP_NOCLASS):
+                temp = np.zeros((len(group.times), 2))
+                temp[:, 1] = gid
+                temp[:, 0] = group.times
+                all_output.append(temp)
+
+        out = {'group_times': np.vstack(all_output)}
+        savemat(fname, out) 

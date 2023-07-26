@@ -214,6 +214,7 @@ def main(data_fname, session_fname, sign, overwrite=False):
 
     session.update_classes(sort_idx)
     session.update_sorting_data(match_idx, artifact_scores)
+    session.h5file.close()
 
 
 def sort_helper(args):

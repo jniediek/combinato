@@ -26,6 +26,7 @@ class Backend(object):
         self.sessions = None
         print('Openening session {} {}'.format(datafilename, sessionfilename))
         self.folder = os.path.dirname(datafilename)
+        self.datafile = os.path.basename(datafilename)
         self.sorting_manager = SortingManagerGrouped(datafilename)
         self.sorting_manager.init_sorting(sessionfilename)
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # JN 2015-05-05
 
 # put out clustering data in old spikes/times format for response plots
@@ -183,7 +183,7 @@ def parse_args():
                      ' 1 = MU\n 2 = SU\n-1 = Artif.\nRefers to '
                      '"cluster_class"-values 1 and up.\nIgnores Unassigned '
                      '(value 0)'}
-        info_fname = "cluster_info"
+        info_fname = "cluster_info.mat"
         savemat(info_fname, info_dict)
 
 if __name__ == "__main__":

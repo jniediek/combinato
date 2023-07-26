@@ -4,10 +4,10 @@ file collects widgets that call matplotlib
 """
 
 from __future__ import print_function, division, absolute_import
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 import numpy as np
-from matplotlib.backends.backend_qt4agg import\
+from matplotlib.backends.backend_qt5agg import\
     FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as mpl
 from matplotlib.figure import Figure
@@ -200,9 +200,11 @@ class GroupOverviewFigure(MplCanvas):
         # group means plot
         data = group.meandata
 
+        delfunc(self.meanAx.lines)
+
         if len(data):
             x = range(data[0].shape[0])
-            ylim_mean = 1.5 * np.max(data)
+            ylim_mean = 1.5 * np.max(np.abs(data))
             self.meanAx.set_ylim(-ylim_mean, ylim_mean)
             for row in data:
                 line = mpl.Line2D(x, row)
@@ -213,11 +215,11 @@ class GroupOverviewFigure(MplCanvas):
 
         if len(data) > 1:
             nBins = options['isi_n_bins']
+            self.isiAx.cla()
             n, _, _ = self.isiAx.hist(data, nBins,
                                       color=options['histcolor'],
                                       histtype=options['histtype'])
-
-            self.isiAx.set_ylim((0, max(n) + 5))
+            self.isiAx.set_ylim((0, np.max(n) + 5))
             # mark percentage
             too_short =\
                 (data <= options['isi_too_short_ms']).sum()/group.times.shape[0]
@@ -239,12 +241,16 @@ class GroupOverviewFigure(MplCanvas):
         times = [(c.times - self.startTime)/6e4 for c in group.clusters]
 
         if len(times):
+            self.overTimeAx.cla()
             for x, y in zip(times, data):
                 self.overTimeAx.plot(x, y, 'b.',
                                      markersize=options['smallmarker'])
             tdata = np.hstack(times)
             tdata.sort()
-            self.cumSpikeAx.plot(tdata, range(len(tdata)), 'b')
+            # remove the existing lines
+            for il in self.cumSpikeAx.lines:
+                il.remove()
+            self.cumSpikeAx.plot(tdata, np.arange(len(tdata)), 'b')
             self.cumSpikeAx.set_xlim(0, tdata.max())
             self.cumSpikeAx.set_ylim(0, len(tdata))
             tstr = '{} spikes'.format(len(tdata))  # show in GUI
@@ -256,6 +262,7 @@ class GroupOverviewFigure(MplCanvas):
             else:
                 self.overTimeAx.set_ylim((mdata.min() * 1.1, 0))
 
+            self.maxDistrAx.cla()
             ns, _, _ = self.maxDistrAx.hist(mdata, 100,
                                             color=options['histcolor'],
                                             histtype=options['histtype'])
@@ -264,6 +271,7 @@ class GroupOverviewFigure(MplCanvas):
 
         else:
             tstr = ''
+            self.overTimeAx.cla()
         self.cumSpikeAx.set_title(tstr)
 
         # thresholds

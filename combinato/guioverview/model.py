@@ -4,7 +4,7 @@ class for channel table
 """
 # JN 2014-12-16
 from __future__ import division, print_function, absolute_import
-from PyQt4 import QtCore as qc
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant
 
 NCOLS = 16
 OBJECT, FNAME, POS_SP, NEG_SP, SORTED_SES, EXTR,\
@@ -22,7 +22,7 @@ SORT_MANUAL_STR_NEG = 'manual neg'
 DROP_STR_NEG = 'drop neg'
 
 
-class ChannelTableModel(qc.QAbstractTableModel):
+class ChannelTableModel(QAbstractTableModel):
     """
     Table of channels with properties such as extracted, sorted etc
     """
@@ -30,35 +30,35 @@ class ChannelTableModel(qc.QAbstractTableModel):
         super(ChannelTableModel, self).__init__()
         self.channels = []
 
-    def rowCount(self, index=qc.QModelIndex()):
+    def rowCount(self, index=QModelIndex()):
         return len(self.channels)
 
-    def columnCount(self, index=qc.QModelIndex()):
+    def columnCount(self, index=QModelIndex()):
         return NCOLS - 6
 
-    def data(self, index, role=qc.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not (index.isValid() and
                 0 <= index.row() < len(self.channels)):
-            return qc.QVariant()
+            return QVariant()
 
         this_channel = self.channels[index.row()]
         col = index.column()
 
-        if role == qc.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             data = this_channel[col]
             if col in [POS_SP, NEG_SP, SORTED_SES]:
                 if data > 1000:
                     data = str(int(round(data/1000))) + ' K'
                 data = str(data)
-            return qc.QVariant(data)
+            return QVariant(data)
 
-    def headerData(self, section, orientation, role=qc.Qt.DisplayRole):
-        if role == qc.Qt.TextAlignmentRole:
-            if orientation == qc.Qt.Horizontal:
-                return qc.QVariant(int(qc.Qt.AlignLeft|qc.Qt.AlignVCenter))
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if role == Qt.TextAlignmentRole:
+            if orientation == Qt.Horizontal:
+                return QVariant(int(Qt.AlignLeft|Qt.AlignVCenter))
 
-        elif role == qc.Qt.DisplayRole:
-            if orientation == qc.Qt.Horizontal:
+        elif role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
                 if section == OBJECT:
                     ret = 'Acquisition Entity'
                 elif section == FNAME:
@@ -80,17 +80,18 @@ class ChannelTableModel(qc.QAbstractTableModel):
                 elif section == SORTED_NEG:
                     ret = 'Sorted negative action'
 
-                return qc.QVariant(ret)
-            return qc.QVariant(int(section) + 1)
+                return QVariant(ret)
+            return QVariant(int(section) + 1)
 
 
     def add_row(self, row):
         """
         simply add a channel to table
         """
+        self.beginResetModel()
         self.channels.append(row)
         print('Added ' + row[0])
-        self.reset()
+        self.endResetModel()
 
     def get_image(self, row, which):
         """
@@ -127,6 +128,7 @@ class ChannelTableModel(qc.QAbstractTableModel):
         """
         toggle sort/extract attributes
         """
+        self.beginResetModel()
         if what == DO_EXTRACT_STR:
             col = EXTR
         elif what == DO_SORT_STR_POS:
@@ -165,7 +167,8 @@ class ChannelTableModel(qc.QAbstractTableModel):
             elif ch_row[col] == DONE_STR:
                 ch_row[col] = SORT_MANUAL_STR_NEG
 
-        self.reset()
+        self.endResetModel()
+
 
     def get_channels(self, what):
         """

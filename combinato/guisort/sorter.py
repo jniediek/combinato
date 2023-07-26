@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 this file contains the code for the spike sorting GUI
 """
@@ -9,8 +9,9 @@ from getpass import getuser
 from time import strftime
 import time
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QListView,
+        QMessageBox, QFileDialog)
 
 from .ui_sorter import Ui_MainWindow
 
@@ -90,6 +91,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.actionOpen.triggered.connect(self.actionOpen_triggered)
         self.comparePlotpushButton.clicked.connect(self.compare_groups)
 
+        self.actionSave.triggered.connect(self.actionSave_triggered)
         self.actionOpenJobs.triggered.connect(self.actionOpenJobs_triggered)
         self.actionNextJob.triggered.connect(self.actionNextJob_triggered)
         self.actionMergeAll.triggered.connect(self.actionMergeAll_triggered)
@@ -97,6 +99,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.actionMerge.triggered.connect(self.actionMerge_triggered)
         self.actionMerge_one_unit_groups.triggered.\
             connect(self.action_MergeOnes_triggered)
+        self.actionSave_to_Matfile.triggered.connect(self.action_export_triggered)
 
         if len(arg) > 1:
             self.basedir = os.path.dirname(arg)
@@ -182,12 +185,12 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         save a plot of one group
         """
         fout = QFileDialog.getSaveFileName(self,
-                                           'Save as Image',
-                                           os.getcwd(),
-                                           'Images (*.jpg *.pdf *.png)')
-        self.groupOverviewFigure.save_as_file(str(fout), dpi=300)
+               "Save as Image", os.getcwd(),
+               "Image files (*.jpg *.pdf *.png)")
+        self.groupOverviewFigure.save_as_file(str(fout[0]), dpi=300)
 
     def on_actionAutoassign_triggered(self):
+        print(self.sender().text())
 
         if self.backend is None:
             return
@@ -209,14 +212,14 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         selectedMean = group.clusters[index].meanspike
         means = dict()
 
-        for name, group in self.backend.sessions.groupsByName.iteritems():
+        for name, group in self.backend.sessions.groupsByName.items():
             if name not in ['Unassigned', 'Artifacts']:
                 means[name] = np.array(group.meandata).mean(0)
 
         dist = np.inf
         minimizer = None
 
-        for name, mean in means.iteritems():
+        for name, mean in means.items():
             if name != groupName:
                 d = spikeDist(mean, selectedMean)
                 if d < dist:
@@ -565,8 +568,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         self.groupsComparisonFigure.xcorr(group1, group2)
 
-    @pyqtSignature("")
-    def on_actionSave_triggered(self):
+    def actionSave_triggered(self):
         msgBox = QMessageBox()
         msgBox.setText("Save changes to current session?")
         msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
@@ -579,7 +581,6 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                                                         self.status_string))
             self.backend.sessions.dirty = False
 
-    @pyqtSignature("")
     def on_actionMarkCluster_triggered(self):
 
         name = self.tabWidget.currentWidget().objectName()
@@ -603,13 +604,11 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             self.allGroupsFigure.mark(groupName, index)
 
 
-    @pyqtSignature("")
     def on_actionMakeArtifact_triggered(self):
         self.move(self.backend.sessions.groupsByName['Artifacts'])
         self.updateGroupInfo()
         self.updateActiveTab()
 
-    @pyqtSignature("")
     def on_actionNextGroup_triggered(self):
         """
         rotate through groups
@@ -682,12 +681,17 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             src = self.listView
         indexes = src.selectedIndexes()
 
+        for obj in (src.model(), dst):
+            obj.beginResetModel()
+       
         for index in indexes:
             cl = src.model().popCluster(index.row())
             dst.addCluster(cl)
 
-        for obj in (src, dst):
-            obj.reset()
+        for obj in (src.model(), dst):
+            obj.endResetModel()
+
+        src.reset()
 
         self.updateGroupInfo()
 
@@ -785,10 +789,23 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.updateGroupsList()
         self.updateActiveTab()
 
+    def action_export_triggered(self):
+        if self.backend is None:
+            return
+        if self.backend.sessions is None:
+            return
+        datafilename, extn = os.path.splitext(self.backend.datafile)
+        outfname = os.path.join(self.backend.folder, datafilename + '.mat')
+        print('Saving to {}'.format(outfname))
+        self.backend.sessions.export_to_matfile(outfname)
+
+
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
 def main():
-    """
-    start the qt app
-    """
+    sys.excepthook = except_hook
     app = QApplication(sys.argv)
     app.setStyle(options['guistyle'])
     win = SpikeSorter(parent=None, arg=sys.argv)

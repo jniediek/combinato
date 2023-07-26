@@ -1,10 +1,10 @@
 # JN 2015-04-22
+# JN 2021-12-01 adding type check for stored sign
 # refactoring
 
 """
 manages spikes and sorting, after concatenation
 """
-from __future__ import print_function, division, absolute_import
 import numpy as np
 import tables
 import os
@@ -12,6 +12,7 @@ import os
 from .. import SIGNS, TYPE_NAMES, TYPE_ART, GROUP_NOCLASS, GROUP_ART, NcsFile,\
     TYPE_NON_NOISE, TYPE_ALL
 
+debug = False
 
 class SortingFile(object):
     """
@@ -26,7 +27,14 @@ class SortingFile(object):
         self.classes = self.h5fid.root.classes[:]
         self.groups = self.h5fid.root.groups[:]
         self.types = self.h5fid.root.types[:]
-        self.sign = self.h5fid.get_node_attr('/', 'sign').decode()
+        temp = self.h5fid.get_node_attr('/', 'sign')
+        if debug:
+            print(f'Detected type {type(temp)}')
+        try:
+            self.sign = str(temp, 'utf-8')
+        except TypeError:
+            self.sign = temp
+
         self.basedir = os.path.dirname(h5fname)
         self.matches = self.h5fid.root.matches[:]
 
@@ -244,7 +252,7 @@ class SortingManagerGrouped(object):
 
         self.stop_idx = stop_idx
 
-        self.sign = sign
+        self.sign = str(sign)
 
         self.spikes[sign] =\
             self.h5datafile.\

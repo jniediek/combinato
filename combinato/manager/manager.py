@@ -146,6 +146,7 @@ class SessionManager(object):
         self.session_dir = session_dir
         h5fname = os.path.join(session_dir, 'sorting.h5')
         self.h5file = tables.open_file(h5fname, 'r+')
+        #print('Openend {}'.format(h5fname))
 
         # index and ident are always there
         self.index = None
@@ -180,24 +181,27 @@ class SessionManager(object):
             self.classes = self.h5file.root.classes[:]
 
         except tables.NoSuchNodeError:
+            print('No classes')
             pass
 
         try:
             self.matches = self.h5file.root.matches[:]
         except tables.NoSuchNodeError:
+            print('No matches')
             pass
 
         try:
             self.artifact_scores = self.h5file.root.artifact_scores[:]
         except tables.NoSuchNodeError:
+            print('No artifacts')
             pass
 
         if True in [x is None for x in
                     (self.classes, self.matches, self.artifact_scores)]:
             self.is_sorted = False
+            print('Unsorted session, not loading sorting data')
         else:
             self.is_sorted = True
-            print('Unsorted session, not loading sorting data')
 
         if self.artifact_scores is not None:
             self.all_ids = self.artifact_scores[:, 0]
@@ -215,6 +219,7 @@ class SessionManager(object):
         """
         self._update_node('classes', classes, np.uint16)
         self.classes = classes
+        print('Classes updated')
 
     def _update_node(self, name, data, dtype):
         """
@@ -343,6 +348,7 @@ class SessionManager(object):
             return None
 
     def __del__(self):
+        print('Closing {}'.format(self.session_dir))
         self.h5file.close()
 
 
