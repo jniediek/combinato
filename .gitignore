@@ -2,3 +2,4 @@ combinato/options.py
 *.pyc
 *.swp
 .DS_Store
+.idea
