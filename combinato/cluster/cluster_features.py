@@ -68,8 +68,7 @@ def cluster_features(features, folder, name):
         fid.write('SaveSuscept|\n')
         fid.write('WriteLables|\n')
         fid.write('WriteCorFile~\n')
-        fid.write('ForceRandomSeed: %f\n' % np.random.random())
-        # fid.write('ForceRandomSeed: 0')
+        fid.write('ForceRandomSeed: %f\n' % (np.random.random() * 2**32))
 
     fid.close()
 
