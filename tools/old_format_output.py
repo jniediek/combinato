@@ -91,6 +91,11 @@ def convert_to_mat(groups, outfname, drop_artifacts=False):
 def main(fname_data, fname_sorting, sign, outfname, drop_artifacts=False):
     """
     read groups from sorting for conversion
+    
+    Args:
+    drop_arftifacts, bool: flag for excluding artifacts. If True,
+    			    artifacts will be excluded. Defaults
+    			    to False.
     """
     man = Combinato(fname_data, sign, fname_sorting)
     # man.set_sign_times_spikes(sign)
@@ -98,7 +103,11 @@ def main(fname_data, fname_sorting, sign, outfname, drop_artifacts=False):
     fn1 = os.path.basename(fname_data)
     # fn2 = os.path.basename(fname_sorting)
 
-    joined = man.get_groups_joined()
+    if drop_artifacts: 
+        joined = man.get_groups_joined(artifacts=False)
+    else:
+        joined = man.get_groups_joined(artifacts=True)
+    
     ch_name = man.header['AcqEntName']
     # ugly: this works only if you use the CSCxy convention!
     go_on = False
