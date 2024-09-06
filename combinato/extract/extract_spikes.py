@@ -17,7 +17,7 @@ try:
 except ImportError:
     pass
 
-def extract_spikes(data, times, timestep, filt):
+def extract_spikes(data, times, timestep, filt, align_timestamps=False, do_clean=False):
 
     factor = options['upsampling_factor']
     indices_per_spike = options['indices_per_spike']
@@ -111,14 +111,23 @@ def extract_spikes(data, times, timestep, filt):
 
         spikes = upsample(spikes, factor)
 
-        spikes, index_maximum = align(spikes,
-                                  (pre_indices + 5) * factor,
-                                  factor,
-                                  factor)
-        _, removed_indices = clean(spikes, index_maximum)
+        center = (pre_indices + 5) * factor
 
-        # this is not optimal, but the error is less than .5 ms in use cases
-        timestamps = times[maxima]
+        if align_timestamps:  # Use the passed flag
+            start = center - 5 * factor
+            end = center + 5 * factor
+            alignment_shifts = (spikes[:, start:end].argmax(1) - 5 * factor) / factor
+            adjusted_maxima = maxima + alignment_shifts.astype(int)
+            timestamps = times[adjusted_maxima]
+        else:
+            timestamps = times[maxima]
+
+        spikes, index_maximum = align(spikes, center, factor, factor)
+
+        if do_clean:  # Use the passed flag
+            spikes, removed_indices = clean(spikes, index_maximum)
+            timestamps = timestamps[~removed_indices]
+
         spikes, new_length = downsample(spikes, index_maximum, factor, pre_indices, indices_per_spike)
 
         if sign == 1:
