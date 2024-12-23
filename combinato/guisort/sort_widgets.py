@@ -466,10 +466,8 @@ class AllGroupsFigure(MplCanvas):
             group = self.session.groupsById[gId]
             ax = group.assignAxis
             if ax is not None:
-                while(len(ax.lines)):
-                    ax.lines[0].remove()
-                    if len(ax.lines):
-                        del ax.lines[0]
+                for line in ax.lines:
+                    line.remove()
                 data = group.meandata
                 counts = sum([c.spikes.shape[0] for c in group.clusters])
                 gtype = TYPE_NAMES[group.group_type]
