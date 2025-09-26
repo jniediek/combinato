@@ -33,4 +33,4 @@ Johannes Niediek, Jan Boström, Christian E. Elger, Florian Mormann. „Reliable
 ## Contact
 Please feel free to use the GitHub infrastructure for questions, bug reports, feature requests, etc.
 
-Johannes Niediek, 2016-2023, `jonied@posteo.de`.
+Johannes Niediek, 2016-2025, `jonied@posteo.de`.
