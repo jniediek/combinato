@@ -49,6 +49,10 @@ def main():
                         help='folder where spikes should be saved')
     parser.add_argument('--refscheme', nargs=1, type=FileType(mode='r'),
                         help='scheme for re-referencing')
+    parser.add_argument('--align-timestamps', action='store_true', 
+                        default=False, help='align timestamps to peaks of extracted spikes')
+    parser.add_argument('--do-clean', action='store_true',
+                        default=False, help='remove spikes that could not be aligned')
     args = parser.parse_args()
 
     if ((args.files is None) and 
@@ -73,7 +77,7 @@ def main():
                  'count': 0,
                  'destination': destination,
                  'scale_factor': args.matfile_scale_factor}]
-        mp_extract(jobs, 1)
+        mp_extract(jobs, 1, align_timestamps=args.align_timestamps, do_clean=args.do_clean)
         return
 
 
@@ -105,7 +109,7 @@ def main():
 
                 jobs.append(jdict)
 
-        mp_extract(jobs, nWorkers)
+        mp_extract(jobs, nWorkers, align_timestamps=args.align_timestamps, do_clean=args.do_clean)
         return
 
 
@@ -162,4 +166,4 @@ def main():
             jobs.append(jdict)
 
 
-    mp_extract(jobs, nWorkers)
+    mp_extract(jobs, nWorkers, align_timestamps=args.align_timestamps, do_clean=args.do_clean)
