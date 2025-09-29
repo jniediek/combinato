@@ -34,7 +34,7 @@ def features_to_index(features, folder, name, overwrite=True):
     """
     wrapper function
     """
-    print(f"{strftime('%Y-%m-%d_%H-%M-%S')} features_to_index got called")  # Log function call
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} features_to_index got called")  # Log function call
 
     clu = None
 
@@ -80,7 +80,7 @@ def cluster_step(features, folder, sub_name, overwrite):
     """
     one step in clustering
     """
-    print(f"{strftime('%Y-%m-%d_%H-%M-%S')} cluster_step got called")  # Log function call
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} cluster_step got called")  # Log function call
 
     res_idx, tree, used_points = features_to_index(features,
                                                    folder,
@@ -105,7 +105,7 @@ def iterative_sorter(features, spikes, n_iterations, name, overwrite=True):
     """
     name is used to generate temporary filenames
     """ 
-    print(f"{strftime('%Y-%m-%d_%H-%M-%S')} iterative_sorter got called")  # Log function call
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} iterative_sorter got called")  # Log function call
 
     idx = np.zeros(features.shape[0], np.uint16)
     match_idx = np.zeros(features.shape[0], bool)
@@ -180,7 +180,7 @@ def sort_spikes(spikes, folder, overwrite=False, sign='pos'):
     """
     function organizes code
     """
-    print(f"{strftime('%Y-%m-%d_%H-%M-%S')} sort_spikes got called")  # Log function call
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} sort_spikes got called")  # Log function call
 
     n_iterations = options['RecursiveDepth']
     if options['Debug']:
@@ -211,7 +211,7 @@ def main(data_fname, session_fname, sign, overwrite=False):
     """
     sort spikes from given session
     """
-    print(f"{strftime('%Y-%m-%d_%H-%M-%S')} main got called")  # Log function call
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} main got called")  # Log function call
 
     sort_man = SortingManager(data_fname)
     session = SessionManager(session_fname)
@@ -240,7 +240,7 @@ def sort_helper(args):
     """
     usual multiprocessing helper, used to un
     """
-    print(f"{strftime('%Y-%m-%d_%H-%M-%S')} sort_helper got called")  # Log function call
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} sort_helper got called")  # Log function call
 
     main(args[0], args[2], args[1], options['overwrite'])
 
@@ -249,7 +249,7 @@ def write_options(fname='css-cluster-log.txt'):
     """
     save options to log file
     """
-    print(f"{strftime('%Y-%m-%d_%H-%M-%S')} write_options got called")  # Log function call
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} write_options got called")  # Log function call
 
     # Remove old session_random_seeds.txt if exists
     if os.path.exists('session_random_seeds.txt'):
@@ -277,7 +277,7 @@ def test_joblist(joblist):
     simple test to detect whether the same job is
     requested more than once
     """
-    print(f"{strftime('%Y-%m-%d_%H-%M-%S')} test_joblist got called")  # Log function call
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} test_joblist got called")  # Log function call
 
     unique_joblist = set(joblist)
     if len(joblist) != len(unique_joblist):
@@ -299,7 +299,7 @@ def argument_parser():
     """
     standard argument parsing
     """
-    print(f"{strftime('%Y-%m-%d_%H-%M-%S')} argument_parser got called")  # Log function call
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} argument_parser got called")  # Log function call
 
     from argparse import ArgumentParser, FileType, ArgumentError
     from multiprocessing import Pool, cpu_count
