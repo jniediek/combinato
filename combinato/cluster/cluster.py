@@ -55,9 +55,7 @@ def features_to_index(features, folder, name, overwrite=True):
     if overwrite:
         feat_idx = select_features(features)
         print('Clustering data in {}/{}'.format(folder, name))
-
-        # retrieve information from cluster_features
-        global SEED
+        
         cluster_features(features[:, feat_idx], folder, name, SEED)
         # ret, random_seed_used = cluster_features(features[:, feat_idx], folder, name)
         # Log_Random_seeds(folder, random_seed_used)
