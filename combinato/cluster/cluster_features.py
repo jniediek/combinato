@@ -30,7 +30,8 @@ def _cleanup(base, ext):
             os.remove(name)
 
 
-def cluster_features(features, folder, name):
+
+def cluster_features(features, folder, name, random_seed=None):
     """
     folder to store temporary files
     name to generate temporary file names
@@ -52,7 +53,7 @@ def cluster_features(features, folder, name):
 
     argument_fname = name + "_cluster.run"
     run_fname = os.path.join(folder, argument_fname)
-
+    
     with open(run_fname, "w") as fid:
         fid.write('NumberOfPoints: %i\n' % features.shape[0])
         fid.write('DataFile: %s\n' % data_fname)
@@ -68,8 +69,8 @@ def cluster_features(features, folder, name):
         fid.write('SaveSuscept|\n')
         fid.write('WriteLables|\n')
         fid.write('WriteCorFile~\n')
-        fid.write('ForceRandomSeed: %f\n' % (np.random.random() * 2**32))
-
+        #fid.write('ForceRandomSeed: %f\n' % np.random.random() * 2**32)
+        fid.write('ForceRandomSeed: %f\n' % random_seed)
     fid.close()
 
     if options['ShowSPCOutput']:
