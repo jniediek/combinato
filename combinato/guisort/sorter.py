@@ -502,12 +502,12 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         else:
             return
 
-        try:
-            int(tgt)
-            int(src)
-        except ValueError:
-            print('Not merging {} and {}!'.format(src, tgt))
-            return
+        #try:
+            #int(tgt)
+            #int(src)
+        #except ValueError:
+            #print('Not merging {} and {}!'.format(src, tgt))
+            #return
 
         if not len(tgt) * len(src):
             return
