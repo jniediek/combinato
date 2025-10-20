@@ -65,8 +65,7 @@ def save(q, ctarget):
     print('Save exited')
 
 
-def work(q_in, q_out, count, target):
-
+def work(q_in, q_out, count, target, align_timestamps=False, do_clean=False):
     filters = {}
 
     while count.value < target:
@@ -83,9 +82,9 @@ def work(q_in, q_out, count, target):
 
         filt = filters[ts]
 
-        result = extract_spikes(datatuple[0],
-                                datatuple[1],
-                                ts,  filt)
+        result = extract_spikes(datatuple[0], datatuple[1], ts, filt,
+                                align_timestamps=align_timestamps,
+                                do_clean=do_clean)
 
         q_out.put((job, result))
 
@@ -149,7 +148,7 @@ def read(jobs, q):
     print('Read exited')
 
 
-def mp_extract(jobs, nWorkers):
+def mp_extract(jobs, nWorkers, align_timestamps=False, do_clean=False):
 
     procs = []
 
@@ -166,7 +165,7 @@ def mp_extract(jobs, nWorkers):
 
     # start the worker processes
     for i in range(nWorkers):
-        p = Process(target=work, args=[q_read, q_work, count, ctarget])
+        p = Process(target=work, args=[q_read, q_work, count, ctarget, align_timestamps, do_clean])
         p.daemon = True
         p.start()
         procs.append(p)
