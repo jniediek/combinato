@@ -5,6 +5,7 @@ main program for spike sorting
 
 from __future__ import print_function, division, absolute_import
 import os
+import math
 import numpy as np
 # pylint:   disable=E1101
 from .. import SortingManager, SessionManager, options
@@ -20,17 +21,21 @@ from .cluster_features import cluster_features, read_results
 from .dist import template_match
 from .artifacts import find_artifacts
 from .plot_temp import plot_temperatures
+from .handle_random_seed import handle_random_seed
 
 
 USER = getuser()
 LOG_FNAME = 'log.txt'
 FIRST_MATCH_FACTOR = options['FirstMatchFactor']
+SEED = None
 
 
 def features_to_index(features, folder, name, overwrite=True):
     """
     wrapper function
     """
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} features_to_index got called")  # Log function call
+
     clu = None
 
     if not overwrite:
@@ -50,12 +55,17 @@ def features_to_index(features, folder, name, overwrite=True):
     if overwrite:
         feat_idx = select_features(features)
         print('Clustering data in {}/{}'.format(folder, name))
-        cluster_features(features[:, feat_idx], folder, name)
-        now = strftime('%Y-%m-%d_%H-%M-%S')
+        
+        cluster_features(features[:, feat_idx], folder, name, SEED)
+        # ret, random_seed_used = cluster_features(features[:, feat_idx], folder, name)
+        # Log_Random_seeds(folder, random_seed_used)
 
+        now = strftime('%Y-%m-%d_%H-%M-%S')
         log_fname = os.path.join(folder, LOG_FNAME)
         with open(log_fname, 'a') as fid_done:
             fid_done.write('{} {} ran {}\n'.format(now, USER, name))
+            # log random seeds
+            # fid_done.write('Random Seed used: %f\n' % random_seed_used)
         fid_done.close()
 
         clu, tree = read_results(folder, name)
@@ -68,6 +78,7 @@ def cluster_step(features, folder, sub_name, overwrite):
     """
     one step in clustering
     """
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} cluster_step got called")  # Log function call
 
     res_idx, tree, used_points = features_to_index(features,
                                                    folder,
@@ -91,10 +102,12 @@ def cluster_step(features, folder, sub_name, overwrite):
 def iterative_sorter(features, spikes, n_iterations, name, overwrite=True):
     """
     name is used to generate temporary filenames
-    """
+    """ 
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} iterative_sorter got called")  # Log function call
+
     idx = np.zeros(features.shape[0], np.uint16)
     match_idx = np.zeros(features.shape[0], bool)
-
+    
     for i in range(n_iterations):
 
         # input to clustering are the spikes that have no index so far
@@ -165,6 +178,8 @@ def sort_spikes(spikes, folder, overwrite=False, sign='pos'):
     """
     function organizes code
     """
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} sort_spikes got called")  # Log function call
+
     n_iterations = options['RecursiveDepth']
     if options['Debug']:
         print('Recursive depth is {}.'.format(n_iterations))
@@ -194,6 +209,8 @@ def main(data_fname, session_fname, sign, overwrite=False):
     """
     sort spikes from given session
     """
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} main got called")  # Log function call
+
     sort_man = SortingManager(data_fname)
     session = SessionManager(session_fname)
     idx = session.index
@@ -221,6 +238,8 @@ def sort_helper(args):
     """
     usual multiprocessing helper, used to un
     """
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} sort_helper got called")  # Log function call
+
     main(args[0], args[2], args[1], options['overwrite'])
 
 
@@ -228,6 +247,13 @@ def write_options(fname='css-cluster-log.txt'):
     """
     save options to log file
     """
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} write_options got called")  # Log function call
+
+    # Remove old session_random_seeds.txt if exists
+    if os.path.exists('session_random_seeds.txt'):
+        os.remove('session_random_seeds.txt')
+        print('Old session_random_seeds.txt has been deleted.')
+    
     print('Writing options to file {}'.format(fname))
     msg = strftime('%Y-%m-%d_%H-%M-%S') + ' ' + USER + '\n'
 
@@ -249,6 +275,8 @@ def test_joblist(joblist):
     simple test to detect whether the same job is
     requested more than once
     """
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} test_joblist got called")  # Log function call
+
     unique_joblist = set(joblist)
     if len(joblist) != len(unique_joblist):
         # there are duplicates!
@@ -269,6 +297,8 @@ def argument_parser():
     """
     standard argument parsing
     """
+    #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} argument_parser got called")  # Log function call
+
     from argparse import ArgumentParser, FileType, ArgumentError
     from multiprocessing import Pool, cpu_count
     parser = ArgumentParser('css-cluster',
@@ -280,8 +310,8 @@ def argument_parser():
     parser.add_argument('--jobs', type=FileType('r'))
     parser.add_argument('--datafile', nargs=1)
     parser.add_argument('--sessions', nargs='+')
-
     parser.add_argument('--single', default=False, action='store_true')
+    parser.add_argument('--rng', type=float, default=None, help='Random seed for clustering')
 
     # possibilities:
     # 1) jobs is supplied, and neither datafile nor session
@@ -289,17 +319,23 @@ def argument_parser():
 
     args = parser.parse_args()
 
+    # Use the passed seed if provided, otherwise generate one
+    global SEED
+    if args.rng is None or math.isnan(args.rng):
+        SEED = handle_random_seed()
+    else:
+        SEED = handle_random_seed(args.rng)
+
+
     if args.jobs is None:
         if None in (args.datafile, args.sessions):
             raise ArgumentError(args.jobs,
                                 'Specify either jobs or datafile and sessions')
-
         else:
             joblist = []
             for session in args.sessions:
                 sign = 'neg' if 'neg' in session else 'pos'
                 joblist.append([args.datafile[0], sign, session])
-
     else:
         jobdata = args.jobs.read().splitlines()
         joblist = tuple((tuple(line.split()) for line in jobdata))
