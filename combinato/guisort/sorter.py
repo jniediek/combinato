@@ -106,7 +106,12 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         else:
             self.basedir = os.getcwd()
 
-        self.logfid = open(LOGFILENAME, 'a')
+        try:
+            self.logfid = open(LOGFILENAME, 'a')
+        except PermissionError:
+            print('Not logging!')
+            self.logfid = None
+
         self.user = getuser()
 
         self.rasterFigure = None
@@ -577,7 +582,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         if ret == QMessageBox.Yes:
             self.backend.sessions.save()
             now = strftime('%Y-%m-%d_%H-%M-%S')
-            self.logfid.write('{} {} saved {}\n'.format(now, self.user,
+            if self.logfid is not None:
+                self.logfid.write('{} {} saved {}\n'.format(now, self.user,
                                                         self.status_string))
             self.backend.sessions.dirty = False
 
