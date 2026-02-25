@@ -40,7 +40,7 @@ def features_to_index(features, folder, name, overwrite=True):
     global SEED
     if SEED is None:
         SEED = handle_random_seed()
-
+        
     clu = None
 
     if not overwrite:

@@ -22,7 +22,12 @@ class SortingFile(object):
         self.h5fid.close()
 
     def __init__(self, h5fname):
-        self.h5fid = tables.open_file(h5fname, 'r+')
+        try:
+            self.h5fid = tables.open_file(h5fname, 'r+')
+        except PermissionError as e:
+            print(e)
+            self.h5fid = tables.open_file(h5fname, 'r')
+            print(f'Opening {h5fname} in read-only mode')
         self.index = self.h5fid.root.index[:]
         self.classes = self.h5fid.root.classes[:]
         self.groups = self.h5fid.root.groups[:]
