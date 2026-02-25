@@ -35,6 +35,11 @@ def features_to_index(features, folder, name, overwrite=True):
     wrapper function
     """
     #print(f"{strftime('%Y-%m-%d_%H-%M-%S')} features_to_index got called")  # Log function call
+        
+    # Handle seed incase the entry point is not argument_parser
+    global SEED
+    if SEED is None:
+        SEED = handle_random_seed()
 
     clu = None
 
