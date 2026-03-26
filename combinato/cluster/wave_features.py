@@ -6,7 +6,8 @@ import pywt # scipy doesn't have the flexibility yet
 from .. import options
 
 WAVELET = pywt.Wavelet(options['Wavelet'])
-OUT_DTYPE = np.float32
+#OUT_DTYPE = np.float32 #previously np.float32 
+OUT_DTYPE = np.float64 #need to swap to np.float64 for Windows Desktop
 LEVEL = 4
 
 def wavelet_features(data):
