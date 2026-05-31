@@ -1,9 +1,12 @@
 # JN 2015-01-11
 
 from __future__ import print_function, division, absolute_import
+import logging
 import numpy as np
 import pywt # scipy doesn't have the flexibility yet
 from .. import options
+
+logger = logging.getLogger(__name__)
 
 WAVELET = pywt.Wavelet(options['Wavelet'])
 OUT_DTYPE = np.float32
@@ -34,7 +37,7 @@ def testit():
     data = np.ones((3, 64)) 
     data[0, :] = np.arange(64)
     data[1, :] = np.linspace(0, 1, 64)
-    print(wavelet_features(data))
+    logger.debug('%s', wavelet_features(data))
     # test successfull 2015-02-10 JN
 
 

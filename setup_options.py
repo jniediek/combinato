@@ -24,7 +24,8 @@ def setup():
     elif "win32" in platform:
         binary = 'cluster_64.exe'
     elif "darwin" in platform:
-        binary = 'cluster_maci.exe'
+        # binary = 'cluster_maci.exe'
+        binary = 'cluster_mac_new.exe'
 
     binary = os.path.join(os.getcwd(),'spc', binary)
     try:

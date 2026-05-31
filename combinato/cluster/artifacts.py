@@ -7,8 +7,11 @@ artifact clusters based on the spike wave forms
 """
 
 from __future__ import print_function, division, absolute_import
+import logging
 import numpy as np
 from .. import options, artifact_criteria
+
+logger = logging.getLogger(__name__)
 
 CRIT = artifact_criteria
 TOLERANCE = 10
@@ -58,7 +61,7 @@ def peak_to_peak(data):
     peak to peak ratio in second half. data: mean spike
     """
     cut = int(data.shape[0]/2)
-    return (data[cut:] - data[0]).ptp()/data.max()
+    return np.ptp(data[cut:] - data[0])/data.max()
 
 
 def artifact_score(data):
@@ -116,7 +119,7 @@ def find_artifacts(spikes, sorted_idx, class_ids, invert=False):
             class_spikes = -class_spikes
         score, reasons, _ = artifact_score(class_spikes)
         if options['Debug']:
-            print(class_id, score, reasons)
+            logger.debug('%s %s %s', class_id, score, reasons)
         artifact_idx[class_idx] = score
         if score:
             artifact_ids.append(class_id)
@@ -131,4 +134,4 @@ def testit():
     data = np.array([[0, 1, 14, 5, 5, 5, 5, 20, 30, 0, 11, 0],
                      [-1, 3, 12, 3, 4, 7, 7, 20, 30, 0, 11, 1]], float)
 
-    print(artifact_score(data))
+    logger.debug('%s', artifact_score(data))

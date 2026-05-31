@@ -6,6 +6,9 @@ impression of the data quality, movement artifacts and so on
 """
 from __future__ import print_function, division, absolute_import
 
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import sys
 import time
@@ -46,7 +49,7 @@ def overview_plot(channel):
     plots = []
     fignames = []
 
-    print('Opening %s' % channel)
+    logger.info('Opening %s', channel)
     fid = NcsFile(channel)
     timestep = fid.timestep
     total_time = fid.num_recs * 512 * timestep # in seconds
@@ -171,7 +174,7 @@ def overview_plot(channel):
     subprocess.call(arg)
     for figname in fignames:
         os.remove(figname)
-    print('Completed ' + entname)
+    logger.info('Completed %s', entname)
 
 def main():
     t = time.time()
@@ -187,4 +190,4 @@ def main():
         for ch in channels:
             overview_plot(ch)
 
-    print('Plotting took {:.0f} seconds'.format(time.time() - t))
+    logger.debug('Plotting took %.0f seconds', time.time() - t)

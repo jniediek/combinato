@@ -3,6 +3,8 @@ Sessions class for sorting sessions for guisort
 """
 
 from __future__ import print_function, division, absolute_import
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 from scipy.io import savemat
 from .cluster import Cluster
@@ -33,14 +35,14 @@ class Sessions(object):
         groups = self.sorting_manager.get_groups()
 
         if GROUP_ART not in groups:
-            print('Adding empty artifact group')
+            logger.info('Adding empty artifact group')
             model = GroupListModel('Artifacts', GROUP_ART, [], TYPE_ART)
             self.groupsById[GROUP_ART] = model
             self.type_table = np.vstack(([GROUP_ART, TYPE_ART],
                                          self.type_table))
 
         if GROUP_NOCLASS not in groups:
-            print('Adding empty noclass group')
+            logger.info('Adding empty noclass group')
             model = GroupListModel('Unassigned', GROUP_NOCLASS, [], TYPE_NO)
             self.groupsById[GROUP_NOCLASS] = model
 
@@ -106,7 +108,7 @@ class Sessions(object):
             if newkey not in keys:
                 self.groupsById[newkey] = GroupListModel(str(newkey),
                                                          newkey, [], TYPE_MU)
-                print('Added group {}'.format(newkey))
+                logger.info('Added group %s', newkey)
                 break
 
         self.type_table = np.vstack((self.type_table, [newkey, TYPE_MU]))
@@ -132,7 +134,7 @@ class Sessions(object):
 
         for pre_new_gid, (size, gid) in enumerate(sizes):
             new_gid = pre_new_gid + 1
-            print("{} -> {} ({})".format(gid, new_gid, size))
+            logger.debug('%s -> %s (%s)', gid, new_gid, size)
             group = self.groupsById[gid] 
             group.name = str(new_gid)
             group.groupId = new_gid

@@ -5,6 +5,8 @@
 create a unit overview plots for all units
 """
 from __future__ import division, print_function, absolute_import
+import logging
+logger = logging.getLogger(__name__)
 import os
 
 import numpy as np
@@ -143,7 +145,7 @@ def plot_group(gid, group, group_joined, start_stop, sign,
     just a simple group overview
     """
 
-    print('Plotting group {} ({} clusters)'.format(gid, len(group)))
+    logger.info('Plotting group %s (%s clusters)', gid, len(group))
 
     panels = PANELS
 
@@ -255,12 +257,12 @@ def run_file(fname, sign, label, savefolder):
     run overview plot on one spikes file
     """
 
-    print('Initializing {} {} {}'.format(fname, sign, label))
+    logger.info('Initializing %s %s %s', fname, sign, label)
     # get thresholds
 
     manager = Combinato(fname, sign, label)
     if not manager.initialized:
-        print('Could not initialize {} {}'.format(fname, label))
+        logger.info('Could not initialize %s %s', fname, label)
         return
     thresholds = manager.get_thresholds()
     start = manager.times[sign][0]
@@ -277,11 +279,11 @@ def run_file(fname, sign, label, savefolder):
 
     entity = manager.header['AcqEntName']
 
-    print('Sorting contains {} spikes from {}, duration {}'.
-          format(nspk, entity, dur_str))
+    logger.info('Sorting contains %s spikes from %s, duration %s',
+                nspk, entity, dur_str)
 
     if not manager.initialized:
-        print('could not initialize ' + fname)
+        logger.info('could not initialize %s', fname)
         return
 
 
@@ -332,5 +334,5 @@ def parse_args():
     label = args.label
 
     for fname in fnames:
-        print(fname)
+        logger.debug(fname)
         run_file(fname, sign, label, savefolder)

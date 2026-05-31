@@ -11,6 +11,9 @@ giving access to clusters, groups etc
 """
 from __future__ import print_function, division, absolute_import
 
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 from glob import glob
 from collections import namedtuple
@@ -53,7 +56,7 @@ class DataManager(object):
             """
             helper
             """
-            print('No {} spikes'.format(sign))
+            logger.debug('No %s spikes', sign)
 
         if cache is None:
             cache = []
@@ -79,7 +82,7 @@ class DataManager(object):
                 artifacts = self._h5file.get_node('/' + sign, 'artifacts')
             except tables.NoSuchNodeError:
                 artifacts = None
-                print('No artifacts defined')
+                logger.debug('No artifacts defined')
 
             if 'spikes' in cache:
                 spikes = spikes[:]
@@ -181,25 +184,25 @@ class SessionManager(object):
             self.classes = self.h5file.root.classes[:]
 
         except tables.NoSuchNodeError:
-            print('No classes')
+            logger.debug('No classes')
             pass
 
         try:
             self.matches = self.h5file.root.matches[:]
         except tables.NoSuchNodeError:
-            print('No matches')
+            logger.debug('No matches')
             pass
 
         try:
             self.artifact_scores = self.h5file.root.artifact_scores[:]
         except tables.NoSuchNodeError:
-            print('No artifacts')
+            logger.debug('No artifacts')
             pass
 
         if True in [x is None for x in
                     (self.classes, self.matches, self.artifact_scores)]:
             self.is_sorted = False
-            print('Unsorted session, not loading sorting data')
+            logger.debug('Unsorted session, not loading sorting data')
         else:
             self.is_sorted = True
 
@@ -219,7 +222,7 @@ class SessionManager(object):
         """
         self._update_node('classes', classes, np.uint16)
         self.classes = classes
-        print('Classes updated')
+        logger.info('Classes updated')
 
     def _update_node(self, name, data, dtype):
         """
@@ -227,9 +230,9 @@ class SessionManager(object):
         """
         try:
             self.h5file.remove_node('/', name)
-            print('Updating ' + name)
+            logger.debug('Updating %s', name)
         except tables.NoSuchNodeError:
-            print('Creating ' + name)
+            logger.debug('Creating %s', name)
 
         self.h5file.create_array('/', name, data.astype(dtype))
 
@@ -344,11 +347,11 @@ class SessionManager(object):
             return fname_full
 
         else:
-            print('File not found: ' + fname_full)
+            logger.info('File not found: %s', fname_full)
             return None
 
     def __del__(self):
-        print('Closing {}'.format(self.session_dir))
+        logger.debug('Closing %s', self.session_dir)
         self.h5file.close()
 
 
@@ -414,12 +417,12 @@ class SortingManager(object):
 
         if DEBUG:
             for sign in SIGNS:
-                print('{} session folders: {}'.
-                      format(sign, self.session_folders[sign]))
-                print('{} session groups: {}'.
-                      format(sign, self.session_groups[sign]))
-                print('{} group types: {}'.
-                      format(sign, self.group_types[sign]))
+                logger.debug('%s session folders: %s',
+                            sign, self.session_folders[sign])
+                logger.debug('%s session groups: %s',
+                            sign, self.session_groups[sign])
+                logger.debug('%s group types: %s',
+                            sign, self.group_types[sign])
 
     def get_group_ids(self, sign='pos'):
         """
@@ -428,7 +431,7 @@ class SortingManager(object):
         if self.group_types is not None:
             return self.group_types[sign][:, 0]
         else:
-            print('called get_group_ids, but no groups loaded')
+            logger.info('called get_group_ids, but no groups loaded')
 
     def get_group_type(self, gid, sign='pos'):
         """
@@ -462,7 +465,7 @@ class SortingManager(object):
         ses = self.groups_h5f.get_node('/' + sign + '/' + session_name)
         # small sanity check:
         idx = (ses[:, 0] == clid).nonzero()[0]
-        print(session_name, idx, group)
+        logger.debug('%s %s %s', session_name, idx, group)
         ses[idx, 1] = group
 
 #        self.groups_h5f.flush()
@@ -570,20 +573,20 @@ def test_one():
     name = sys.argv[1]
     sorting_man = SortingManager(name)
     ses_names = sorting_man.session_groups['pos']
-    print(ses_names)
+    logger.debug('%s', ses_names)
     gids = sorting_man.get_group_ids()
-    print(gids)
+    logger.debug('%s', gids)
     group_data = sorting_man.get_groups_from_sessions(ses_names, 'pos')
 
     for gid, data in group_data.items():
         group_type = sorting_man.get_group_type(gid, 'pos')
-        print(gid, TYPE_NAMES[group_type])
+        logger.debug('%s %s', gid, TYPE_NAMES[group_type])
         for ses_name, clids in data:
-            print(ses_name)
+            logger.debug('%s', ses_name)
             for clid in clids:
                 idx, fname = sorting_man.\
                         get_class_by_session_id(ses_name, clid, 'pos')
-                print(len(idx), fname)
+                logger.debug('%s %s', len(idx), fname)
 
 if __name__ == "__main__":
     test_one()

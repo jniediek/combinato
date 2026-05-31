@@ -8,6 +8,7 @@ different functions can be called to mark artifacts
 
 
 from __future__ import print_function, division, absolute_import
+import logging
 import os
 from argparse import ArgumentParser
 
@@ -15,6 +16,8 @@ import numpy as np
 import tables
 
 from .. import h5files
+
+logger = logging.getLogger(__name__)
 
 SIGNS = ('pos', 'neg')
 DEBUG = True
@@ -63,8 +66,8 @@ def add_id(artifacts, index, art_id, sign):
             masked = ((index != 0) & (artifacts[:] == 0)).sum()
         else:
             masked = detected
-        print('{}: detected {} {} spikes, masked {} in mode "{}"'.
-              format(id_to_name[art_id], detected, sign, masked, MODE))
+        logger.debug('%s: detected %s %s spikes, masked %s in mode "%s"',
+                    id_to_name[art_id], detected, sign, masked, MODE)
 
     if READONLY:
         return
@@ -81,7 +84,7 @@ def add_id(artifacts, index, art_id, sign):
     else:
         raise ValueError('Unknown artifact storage mode: {}'.format(MODE))
 
-    print('Total: ', (artifacts[:] != 0).sum())
+    logger.debug('Total: %s', (artifacts[:] != 0).sum())
 
 
 def mark_range_detection(times, ranges):
@@ -92,8 +95,8 @@ def mark_range_detection(times, ranges):
     artifacts = np.zeros(times.shape[0], dtype=bool)
     for this_range in ranges:
         idx = (times >= this_range[0]) & (times <= this_range[1])
-        print(this_range, times[0], times[-1])
-        print(idx.sum())
+        logger.debug('%s %s %s', this_range, times[0], times[-1])
+        logger.debug('%s', idx.sum())
         artifacts[idx] |= True
 
     return artifacts, options_ranges['art_id']
@@ -126,7 +129,7 @@ def mark_double_detection(times, spikes, sign):
             kill = i
         artifacts[kill] = True
 
-    print('{} dist < {}'.format((double_idx).sum(), min_dist))
+    logger.debug('%s dist < %s', (double_idx).sum(), min_dist)
     return artifacts, options_double['art_id']
 
 
@@ -146,8 +149,7 @@ def mark_by_diff(times):
         counts, _ = np.histogram(times, bins)
         left_edges_too_many = bins[:-1][counts > max_per_bin]
         # try a loop, but maybe too slow?
-        if DEBUG:
-            print('looping over {} edges'.format(left_edges_too_many.shape[0]))
+        logger.debug('looping over %s edges', left_edges_too_many.shape[0])
         for edge in left_edges_too_many:
             idx = (times >= edge) & (times <= edge + bin_len)
             artifacts[idx] = True
@@ -170,7 +172,7 @@ def bincount_to_edges(concurrent_fname):
     bins = np.arange(start, stop, bin_len)
     cutoff = options_by_bincount['max_frac_ch'] * num_channels
     if DEBUG:
-        print('Using cutoff of {:.0f} channels'.format(cutoff))
+        logger.debug('Using cutoff of %.0f channels', cutoff)
     exclusion_left_edges = bins[:-1][count > cutoff]
     return exclusion_left_edges, bin_len
 
@@ -180,8 +182,8 @@ def mark_by_bincount(times, left_edges, bin_len):
     marks bins with events in too many other channels (specified by counts)
     """
     if DEBUG:
-        print('all channel rejection, looping over {} edges'.
-              format(left_edges.shape[0]))
+        logger.debug('all channel rejection, looping over %s edges',
+                     left_edges.shape[0])
 
     artifacts = np.zeros(times.shape[0], dtype=bool)
 
@@ -225,7 +227,7 @@ def main(fname, concurrent_edges=None, concurrent_bin=None,
         try:
             node = h5fid.get_node('/' + sign + '/times')
         except tables.NoSuchNodeError:
-            print('{} has no {} spikes'.format(fname, sign))
+            logger.info('%s has no %s spikes', fname, sign)
             h5fid.close()
             continue
 
@@ -318,7 +320,7 @@ def parse_args():
         concurrent_edges, concurrent_bin =\
             bincount_to_edges(conc_fname)
     else:
-        print('Not using concurrent spike detection')
+        logger.info('Not using concurrent spike detection')
         concurrent_edges = concurrent_bin = None
 
     if args.file:
@@ -345,7 +347,7 @@ def parse_args():
     # processing (bad because of high I/O)
     for fname in files:
         if DEBUG:
-            print('Starting ' + fname)
+            logger.debug('Starting %s', fname)
         main(fname, concurrent_edges, concurrent_bin, exclude_ranges)
 
 if __name__ == "__main__":

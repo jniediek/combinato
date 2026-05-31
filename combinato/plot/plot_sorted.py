@@ -8,6 +8,9 @@ plot all clusters from a channel in one overview figure
 """
 from __future__ import print_function, division, absolute_import
 
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import numpy as np
 
@@ -52,12 +55,12 @@ def clust_overview_plot(groups, outname):
     row = 0
 
     for gid in sorted(groups.keys()):
-        print(gid, end=' ')
+        logger.debug('%s', gid)
         group = groups[gid]
         gtype = TYPE_NAMES[group['type']]
 
         col = 0
-        print('row {}/{}, col {}/{}'.format(row, nrows, col, NCOLS))
+        logger.debug('row %s/%s, col %s/%s', row, nrows, col, NCOLS)
         plot = fig.add_subplot(grid[row, col])
         # summary plot
         spike_heatmap(plot, group['spikes'])
@@ -71,7 +74,7 @@ def clust_overview_plot(groups, outname):
 
         # label it
         label = '{} {} {}'.format(gid, len(group['times']), gtype)
-        print(label)
+        logger.debug(label)
         pos = (plot.get_xlim()[0], plot.get_ylim()[0])
         plot.text(pos[0], pos[1], label, backgroundcolor='w',
                   va='bottom', fontsize=FONTSIZE)
@@ -80,17 +83,17 @@ def clust_overview_plot(groups, outname):
         col = 1
         for img_name in group['images']:
             try:
-                print(img_name)
+                logger.debug(img_name)
                 image = mpl.imread(img_name)
             except IOError as err:
-                print(err)
+                logger.error('%s', err)
                 continue
 
             if col == NCOLS:
                 col = 0
                 row += 1
 
-            print('row {}/{}, col {}/{}'.format(row, nrows, col, NCOLS))
+            logger.debug('row %s/%s, col %s/%s', row, nrows, col, NCOLS)
             plot = fig.add_subplot(grid[row, col])
             plot.imshow(image)
             plot.axis('off')
@@ -102,7 +105,7 @@ def clust_overview_plot(groups, outname):
 
     # suptitle = '{} {} ... {}'.format(fname, sessions[0], sessions[-1])
     # fig.suptitle(suptitle)
-    print('saving to ' + outname)
+    logger.info('saving to %s', outname)
     fig.savefig(outname, dpi=300)
     mpl.close(fig)
 
@@ -122,7 +125,7 @@ def run_file(fname, savefolder, sign, label):
         entity = 'unknown'
 
     if not manager.initialized:
-        print('could not initialize ' + fname)
+        logger.info('could not initialize %s', fname)
         return
 
     # basedir = os.path.dirname(fname)
@@ -178,5 +181,5 @@ def parse_args():
     label = args.label
 
     for fname in fnames:
-        print(fname)
+        logger.debug(fname)
         run_file(fname, savefolder, sign, label)

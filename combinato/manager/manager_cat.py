@@ -5,6 +5,9 @@
 """
 manages spikes and sorting, after concatenation
 """
+import logging
+logger = logging.getLogger(__name__)
+
 import numpy as np
 import tables
 import os
@@ -12,7 +15,7 @@ import os
 from .. import SIGNS, TYPE_NAMES, TYPE_ART, GROUP_NOCLASS, GROUP_ART, NcsFile,\
     TYPE_NON_NOISE, TYPE_ALL
 
-debug = False
+DEBUG = False
 
 class SortingFile(object):
     """
@@ -25,16 +28,16 @@ class SortingFile(object):
         try:
             self.h5fid = tables.open_file(h5fname, 'r+')
         except PermissionError as e:
-            print(e)
+            logger.info('%s', e)
             self.h5fid = tables.open_file(h5fname, 'r')
-            print(f'Opening {h5fname} in read-only mode')
+            logger.info('Opening %s in read-only mode', h5fname)
         self.index = self.h5fid.root.index[:]
         self.classes = self.h5fid.root.classes[:]
         self.groups = self.h5fid.root.groups[:]
         self.types = self.h5fid.root.types[:]
         temp = self.h5fid.get_node_attr('/', 'sign')
-        if debug:
-            print(f'Detected type {type(temp)}')
+        if DEBUG:
+            logger.debug('Detected type %s', type(temp))
         try:
             self.sign = str(temp, 'utf-8')
         except TypeError:
@@ -144,7 +147,7 @@ class SortingManagerGrouped(object):
         try:
             self.h5datafile = tables.open_file(h5fname, 'r')
         except IOError as error:
-            print('Could not initialize {}: {}'.format(h5fname, error))
+            logger.error('Could not initialize %s: %s', h5fname, error)
             self.initialized = False
             return
 
@@ -174,7 +177,7 @@ class SortingManagerGrouped(object):
         try:
             thr = self.h5datafile.root.thr[:, :]
         except tables.exceptions.NoSuchNodeError:
-            print('Extraction thresholds were not saved!')
+            logger.error('Extraction thresholds were not saved!')
             thr = None
         return thr
 
@@ -211,7 +214,7 @@ class SortingManagerGrouped(object):
                 self.header = {'AcqEntName': names[ext]}
                 return
 
-        print('Ncs file not found, no header!')
+        logger.info('Ncs file not found, no header!')
         self.header = None
 
     def init_sorting(self, sorting_folder):
@@ -338,7 +341,7 @@ class SortingManagerGrouped(object):
         shape = self.times[self.sign].shape[0]
         if idx[-1] >= shape:
             idx = idx[idx < shape]
-            print('Shortened index!')
+            logger.debug('Shortened index!')
 
         ret['type'] = gtype
         ret['n_clusters'] = n_clusters
@@ -443,8 +446,7 @@ class Combinato(SortingManagerGrouped):
 
         # quick check if we can do this
         if not os.path.exists(sorting_session):
-            print('Session folder {} '
-                  'not found'.format(sorting_session))
+            logger.info('Session folder %s not found', sorting_session)
             return
 
         super(Combinato, self).__init__(fname)
@@ -452,8 +454,7 @@ class Combinato(SortingManagerGrouped):
         res = self.init_sorting(sorting_session)
 
         if not res:
-            print('Sorting session {} '
-                  'not initialized'.format(sorting_session))
+            logger.info('Sorting session %s not initialized', sorting_session)
         else:
             self.initialized = True
 
@@ -468,19 +469,19 @@ def test(name, label, ts):
     man = SortingManagerGrouped(name)
     if not man.initialized:
         return
-    print('Working on {}, from time {} to {} ({:.1f} min)'
-          .format(name, start, stop, (stop-start)/6e4))
+    logger.info('Working on %s, from time %s to %s (%.1f min)',
+                name, start, stop, (stop - start) / 6e4)
     start_idx, stop_idx = man.get_start_stop_index('pos', start, stop)
-    print('Setting start index: {}, stop index: {}'.
-          format(start_idx, stop_idx))
+    logger.info('Setting start index: %s, stop index: %s',
+                start_idx, stop_idx)
     man.set_sign_times_spikes('pos', start_idx, stop_idx)
     ret = man.init_sorting(os.path.join(os.path.dirname(name), label))
     if not ret:
-        print('Unable to initialize!')
+        logger.info('Unable to initialize!')
         return
-    print(man.sorting.index.shape)
+    logger.info('%s', man.sorting.index.shape)
     groups = man.get_groups()
-    print('Retrieved Groups')
+    logger.info('Retrieved Groups')
     test_gid = groups.keys()[0]
     man.get_group_joined(test_gid)
 
@@ -489,11 +490,11 @@ def test(name, label, ts):
     # iterate through clusters
     all_good = 0
     for k, v in groups.items():
-        print('Group {} type {}'.format(k, TYPE_NAMES[man.get_group_type(k)]))
-        print(v.keys())
+        logger.info('Group %s type %s', k, TYPE_NAMES[man.get_group_type(k)])
+        logger.info('%s', v.keys())
         sumidx = 0
         for clid in v:
-            print('Cluster {} len {}'.format(clid, v[clid]['times'].shape[0]))
+            logger.info('Cluster %s len %s', clid, v[clid]['times'].shape[0])
             sumidx += v[clid]['times'].shape[0]
 
         if man.get_group_type(k) > 0:
@@ -503,19 +504,18 @@ def test(name, label, ts):
         idx2 = man.sorting.get_cluster_index_alt(k)
         assert not (idx1 - idx2).any()
 
-        print('Total index len {} vs {} summed'.
-              format(idx1.shape[0], sumidx))
+        logger.info('Total index len %s vs %s summed', idx1.shape[0], sumidx)
         # assert idx1.shape[0] == sumidx
 
     non_noise_spk = man.get_non_noise_spikes()
     total = man.get_all_spikes()
-    print('Non-noise index has {} elements'.
-          format(non_noise_spk['times'].shape[0]))
+    logger.info('Non-noise index has %s elements',
+                non_noise_spk['times'].shape[0])
     assert non_noise_spk['times'].shape[0] == all_good
 
-    print('Total has {} elements'.format(total['times'].shape[0]))
+    logger.info('Total has %s elements', total['times'].shape[0])
 
     for gid, group in all_groups.items():
-        print('Group {} has {} times, type {} and {} members'.
-              format(gid, group['times'].shape[0],
-                     TYPE_NAMES[group['type']], group['n_clusters']))
+        logger.info('Group %s has %s times, type %s and %s members',
+                    gid, group['times'].shape[0],
+                    TYPE_NAMES[group['type']], group['n_clusters'])

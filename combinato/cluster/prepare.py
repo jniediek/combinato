@@ -5,10 +5,12 @@
 prepare clustering jobs
 """
 from __future__ import print_function, division, absolute_import
+import logging
 import os
 import numpy as np
 from .. import options, DataManager, create_session
 
+logger = logging.getLogger(__name__)
 DEBUG = options['Debug']
 
 
@@ -23,10 +25,10 @@ def make_arguments(filename, sign, mode, start=0,
     start and stop indexes into the spike array, after artifact exclusion
     """
     h5manager = DataManager(filename, cache=['times', 'artifacts'])
-    print('Opened {}'.format(filename))
+    logger.info('Opened %s', filename)
     non_artifact_idx, num_spikes = h5manager.get_non_artifact_index(sign)
     if num_spikes == 0:
-        print('No spikes found!')
+        logger.info('No spikes found!')
         return None
 
     # find start and stop index
@@ -41,7 +43,7 @@ def make_arguments(filename, sign, mode, start=0,
         if add_one:
             start_idx += 1
             stop_idx -= 1
-        print('Converted time to {}-{}'.format(start_idx, stop_idx))
+        logger.info('Converted time to %s-%s', start_idx, stop_idx)
 
     else:
         start_idx = start
@@ -57,7 +59,7 @@ def make_arguments(filename, sign, mode, start=0,
 
     if len(stops) > 1:
         if stops[-1] - stops[-2] < max_nspk_session/5:
-            print('Adjusting stop to have some spikes')
+            logger.debug('Adjusting stop to have some spikes')
             stops[-2] = stops[-1]
             del starts[-1], stops[-1]
 
@@ -81,9 +83,9 @@ def main(fnames, sign, mode, start, stop, max_nspk_session, label,
 
     ret = []
 
-    print('running {} {} {} {} {} {} {} {}'.
-          format(fnames, sign, mode, start, stop, max_nspk_session,
-                 label, 'replace' if replace else 'no replace'))
+    logger.debug('running %s %s %s %s %s %s %s %s',
+                fnames, sign, mode, start, stop, max_nspk_session,
+                label, 'replace' if replace else 'no replace')
 
     for name in fnames:
         jobs = make_arguments(name, sign, mode, start, stop,
@@ -147,7 +149,7 @@ def parse_arguments():
 
     if None not in (args.jobs, args.datafile):
         parser.print_help()
-        print('Supply either list file or data file, not both')
+        logger.info('Supply either list file or data file, not both')
         return
 
     add_one = False
@@ -176,7 +178,7 @@ def parse_arguments():
         if mode == 'index':
             if None in (args.start, args.stop):
                 start_stop = [(0, None)]
-                print('Automatically using all spikes'.format(*start_stop))
+                logger.info('Automatically using all spikes')
             else:
                 start_stop = [(args.start[0], args.stop[0])]
 
@@ -187,7 +189,7 @@ def parse_arguments():
 
         if (mode == 'index') and (None in (args.start, args.stop)):
             start_stop = [(0, None)]
-            print('Automatically using all spikes'.format(*start_stop))
+            logger.info('Automatically using all spikes')
 
         if 'neg' in args.jobs[0]:
             sign = 'neg'

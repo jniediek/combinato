@@ -2,11 +2,14 @@
 collection of helper functions
 """
 from __future__ import print_function, division, absolute_import
+import logging
 import os
 from glob import glob
 from collections import defaultdict
 import tables
 from .. import NcsFile, options
+
+logger = logging.getLogger(__name__)
 
 def check_sorted(channel_dirname):
     """
@@ -77,7 +80,7 @@ def get_channels(path, from_h5files=False):
             if os.path.exists(cand):
                 return cand
             else:
-                print('{} not found!'.format(cand))
+                logger.debug('%s not found!', cand)
 
     ret = {}
 
@@ -124,7 +127,7 @@ def get_regions(path):
                 if name[-4:] == '_Ref':
                     name = name[:-4]
                 else:
-                    print('Unknown Region: ' + name[-4:])
+                    logger.debug('Unknown Region: %s', name[-4:])
             
             regions[name].append(ch)
 

@@ -1,6 +1,9 @@
 # JN 2015-02-13 refactoring
 from __future__ import absolute_import, print_function, division
 
+import logging
+logger = logging.getLogger(__name__)
+
 from collections import defaultdict
 from multiprocessing import Process, Queue, Value
 import numpy as np
@@ -38,9 +41,8 @@ def save(q, ctarget):
         this_name_pending_jobs[jcount] = job
 
 
-        print('Job name: {} pending jobs: {} jnow: {}'.format(jname,
-                                                              this_name_pending_jobs.keys(),
-                                                              jcount))
+        logger.debug('Job name: %s pending jobs: %s jnow: %s', jname,
+                    list(this_name_pending_jobs.keys()), jcount)
 
         while last_saved_count[jname] + 1 in this_name_pending_jobs:
             sjob = this_name_pending_jobs[last_saved_count[jname] + 1]
@@ -51,7 +53,7 @@ def save(q, ctarget):
                  openfiles[sjob['name']] = OutFile(sjob['name'], sjob['filename'],
                                                    spoints, sjob['destination'])
 
-            print('saving {}, count {}'.format(sjob['name'], sjob['count']))
+            logger.debug('saving %s, count %s', sjob['name'], sjob['count'])
             openfiles[sjob['name']].write(data)
             all_data[sjob['all_data_ind']] = None
             last_saved_count[jname] = sjob['count']
@@ -62,7 +64,7 @@ def save(q, ctarget):
     for fid in openfiles.values():
         fid.close()
 
-    print('Save exited')
+    logger.info('Save exited')
 
 
 def work(q_in, q_out, count, target):
@@ -89,7 +91,7 @@ def work(q_in, q_out, count, target):
 
         q_out.put((job, result))
 
-    print('Work exited')
+    logger.info('Work exited')
 
 
 def read(jobs, q):
@@ -126,11 +128,11 @@ def read(jobs, q):
         elif 'is_matfile' in job.keys():
             if job['is_matfile']:
                 fname = job['filename']
-                print('Reading from matfile ' + fname)
+                logger.info('Reading from matfile %s', fname)
                 data = read_matfile(fname)
                 if job['scale_factor'] != 1:
-                    print('Rescaling matfile data by {:.4f}'.
-                        format(job['scale_factor']))
+                    logger.debug('Rescaling matfile data by %.4f',
+                                job['scale_factor'])
                     data = (data[0] * job['scale_factor'],
                             data[1],
                             data[2])
@@ -140,13 +142,13 @@ def read(jobs, q):
             if jname not in openfiles:
                 openfiles[jname] = ExtractNcsFile(job['filename'], job['reference'])
 
-            print('Read {} {: 7d} {: 7d}'.format(jname, job['start'], job['stop']))
+            logger.debug('Read %s % 7d % 7d', jname, job['start'], job['stop'])
             data = openfiles[jname].read(job['start'], job['stop'])
             job.update(filename='data_' + jname + '.h5')
 
         q.put((job, data))
 
-    print('Read exited')
+    logger.info('Read exited')
 
 
 def mp_extract(jobs, nWorkers):

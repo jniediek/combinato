@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import numpy as np
 from .interpolate import clean, upsample, downsample, align
 
@@ -13,7 +16,7 @@ options = dict([('threshold_factor', 5),        # 5
 try:
     from local_options import options as local_options
     options.update(local_options)
-    print('Updated {} options by local_options'.format(len(local_options)))
+    logger.info('Updated %s options by local_options', len(local_options))
 except ImportError:
     pass
 
@@ -86,10 +89,10 @@ def extract_spikes(data, times, timestep, filt):
             continue
 
         maxima = np.array(maxima[1:-2])
-        print((np.diff(maxima) < 64).sum())
+        logger.debug('%s', (np.diff(maxima) < 64).sum())
         # make sure maxima are far enough from border of data
         mindex = (maxima >= pre_indices + 5) & (maxima <= len(data) - post_indices - 5)
-        print('Shortening maxima list from {} to {}'.format(len(maxima), mindex.sum()))
+        logger.debug('Shortening maxima list from %s to %s', len(maxima), mindex.sum())
         maxima = maxima[mindex]
         if data_extract is None:
             if options['do_filter']:

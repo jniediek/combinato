@@ -6,8 +6,10 @@ from __future__ import print_function, division, absolute_import
 import sys
 import os
 from getpass import getuser
-from time import strftime
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QListView,
@@ -31,7 +33,6 @@ from .. import options, TYPE_ART, TYPE_MU, TYPE_SU, TYPE_NO
 imageSize = 260
 stylesheet = 'QListView:focus { background-color: rgb(240, 255, 255)}'
 DEBUG = options['Debug']
-LOGFILENAME = 'css_gui_log.txt'
 
 
 class SpikeSorter(QMainWindow, Ui_MainWindow):
@@ -106,12 +107,6 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         else:
             self.basedir = os.getcwd()
 
-        try:
-            self.logfid = open(LOGFILENAME, 'a')
-        except PermissionError:
-            print('Not logging!')
-            self.logfid = None
-
         self.user = getuser()
 
         self.rasterFigure = None
@@ -137,7 +132,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                     break
 
         except ValueError:
-            print('Unable to initialize raster meta data')
+            logger.error('Unable to initialize raster meta data')
             return
         #infix = '{:03d}{}{}'.format(pat, raster_options['infix'], run)
         infix = pat+paradigm
@@ -195,7 +190,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         self.groupOverviewFigure.save_as_file(str(fout[0]), dpi=300)
 
     def on_actionAutoassign_triggered(self):
-        print(self.sender().text())
+        logger.debug('Auto-assign triggered: %s', self.sender().text())
 
         if self.backend is None:
             return
@@ -204,7 +199,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         groupName = str(self.groupComboBox.currentText())
         group = self.backend.sessions.groupsByName[groupName]
-        print('Auto-assigning group {}'.format(group))
+        logger.info('Auto-assigning group %s', group)
 
         if group == '':
             return
@@ -231,7 +226,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                     dist = d
                     minimizer = name
 
-        print('Moving to ' + minimizer + ', distance {:2f}'.format(dist))
+        logger.debug('Moving to %s, distance %.2f', minimizer, dist)
         self.move(self.backend.sessions.groupsByName[minimizer])
         self.updateActiveTab()
         l = self.backend.sessions.groupsByName[minimizer].assignAxis.get_lines()
@@ -265,7 +260,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             folder = ' '.join(item[0:-2])
             datafile = item[-2]
             sortingfile = item[-1]
-            print(folder, datafile, sortingfile)
+            logger.info('Opening session: folder=%s, data=%s, sorting=%s',
+                        folder, datafile, sortingfile)
             item = str(dialog.timesList.selectedItems()[0].text()).split()
             try:
                 start_time_ms = int(item[1])/1000
@@ -274,9 +270,9 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
                 start_time_ms = 0
                 stop_time_ms = np.inf
 
-            print('Opening {} {} {} ({} ms to {} ms)'.
-                  format(folder, datafile, sortingfile,
-                         start_time_ms, stop_time_ms))
+            logger.info('Opening %s %s %s (%.0f ms to %.0f ms)',
+                        folder, datafile, sortingfile,
+                        start_time_ms, stop_time_ms)
 
             datapath = os.path.join(folder, datafile)
             sessionpath = os.path.join(folder, sortingfile)
@@ -348,7 +344,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         if cj + 1 < len(self.job_names):
             self.open_job(cj + 1)
         else:
-            print('Last job open')
+            logger.debug('Last job open')
             return
 
     def actionGotoJob_triggered(self):
@@ -364,9 +360,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         if dialog.exec_():
             item = str(dialog.joblist.selectedItems()[0].text())
-            print(item)
             jobid = int(item.split()[0])
-            print(jobid)
+            logger.info('Opening job %d: %s', jobid, item)
             self.open_job(jobid)
 
     def actionOpenJobs_triggered(self):
@@ -406,9 +401,9 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             self.job_stop_time_ms = stop_time_ms
             job_to_open = 0
 
-            print('Loaded {} jobs from {} {} ({} ms to {} ms)'.
-                  format(len(jobs), self.basedir, jobfile,
-                         start_time_ms, stop_time_ms))
+            logger.info('Loaded %d jobs from %s %s (%.0f ms to %.0f ms)',
+                        len(jobs), self.basedir, jobfile,
+                        start_time_ms, stop_time_ms)
 
             self.open_job(job_to_open)
 
@@ -432,7 +427,8 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             item = [str(item.text()) for
                     item in dialog.widget.selectedItems()][0]
             start, _, stop, fname = item.split()
-            print(start, stop, fname[1:-2])
+            logger.debug('Selected time range: start=%s, stop=%s, fname=%s',
+                        start, stop, fname[1:-2])
             start, stop = [int(x)/1000 for x in (start, stop)]
             self.backend.set_sign_start_stop('pos', start, stop)
 
@@ -480,18 +476,18 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         groups = self.backend.sessions.groupsByName
         names = sorted(groups.keys())
         if len(names) <= 3:
-            print('Nothing to move, only groups: {}'.format(names))
+            logger.debug('Nothing to move, only groups: %s', names)
             return
 
         target = names[0]
-        print('Moving everything to group {}'.format(target))
+        logger.info('Moving everything to group %s', target)
 
         for name in names[1:]:
             try:
                 int(name)
                 self.merge_groups(name, target)
             except ValueError:
-                print('not moving {}'.format(name))
+                logger.debug('not moving %s', name)
 
     def actionMerge_triggered(self):
         """
@@ -539,7 +535,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             tgt = shorties[0]
 
         for src in shorties[1:]:
-            print('Merging {} to {}'.format(src, tgt))
+            logger.debug('Merging %d to %d', src, tgt)
             self.merge_groups(src, tgt, mode='by-id', finalize=False)
 
         self.listView.reset()
@@ -581,10 +577,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
         ret = msgBox.exec_()
         if ret == QMessageBox.Yes:
             self.backend.sessions.save()
-            now = strftime('%Y-%m-%d_%H-%M-%S')
-            if self.logfid is not None:
-                self.logfid.write('{} {} saved {}\n'.format(now, self.user,
-                                                        self.status_string))
+            logger.info('%s saved %s', self.user, self.status_string)
             self.backend.sessions.dirty = False
 
     def on_actionMarkCluster_triggered(self):
@@ -790,7 +783,7 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
 
         t1 = time.time()
         self.backend.sessions.reorganize_groups()
-        print('Reorganization took {:.3f} seconds'.format(time.time() - t1))
+        logger.debug('Reorganization took %.3f seconds', time.time() - t1)
         self.allGroupsFigureDirty = True
         self.updateGroupsList()
         self.updateActiveTab()
@@ -802,11 +795,12 @@ class SpikeSorter(QMainWindow, Ui_MainWindow):
             return
         datafilename, extn = os.path.splitext(self.backend.datafile)
         outfname = os.path.join(self.backend.folder, datafilename + '.mat')
-        print('Saving to {}'.format(outfname))
+        logger.info('Saving to %s', outfname)
         self.backend.sessions.export_to_matfile(outfname)
 
 
 def except_hook(cls, exception, traceback):
+    logger.critical('Unhandled exception', exc_info=(cls, exception, traceback))
     sys.__excepthook__(cls, exception, traceback)
 
 

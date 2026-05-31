@@ -9,6 +9,9 @@ is worth it or not
 
 from __future__ import division, print_function, absolute_import
 
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import numpy as np
 import tables
@@ -80,7 +83,7 @@ def spikes_overview(dirname, save_fname):
     """
     h5fname = os.path.join(dirname, 'data_' + dirname + '.h5')
     if not os.path.exists(h5fname):
-        print("{} not found".format(h5fname))
+        logger.info('%s not found', h5fname)
         return
 
     fid = tables.open_file(h5fname, 'r')
@@ -90,7 +93,7 @@ def spikes_overview(dirname, save_fname):
         try:
             spikes = fid.get_node('/' + sign + '/spikes')[:, :]
         except tables.NoSuchNodeError as error:
-            print(error)
+            logger.info('%s', error)
             continue
         times = fid.get_node('/' + sign + '/times')[:]
         try:
@@ -98,7 +101,7 @@ def spikes_overview(dirname, save_fname):
             arti_types = np.unique(artifacts)
             n_all_types = len(arti_types)
         except tables.NoSuchNodeError as error:
-            print(error)
+            logger.info('%s', error)
             artifacts = None
             n_all_types = 1
 
@@ -118,7 +121,7 @@ def spikes_overview(dirname, save_fname):
                 idx = artifacts == arti_type
                 n_plots += int(np.ceil(idx.sum()/SPIKES_PER_PLOT))
         if DEBUG:
-            print('{} {}: {} spikes'.format(h5fname, sign, n_spk))
+            logger.debug('%s %s: %s spikes', h5fname, sign, n_spk)
 
         n_rows = int(np.ceil(n_plots/N_COLS))
         fig = make_figure(n_rows)
@@ -129,7 +132,7 @@ def spikes_overview(dirname, save_fname):
 
             if artifacts is not None:
                 current_type = arti_types[type_count]
-                print(current_type)
+                logger.debug('%s', current_type)
                 idx = artifacts == current_type
                 current_spikes = spikes[idx, :]
                 current_times = times[idx]
@@ -147,7 +150,7 @@ def spikes_overview(dirname, save_fname):
                 plot = fig.add_subplot(grid[plot_count])
                 start = start_i * SPIKES_PER_PLOT
                 stop = start + SPIKES_PER_PLOT
-                print(start, stop)
+                logger.debug('%s %s', start, stop)
                 spike_heatmap(plot, current_spikes[start:stop])
                 set_params(plot, x, start == 0)
                 if current_type in artifact_id_to_name:
@@ -191,7 +194,7 @@ def process_file(fname):
     except TypeError:
         entity = 'unknown'
     ncs_fname = os.path.basename(fname)[5:-3]
-    print(ncs_fname)
+    logger.debug(ncs_fname)
     plot_fname = 'spikes_{}_{}'.format(entity, ncs_fname)
     save_fname = os.path.join(OVERVIEW, plot_fname)
     spikes_overview(ncs_fname, save_fname)

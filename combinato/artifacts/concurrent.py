@@ -6,11 +6,14 @@
 # as they are likely to be artifacts
 
 from __future__ import print_function, division
+import logging
 import os
 import numpy as np
 import tables
 import time
 from .. import NcsFile, h5files, get_regions
+
+logger = logging.getLogger(__name__)
 
 DEBUG = True
 BIN_MS = 3 
@@ -25,8 +28,7 @@ def bincount(ts_beg, ts_end, files, sign='pos'):
         if len(times):
             nch += 1 
             count += (np.histogram(times, bins)[0] > 0)
-            if DEBUG:
-                print('Added {}/{}'.format(i + 1, len(files)))
+            logger.debug('Added %s/%s', i + 1, len(files))
 
     return count, bins, nch 
 
@@ -37,15 +39,15 @@ def _any_from_file(what, fname, sign='pos'):
     try:
         h5file = tables.open_file(fname)
     except IOError as e:
-        print(e.message + ' ' + fname)
+        logger.info('%s %s', e.message, fname)
         times = []
-        failed = True 
-   
+        failed = True
+
     if not failed:
         try:
             times = h5file.get_node('/' + sign + '/times')
         except tables.exceptions.NoSuchNodeError as e:
-            print(e.message + ' ' + fname)
+            logger.info('%s %s', e.message, fname)
             times = []
        
     if what == 'times':
@@ -92,7 +94,7 @@ def write_bincount(folder):
     ncsfiles = get_regions(folder)
 
     if len(ncsfiles) == 0:
-        print('No ncs files found, reading from h5 files')
+        logger.info('No ncs files found, reading from h5 files')
         fid = tables.open_file(files[0], 'r')
         ts_beg = fid.root.thr[0, 0]
         ts_end = fid.root.thr[-1, 1]
@@ -104,7 +106,7 @@ def write_bincount(folder):
                                    ncsfid.num_recs, 
                                    mode='timestamp'))/1000
 
-    print(ts_beg, ts_end, (ts_end - ts_beg)/1000/60)
+    logger.debug('%s %s %s', ts_beg, ts_end, (ts_end - ts_beg)/1000/60)
 
     count, bins, nch = bincount(ts_beg, ts_end, files)
     outfile = tables.open_file(outfname, 'w')

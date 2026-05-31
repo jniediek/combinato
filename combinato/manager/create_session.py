@@ -3,6 +3,10 @@
 create a new folder for sorting
 """
 from __future__ import print_function, division, absolute_import
+
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import numpy as np
 import tables
@@ -34,7 +38,7 @@ def create_session(folder, sign, label, index, replace=False):
     data_fname = os.path.join(session_dir, 'sorting.h5')
 
     if os.path.exists(data_fname) and not replace:
-        print('Not replacing ' + data_fname)
+        logger.info('Not replacing %s', data_fname)
 
     h5fid = tables.open_file(data_fname, 'w')
     h5fid.create_array('/', 'index', index.astype(np.uint32))

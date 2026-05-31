@@ -1,8 +1,11 @@
 # JN 2015-01-13
 from __future__ import absolute_import, print_function, division
 
+import logging
 import matplotlib.pyplot as mpl
 from .. import options
+
+logger = logging.getLogger(__name__)
 
 
 def plot_temperatures(tree, used_points):

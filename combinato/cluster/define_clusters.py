@@ -6,8 +6,11 @@ given a cluster tree, define clusters and return their index
 """
 
 from __future__ import division, print_function, absolute_import
+import logging
 import numpy as np
 from .. import options
+
+logger = logging.getLogger(__name__)
 
 def find_relevant_tree_points(tree, min_spikes):
     """
@@ -103,7 +106,7 @@ def testit():
     from .cluster_features import testit as test_features
     clu, tree = test_features()
     idx = define_clusters(clu, tree)
-    print(idx)
+    logger.debug('%s', idx)
 
 if __name__ == "__main__":
     testit()

@@ -6,11 +6,14 @@ read a total sorting file and group the classes
 """
 from __future__ import absolute_import, print_function, division
 
+import logging
 import tables
 import numpy as np
 from .. import SortingManager, options, CLID_UNMATCHED, GROUP_ART, GROUP_NOCLASS,\
     TYPE_ART, TYPE_NO, TYPE_MU
 from .dist import distance_groups
+
+logger = logging.getLogger(__name__)
 
 
 def create_groups(spikes, classes, clids, sign):
@@ -54,7 +57,7 @@ def create_groups(spikes, classes, clids, sign):
         minimum = dists[gr1, gr2]
         if minimum > crit:
             break
-        print('Merging {} and {}, dist: {:.4f}'.format(gr1, gr2, minimum))
+        logger.debug('Merging %s and %s, dist: %.4f', gr1, gr2, minimum)
         # merge groups 1 and 2 now
         groups[gr1] += groups[gr2]
         del groups[gr2] 
@@ -92,7 +95,7 @@ def main(datafname, sorting_fname, read_only=False):
     idx = sort_fid.root.index[:]
     spikes = man.get_data_by_name_and_index('spikes', idx, sign)
     del man
-    print('Read {} spikes'.format(spikes.shape[0]))
+    logger.debug('Read %s spikes', spikes.shape[0])
     classes = sort_fid.root.classes[:]
     artifacts = sort_fid.root.artifacts[:, :]
     group_arr = artifacts.copy().astype(np.int16)
@@ -101,7 +104,7 @@ def main(datafname, sorting_fname, read_only=False):
     clids = artifacts[~art_idx, 0]
 
     group_arr[art_idx, 1] = GROUP_ART
-    print('Classes: {}'.format(clids))
+    logger.debug('Classes: %s', clids)
 
     groups = create_groups(spikes, classes, clids, sign)
     
@@ -119,17 +122,17 @@ def main(datafname, sorting_fname, read_only=False):
 
         try:
             sort_fid.remove_node('/', 'groups')
-            print('Updating grouping')
+            logger.debug('Updating grouping')
         except tables.NoSuchNodeError:
-            print('Creating grouping')
+            logger.debug('Creating grouping')
 
         sort_fid.create_array('/', 'groups', group_arr)
 
         try:
             sort_fid.remove_node('/', 'groups_orig')
-            print('Updating original grouping')
+            logger.debug('Updating original grouping')
         except tables.NoSuchNodeError:
-            print('Creating original grouping')
+            logger.debug('Creating original grouping')
 
         sort_fid.create_array('/', 'groups_orig', group_arr)
 
@@ -146,18 +149,18 @@ def main(datafname, sorting_fname, read_only=False):
     if not read_only:
         try:
             sort_fid.remove_node('/', 'types')
-            print('Updating types')
+            logger.debug('Updating types')
         except tables.NoSuchNodeError:
-            print('Creating types')
+            logger.debug('Creating types')
 
         sort_fid.create_array('/', 'types', types)
 
         # create backups of types
         try:
             sort_fid.remove_node('/', 'types_orig')
-            print('Updating original types')
+            logger.debug('Updating original types')
         except tables.NoSuchNodeError:
-            print('Storing original types')
+            logger.debug('Storing original types')
 
         sort_fid.create_array('/', 'types_orig', types)
 

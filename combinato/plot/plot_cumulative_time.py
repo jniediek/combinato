@@ -4,6 +4,9 @@
 cumulative spike time plot
 """
 
+import logging
+logger = logging.getLogger(__name__)
+
 import numpy as np
 TEXT_SIZE = 'small'
 

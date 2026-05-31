@@ -5,8 +5,11 @@ from __future__ import print_function, division, absolute_import
 import os
 import time
 import subprocess
+import logging
 import numpy as np
 #   pylint:disable=E1101
+
+logger = logging.getLogger(__name__)
 
 from .. import options
 
@@ -93,9 +96,8 @@ def cluster_features(features, folder, name, random_seed=None):
         raise Exception('Error in Clustering: ' + name)
 
     if DO_TIMING:
-        with open(os.path.join(folder, 'cluster_log.txt'), 'a') as log_fid:
-            log_fid.write('clustered {} spikes in {:.6f} s'.
-                          format(features.shape[0], dt))
+        logger.debug('clustered: %d spikes in %.3f seconds',
+                    features.shape[0], dt)
 
     if DO_CLEAN:
         _cleanup(cleanname, EXT_TMP)

@@ -5,6 +5,8 @@ this is the gui sorter backend, doesn't have much functionality actually
 """
 from __future__ import print_function, division, absolute_import
 
+import logging
+logger = logging.getLogger(__name__)
 import os
 import numpy as np
 from .. import SortingManagerGrouped
@@ -16,7 +18,7 @@ class Backend(object):
     gui sorter backend
     """
     def __del__(self):
-        print('Closing session')
+        logger.info('Closing session')
         del self.sorting_manager
         del self.sessions
 
@@ -24,7 +26,7 @@ class Backend(object):
                  start_time=0, stop_time=np.inf):
 
         self.sessions = None
-        print('Openening session {} {}'.format(datafilename, sessionfilename))
+        logger.info('Openening session %s %s', datafilename, sessionfilename)
         self.folder = os.path.dirname(datafilename)
         self.datafile = os.path.basename(datafilename)
         self.sorting_manager = SortingManagerGrouped(datafilename)
@@ -35,7 +37,7 @@ class Backend(object):
         start_idx, stop_idx = self.sorting_manager.\
             get_start_stop_index(self.sign, start_time, stop_time)
 
-        print('Setting index {} to {}'.format(start_idx, stop_idx))
+        logger.debug('Setting index %s to %s', start_idx, stop_idx)
 
         self.sorting_manager.\
             set_sign_times_spikes(self.sign, start_idx, stop_idx)
