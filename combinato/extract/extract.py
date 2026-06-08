@@ -3,6 +3,10 @@
 
 
 from __future__ import division, print_function, absolute_import
+
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 from argparse import ArgumentParser, FileType
 import tables
@@ -56,7 +60,7 @@ def main():
         (args.jobs is None)):
 
         parser.print_help()
-        print('Supply either files or jobs or matfile.')
+        logger.info('Supply either files or jobs or matfile.')
         return
 
     if args.destination is not None:
@@ -81,7 +85,7 @@ def main():
         with open(args.jobs[0], 'r') as f:
             files = [a.strip() for a in f.readlines()]
         f.close()
-        print('Read jobs from ' + args.jobs[0])
+        logger.info('Read jobs from %s', args.jobs[0])
     else:
         files = args.files
 
@@ -110,7 +114,7 @@ def main():
 
 
     if files[0] is None:
-        print('Specify files!')
+        logger.info('Specify files!')
         return
 
     # construct the jobs
@@ -144,11 +148,11 @@ def main():
         name = os.path.splitext(os.path.basename(f))[0]
         if references is not None:
             reference = references[f]
-            print('{} (re-referenced to {})'.format(f, reference))
+            logger.info('%s (re-referenced to %s)', f, reference)
 
         else:
             reference = None
-            print(name)
+            logger.info(name)
 
         for i in range(len(starts)):
             jdict = {'name': name,

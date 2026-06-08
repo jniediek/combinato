@@ -7,6 +7,10 @@ Displays overview of ncs files with their extract/sort status
 # JN 2019-01-08 converting to Qt5
 
 from __future__ import print_function, division, absolute_import
+
+import logging
+logger = logging.getLogger(__name__)
+
 import sys
 import os
 
@@ -59,11 +63,11 @@ def load_image(path, entity, fname, img_type, sign=None, label=None):
     if os.path.exists(path_pattern):
         image = QPixmap(QImage(path_pattern))
     else:
-        print(path_pattern + ' does not exist')
+        logger.debug('%s does not exist', path_pattern)
         
     if DEBUG:
         if image is not None:
-            print('Loaded ' + path_pattern)
+            logger.debug('Loaded %s', path_pattern)
 
     return image
 
@@ -172,7 +176,7 @@ class GuiOverview(QMainWindow, Ui_MainWindow):
 
         sorted_channels = sorted(channels)
 
-        print(sorted_channels, label)
+        logger.debug('%s %s', sorted_channels, label)
 
         if DEBUG:
             sorted_channels = sorted_channels[:3]
@@ -444,7 +448,7 @@ class GuiOverview(QMainWindow, Ui_MainWindow):
             msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             ret = msgbox.exec_()
             if ret == QMessageBox.Yes:
-                print('Overwriting ' + out_fname)
+                logger.info('Overwriting %s', out_fname)
                 os.rename(out_fname, out_fname + '.bak') 
             else:
                 write = False
@@ -462,7 +466,7 @@ class GuiOverview(QMainWindow, Ui_MainWindow):
         where = 'left'
         which_text = str(self.comboBoxLeftImage.currentText())
         which = IMG_BY_LABEL[which_text]
-        print(which)
+        logger.debug('%s', which)
         self.set_image(where, which)
 
     def set_image_right(self):

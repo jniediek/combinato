@@ -3,6 +3,10 @@ reading and writing data
 """
 # pylint: disable=E1101
 from __future__ import absolute_import, print_function, division
+
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import numpy as np
 import tables
@@ -26,7 +30,7 @@ def read_matfile(fname):
         sr = DEFAULT_MAT_SR
         insert = 'default'
 
-    print('Using ' + insert + ' sampling rate ({} kHz)'.format(sr/1000.))
+    logger.info('Using %s sampling rate (%s kHz)', insert, sr/1000.)
     ts = 1/sr
     fdata = data['data'].ravel()
     atimes = np.linspace(0, fdata.shape[0]/(sr/1000), fdata.shape[0])
@@ -65,8 +69,8 @@ class ExtractNcsFile(object):
         fdata *= (1e6 * self.ncs_file.header['ADBitVolts'])
 
         if self.ref_file is not None:
-            print('Reading reference data from {}'.
-                format(self.ref_file.filename))
+            logger.debug('Reading reference data from %s',
+                        self.ref_file.filename)
             ref_data = self.ref_file.read(start, stop, 'data')
             fref_data = np.array(ref_data).astype(np.float32)
             fref_data *= 1e6 * self.ref_file.header['ADBitVolts']
@@ -77,9 +81,9 @@ class ExtractNcsFile(object):
 
         err = expected_length - times[-1] + times[0]
         if err != 0:
-            print("Timestep mismatch in {}"
-                  " between records {} and {}: {:.1f} ms"
-                  .format(self.fname, start, stop, err/1e3))
+            logger.info("Timestep mismatch in %s"
+                        " between records %s and %s: %.1f ms",
+                        self.fname, start, stop, err/1e3)
 
         atimes = np.hstack([t + self.timerange for t in times])/1e3
         # MUST NOT USE dictionaries here, because they would persist in memory
@@ -108,7 +112,7 @@ class OutFile(object):
         f.create_earray('/', 'thr', tables.FloatAtom(), (0, 3))
 
         self.f = f
-        print('Initialized ' + fname)
+        logger.info('Initialized %s', fname)
 
     def write(self, data):
         r = self.f.root

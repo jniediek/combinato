@@ -92,6 +92,16 @@ options = {
                                      MAX_AMPLITUDE),
     'cmap': cm.hot,
     'overview_ax_ylim': (-150, 150),
+
+    # Logging
+    'LogLevel': 'DEBUG',         # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    'LogDir': '',                # Empty = CWD; set to absolute path to fix
+    'LogToConsole': True,        # StreamHandler to stderr
+    'LogToFile': True,           # FileHandler (one per subsystem)
+    'LogFileMode': 'a',          # Append mode
+    'LogFormat': '%(asctime)s [%(levelname)-7s] %(name)s: %(message)s',
+    'LogDateFormat': '%Y-%m-%d %H:%M:%S',
+
     'Debug': False,
     'histcolor': 'b',
     'histtype': 'stepfilled',

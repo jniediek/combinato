@@ -7,10 +7,13 @@ for final grouping
 """
 from __future__ import print_function, division, absolute_import
 import os
+import logging
 import numpy as np
 #   pylint: disable=E1101
 import tables
 from multiprocessing import Pool, cpu_count
+
+logger = logging.getLogger(__name__)
 
 import matplotlib.pyplot as mpl
 
@@ -63,9 +66,9 @@ def read_all_info(managers):
         sorted_index[curr_idx:curr_idx+t_size] = man.index
         overfull = (np.diff(sorted_index[:curr_idx+t_size]) == 0).sum()
         if overfull:
-            print(ses, overfull, "ALARM")
+            logger.warning('%s overfull: %s', ses, overfull)
         t_classes = man.classes
-        print("Working on {}".format(man.h5file.filename))
+        logger.info('Working on %s', man.h5file.filename)
         idx = t_classes != 0
         t_classes[idx] += old_max_class
         t_arti = man.artifact_scores.astype(np.int16)
@@ -77,7 +80,7 @@ def read_all_info(managers):
         sorted_info[curr_idx:curr_idx + t_size, COL_MATCH_TYPE] = man.matches
         curr_idx += t_size
         old_max_class = t_classes.max()
-        print('Read {} spikes from {}'.format(t_size, ses))
+        logger.debug('Read %d spikes from %s', t_size, ses)
 
     return sorted_index, sorted_info, np.vstack(artifact_scores)
 
@@ -91,14 +94,14 @@ def write_sorting_file(h5fname, sorted_index, sorted_info, artifacts):
             ('matches', COL_MATCH_TYPE, np.int8))
 
     fid = tables.open_file(h5fname, 'w')
-    print('Writing index')
+    logger.debug('Writing index')
     fid.create_array('/', 'index', sorted_index)
 
     for name, col, atom in data:
-        print('Writing ' + name)
+        logger.debug('Writing %s', name)
         fid.create_array('/', name, sorted_info[:, col].astype(atom))
 
-    print('Writing distance')
+    logger.debug('Writing distance')
     fid.create_array('/', 'distance',
                      np.zeros(sorted_index.shape[0], np.float32))
 
@@ -112,7 +115,7 @@ def write_sorting_file(h5fname, sorted_index, sorted_info, artifacts):
         msg = 'Writing artifacts'
         name = 'artifacts'
 
-    print(msg)
+    logger.debug('%s', msg)
     fid.create_array('/', name, artifacts)
     fid.close()
 
@@ -130,13 +133,13 @@ def collect_sorting(fname, signs, sessions, outfname):
     for ses in sessions:
         ses_mans[ses] = SessionManager(os.path.join(basedir, ses))
 
-    print('Starting read from {}'.format(fname))
+    logger.info('Starting read from %s', fname)
     sorted_index, sorted_info, artifacts = read_all_info(ses_mans)
 
     # write to file so that we can continue from that file
     write_sorting_file(outfname, sorted_index, sorted_info, artifacts)
     for ses, man in ses_mans.items():
-        print('Closed {}'.format(ses))
+        logger.debug('Closed %s', ses)
         del man
 
     return sort_man
@@ -149,8 +152,7 @@ def total_match(fid, all_spikes):
     """
     classes = fid.root.classes[:]
 
-    print('classes: {}, all_spikes: {}'.format(classes.shape,
-                                               all_spikes.shape))
+    logger.debug('classes: %s, all_spikes: %s', classes.shape, all_spikes.shape)
 
     ids, mean_array, stds = get_means(classes, all_spikes)
     if not len(ids):
@@ -172,10 +174,10 @@ def total_match(fid, all_spikes):
 
     for start, stop in zip(starts, stops):
         this_idx = unmatched_idx[start:stop] 
-        print('Calculating match for {} spikes'.
-            format(all_spikes[this_idx].shape[0]))
+        logger.debug('Calculating match for %d spikes',
+                     all_spikes[this_idx].shape[0])
         all_dists = distances_euclidean(all_spikes[this_idx], mean_array)
-        print('all_dists: {}'.format(all_dists.shape))
+        logger.debug('all_dists: %s', all_dists.shape)
 
         all_dists[all_dists > options['SecondMatchFactor'] * stds] = np.inf
         minimizers_idx = all_dists.argmin(1)
@@ -220,8 +222,8 @@ def plot_all_classes(classes, matches, all_spikes, plot_dirname):
     for clnum, clid in enumerate(clids):
         cl_idx = classes == clid
         outname = os.path.join(plot_dirname, 'class_{:03d}.png'.format(clid))
-        print('Plotting {}/{}, {}, {} spikes'.
-               format(clnum + 1, len(clids), plot_dirname, cl_idx.sum()))
+        logger.debug('Plotting %d/%d, %s, %d spikes',
+                     clnum + 1, len(clids), plot_dirname, cl_idx.sum())
         plot_class(fig, xax, xlim, ylim,
                    all_spikes[cl_idx], matches[cl_idx], outname)
 
@@ -271,19 +273,15 @@ def main(fname, sessions, label, do_plot=True):
     basedir = os.path.dirname(fname)
     sorting_dir = os.path.join(basedir, label)
 
-    logfname = os.path.join(basedir, 'log.txt')
-
-    logfid = open(logfname, 'a')
-
     if not os.path.isdir(sorting_dir):
         os.mkdir(sorting_dir)
-        logfid.write('created {}\n'.format(sorting_dir))
+        logger.info('Created directory: %s', sorting_dir)
 
     outfname = os.path.join(sorting_dir, 'sort_cat.h5')
 
     if not options['OverwriteGroups']:
         if os.path.exists(outfname):
-            print(outfname + ' exists already, skipping!')
+            logger.info('%s exists already, skipping!', outfname)
             return None
 
     sort_man = collect_sorting(fname, sign, sessions, outfname)
@@ -317,16 +315,14 @@ def main(fname, sessions, label, do_plot=True):
         fid.root.artifacts[:] = artifacts
         fid.flush()
 
-        # print('New artifacts: {}'.format(fid.root.artifacts))
-
+        logger.debug('New artifacts: %s', fid.root.artifacts)
     if do_plot:
         plot_all_classes(classes, matches, all_spikes, sorting_dir)
-        logfid.write('Plotted classes in {}\n'.format(sorting_dir))
+        logger.info('Plotted classes in %s', sorting_dir)
 
-    print(fid.filename, fid.root.artifacts[:])
+    logger.debug('%s %s', fid.filename, fid.root.artifacts[:])
 
     fid.close()
-    logfid.close()
 
     return outfname
 
@@ -400,7 +396,7 @@ def parse_args():
                 multi_helper((fname, sessions, label, do_groups, do_plots))
         else:
             pool = Pool(cpu_count())
-            print('Starting {} workers to concatenate'.format(cpu_count()))
+            logger.info('Starting %d workers to concatenate', cpu_count())
             pool.map(multi_helper, [(fname, sessions, label,
                                      do_groups, do_plots)
                                     for fname, sessions in jobdict.items()])

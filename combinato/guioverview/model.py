@@ -4,6 +4,8 @@ class for channel table
 """
 # JN 2014-12-16
 from __future__ import division, print_function, absolute_import
+import logging
+logger = logging.getLogger(__name__)
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant
 
 NCOLS = 16
@@ -90,7 +92,7 @@ class ChannelTableModel(QAbstractTableModel):
         """
         self.beginResetModel()
         self.channels.append(row)
-        print('Added ' + row[0])
+        logger.debug('Added %s', row[0])
         self.endResetModel()
 
     def get_image(self, row, which):

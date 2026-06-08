@@ -5,6 +5,8 @@ show resposes in css-gui
 
 from __future__ import print_function, division, absolute_import
 
+import logging
+logger = logging.getLogger(__name__)
 import os
 import numpy as np
 import scipy.signal as signal
@@ -158,7 +160,7 @@ class RasterFigure(MplCanvas):
             stim_name, fname_image = get_stim_info(self.frame, stimulus)
             self.names[stimulus] = stim_name
             fname_image = os.path.join(image_path, fname_image)
-            print(fname_image)
+            logger.debug('%s', fname_image)
             self.images[stimulus] = imread(fname_image)
 
     def update_figure(self, spiketimes, daytime, scale=5,

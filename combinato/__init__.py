@@ -12,19 +12,34 @@ try:
 except ImportError:
     pass
 
+n_local = 0
 try:
     from local_options import options as local_options
     options.update(local_options)
-    print('Updated {} options by local_options'.format(len(local_options)))
+    n_local = len(local_options)
 except ImportError:
     pass
 
+n_art_local = 0
 try:
     from local_options import artifact_criteria as loc_artifact_criteria
     artifact_criteria.update(loc_artifact_criteria)
-    print('Updated {} artifact criteria from local_options')
+    n_art_local = len(loc_artifact_criteria)
 except ImportError:
     pass
+
+# Configure logging after options are fully merged, before any
+# other combinato modules create their loggers.
+from .util.logging_config import configure_logging  # noqa: E402
+configure_logging(options)
+
+import logging
+_logger = logging.getLogger(__name__)
+
+if n_local:
+    _logger.info('Updated %d options from local_options', n_local)
+if n_art_local:
+    _logger.info('Updated %d artifact criteria from local_options', n_art_local)
 
 from .constants import SPIKE_CLUST, SPIKE_MATCHED, SPIKE_MATCHED_2,\
     CLID_UNMATCHED, SIGNS, TYPE_NAMES, TYPE_ART, TYPE_MU, TYPE_SU,\

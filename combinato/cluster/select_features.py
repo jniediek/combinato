@@ -2,9 +2,12 @@
 # refactoring
 
 from __future__ import division, print_function, absolute_import
+import logging
 import numpy as np
 import scipy.stats as stats
 from .. import options
+
+logger = logging.getLogger(__name__)
 
 def select_features(features):
     """
@@ -45,4 +48,4 @@ if __name__ == "__main__":
     for i in [2, 4, 6]:
         assert i in features
 
-    print('OK, features: ', features)
+    logger.debug('OK, features: %s', features)

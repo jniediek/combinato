@@ -4,11 +4,14 @@ file collects widgets that call matplotlib
 """
 
 from __future__ import print_function, division, absolute_import
+import logging
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import numpy as np
 from matplotlib.backends.backend_qt5agg import\
     FigureCanvasQTAgg as FigureCanvas
+
+logger = logging.getLogger(__name__)
 import matplotlib.pyplot as mpl
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
@@ -155,7 +158,7 @@ class GroupOverviewFigure(MplCanvas):
         if (thresholds is not None) and options['GuiUseThresholdTimeAxis']:
             self.startTime = thresholds[0, 0]
             self.stopTime = thresholds[-1, 0]
-            print('Using times from thresholds')
+            logger.debug('Using times from thresholds')
         else:
             self.startTime = times[0]
             self.stopTime = times[1]
@@ -309,7 +312,7 @@ class GroupOverviewFigure(MplCanvas):
         self.draw()
 
         t2 = time.time()
-        print('Update time: {:.0f} ms'.format((t2 - t1)*1000))
+        logger.debug('Update time: %.0f ms', (t2 - t1) * 1000)
 
     def mark(self, index, histdata=None):
         """
@@ -340,7 +343,7 @@ class GroupOverviewFigure(MplCanvas):
         ts1 = time.time()
         self.draw()
         ts2 = time.time()
-        print('Drawing: {:0.1f} ms'.format((ts2 - ts1)*1000))
+        logger.debug('Drawing: %.1f ms', (ts2 - ts1) * 1000)
 
 
 class ComparisonFigure(MplCanvas):
@@ -469,7 +472,8 @@ class AllGroupsFigure(MplCanvas):
                 while(len(ax.lines)):
                     ax.lines[0].remove()
                     if len(ax.lines):
-                        del ax.lines[0]
+                        # del ax.lines[0]
+                        ax.lines[0].remove()
                 data = group.meandata
                 counts = sum([c.spikes.shape[0] for c in group.clusters])
                 gtype = TYPE_NAMES[group.group_type]

@@ -3,6 +3,10 @@
 These functions allow for fast and convenient access to clusters
 """
 from __future__ import print_function, division, absolute_import
+
+import logging
+logger = logging.getLogger(__name__)
+
 import numpy as np
 
 def get_data_from_sessions(sorting_man, sessions,\
@@ -61,8 +65,8 @@ def test(fname):
     groups = get_times_from_sessions(sorting_man, ses_names, 'pos')
     groups_full = get_data_from_sessions(sorting_man, ses_names, 'pos',\
             items=['spikes', 'times'])
-    print(groups)
-    print(groups_full)
+    logger.info('%s', groups)
+    logger.info('%s', groups_full)
 
 
 if __name__ == "__main__":

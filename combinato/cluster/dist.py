@@ -6,9 +6,12 @@ between clusters, groups etc
 
 # pylint: disable=E1101
 from __future__ import division, print_function, absolute_import
+import logging
 import numpy as np
 # import sys
 from .. import options, CLID_UNMATCHED
+
+logger = logging.getLogger(__name__)
 
 
 def distances_euclidean(all_spikes, templates):
@@ -19,7 +22,7 @@ def distances_euclidean(all_spikes, templates):
 
     ret = np.empty((all_spikes.shape[0], templates.shape[0]))
 
-    print('Calculating distances')
+    logger.debug('Calculating distances')
 
     for i, template in enumerate(templates):
         # print(i, end=' ')
@@ -112,7 +115,7 @@ def get_means(classes, all_spikes):
             means.append(meandata.mean(0))
             stds.append(np.sqrt(meandata.var(0).sum()))
             if options['Debug']:
-                print('class {} has stdval: {:.3f}'.format(clid, stds[-1]))
+                logger.debug('class %s has stdval: %.3f', clid, stds[-1])
 
     if not len(means):
         empty = np.array([])

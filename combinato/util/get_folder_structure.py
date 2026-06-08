@@ -3,6 +3,8 @@
 read out the structure of a sorting folder
 """
 from __future__ import division, print_function, absolute_import
+import logging
+logger = logging.getLogger(__name__)
 import os
 import glob
 from .. import options
@@ -69,12 +71,12 @@ def get_time_files(path):
             try:
                 start, stop = map(int, fid.readline().split())
             except ValueError as error:
-                print(fname, error.message)
+                logger.error('%s %s', fname, error.message)
                 continue
             ret.append((fname, start, stop))
     return ret
 
 
 def test():
-    print(get_relevant_folders(os.getcwd()))
-    print(get_time_files(os.getcwd()))
+    logger.info('%s', get_relevant_folders(os.getcwd()))
+    logger.info('%s', get_time_files(os.getcwd()))

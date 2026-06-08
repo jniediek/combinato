@@ -3,6 +3,9 @@
 # function to plot heatmaps of clusters
 from __future__ import absolute_import, division, print_function
 
+import logging
+logger = logging.getLogger(__name__)
+
 import numpy as np
 from matplotlib.pyplot import cm
 
