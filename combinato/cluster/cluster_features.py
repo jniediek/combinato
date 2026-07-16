@@ -75,22 +75,41 @@ def cluster_features(features, folder, name, random_seed=None):
 
     if options['ShowSPCOutput']:
         out = None
+        err = None
     else:
         out = subprocess.PIPE
+        err = subprocess.PIPE
 
     if DO_RUN:
         if DO_TIMING:
             t1 = time.time()
-        ret = subprocess.call((options['ClusterPath'], argument_fname),
+        proc = subprocess.run((options['ClusterPath'], argument_fname),
                               stdout=out,
+                              stderr=err,
                               cwd=folder)
+        ret = proc.returncode
         if DO_TIMING:
             dt = time.time() - t1
     else:
         ret = 0
 
     if ret:
-        raise Exception('Error in Clustering: ' + name)
+        stdout_txt = proc.stdout.decode(errors='replace') if proc.stdout else ''
+        stderr_txt = proc.stderr.decode(errors='replace') if proc.stderr else ''
+        log_path = os.path.join(folder, name + '_spc_error.log')
+        with open(log_path, 'w') as err_fid:
+            err_fid.write('ClusterPath: {}\n'.format(options['ClusterPath']))
+            err_fid.write('argument_fname: {}\n'.format(argument_fname))
+            err_fid.write('cwd: {}\n'.format(folder))
+            err_fid.write('returncode: {}\n'.format(ret))
+            err_fid.write('--- stdout ---\n')
+            err_fid.write(stdout_txt)
+            err_fid.write('\n--- stderr ---\n')
+            err_fid.write(stderr_txt)
+        msg = ('Error in Clustering: {} (exit {}); '
+               'stderr: {!r}; full log: {}'
+               .format(name, ret, stderr_txt.strip()[-500:], log_path))
+        raise Exception(msg)
 
     if DO_TIMING:
         with open(os.path.join(folder, 'cluster_log.txt'), 'a') as log_fid:

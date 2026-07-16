@@ -3,3 +3,4 @@ combinato/options.py
 *.swp
 .DS_Store
 .idea
+css_gui_log.txt
