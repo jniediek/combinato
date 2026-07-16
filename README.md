@@ -1,3 +1,5 @@
+combinato-nyu forked repo allowing processing of sdma folder used at NYU
+
 # Combinato Spike Sorting
 
 ## Introduction
