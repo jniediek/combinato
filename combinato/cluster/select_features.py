@@ -34,7 +34,7 @@ def select_features(features):
             scores[i] = stats.kstest(good_features, 'norm')[1]
 
     sorted_scores = np.sort(scores)
-    border = sorted_scores[num_features_out]
+    border = sorted_scores[num_features_out - 1]
     ret = (scores <= border).nonzero()[0]
     ret = ret[:num_features_out]
     return ret
